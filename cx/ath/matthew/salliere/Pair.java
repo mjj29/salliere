@@ -75,9 +75,12 @@ public class Pair
    }
    public String[] export()
    {
-      String[] rv = new String[names.length+1];
+      String[] rv = new String[names.length+4];
       rv[0] = number;
       System.arraycopy(names, 0, rv, 1, names.length);
+      rv[names.length+1] = ""+mps;
+      rv[names.length+2] = ""+percentage;
+      rv[names.length+3] = ""+lps;
       return rv;
    }
 }

@@ -20,14 +20,18 @@
 package cx.ath.matthew.salliere;
 
 import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
 
 import cx.ath.matthew.debug.Debug;
 
 import java.io.EOFException;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 public class Salliere
 {
@@ -84,33 +89,103 @@ public class Salliere
       return pairs;
    }
 
-   private static Map/*<String,Board>*/ boards;
-   private static Map/*<String,Pairs>*/ pairs;
-   public static void main(String[] args) throws Exception
+   private static void writePairs(Map pairs, OutputStream os) throws IOException
    {
-      if (args.length < 2) {
-         System.out.println("Syntax: salliere <boards.csv> <names.csv>");
-         System.exit(1);
-      }
+      CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
+      for (Pair p: (Pair[]) pairs.values().toArray(new Pair[0])) 
+         out.writeRecord(p.export());
+      out.close();
+   }
 
-      boards = readBoards(new FileInputStream(args[0]));
-      if (Debug.debug)
-         for (Board b: (Board[]) boards.values().toArray(new Board[0])) {
-            for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) {
-               h.score();
-            }
-            b.matchPoint();
-            Debug.print(b);
-         }
 
-      pairs = readPairs(new FileInputStream(args[1]));
+   private static void writeBoards(Map boards, OutputStream os) throws IOException
+   {
+      CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
+      for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
+         for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
+            out.writeRecord(h.export());
+      out.close();
+   }
 
-      List pairv = new ArrayList(pairs.values());
-      for (Pair p: (Pair[]) pairv.toArray(new Pair[0])) 
+   public static void score(Map boards) throws ScoreException, ContractParseException
+   {
+      for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
+         for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
+            h.score();
+   }
+
+   public static void matchpoint(Map boards) throws ScoreException
+   {
+      for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
+         b.matchPoint();
+   }
+
+   public static void total(Map pairs, Map boards)
+   {
+      for (Pair p: (Pair[]) pairs.values().toArray(new Pair[0])) 
          p.total(boards);
+   }
 
+   public static void matrix(Map pairs, Map boards) {}
+   public static void boardbyboard(Map boards) {}
+   public static void localpoint(Map pairs) {}
+
+   public static void results(Map pairs)
+   {
+      Vector results = new Vector();
+      List pairv = new ArrayList(pairs.values());
       Collections.sort(pairv, new PairPercentageComparer());
       for (Pair p: (Pair[]) pairv.toArray(new Pair[0])) 
-         System.out.println(p+" "+p.getMPs());
+         results.add(p.export());
+      
+      TablePrinter tabulate = new TablePrinter(System.out);
+      tabulate.print(new String[] { "Pair#", "Names", "", "MPs", "%age", "OPs" }, 
+               (String[][]) results.toArray(new String[0][]));
+   }
+
+   public static void main(String[] args)
+   {
+      try {
+         Vector commands = new Vector();
+         int i;
+         for (i = 0; i < args.length; i++) {
+            if ("--".equals(args[i])) break;
+            commands.add(args[i]);
+         }
+
+         if (args.length < (i+3)) {
+            System.out.println("Syntax: salliere [commands] -- <boards.csv> <names.csv>");
+            System.out.println("   Commands: score matchpoint total localpoint results matrix boards");
+            System.exit(1);
+         }
+
+         Map/*<String,Board>*/ boards;
+         Map/*<String,Pairs>*/ pairs;
+
+         boards = readBoards(new FileInputStream(args[i+1]));
+         pairs = readPairs(new FileInputStream(args[i+2]));
+
+         for (String command: (String[]) commands.toArray(new String[0])) {
+            if ("score".equals(command)) score(boards);
+            else if ("matchpoint".equals(command)) matchpoint(boards);
+            else if ("total".equals(command)) total(pairs, boards);
+            else if ("results".equals(command)) results(pairs);
+            else if ("matrix".equals(command)) matrix(pairs, boards);
+            else if ("boards".equals(command)) boardbyboard(boards);
+            else if ("localpoint".equals(command)) localpoint(pairs);
+            else {
+               System.out.println("Syntax: salliere [commands] -- <boards.csv> <names.csv>");
+               System.out.println("   Commands: score matchpoint total results matrix boards");
+               System.exit(1);
+            }
+         }
+     
+         writeBoards(boards, new FileOutputStream(args[i+1]));
+         writePairs(pairs, new FileOutputStream(args[i+2]));
+      } catch (Exception e) {
+         if (Debug.debug) Debug.print(e);
+         System.out.println("Salliere failed to compute results: "+e.getMessage());
+         System.exit(1);
+      }
    }
 }
