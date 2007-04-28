@@ -28,12 +28,24 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Salliere
 {
+
+   static class PairPercentageComparer implements Comparator
+   {
+      public int compare(Object ob1, Object ob2)
+      {
+         return (int) ((((Pair) ob2).getPercentage()-((Pair) ob1).getPercentage())*100.0);
+      }
+   }
 
    private static Map/*<String,Board>*/ readBoards(InputStream is) throws IOException
    {
@@ -76,6 +88,11 @@ public class Salliere
    private static Map/*<String,Pairs>*/ pairs;
    public static void main(String[] args) throws Exception
    {
+      if (args.length < 2) {
+         System.out.println("Syntax: salliere <boards.csv> <names.csv>");
+         System.exit(1);
+      }
+
       boards = readBoards(new FileInputStream(args[0]));
       if (Debug.debug)
          for (Board b: (Board[]) boards.values().toArray(new Board[0])) {
@@ -88,9 +105,12 @@ public class Salliere
 
       pairs = readPairs(new FileInputStream(args[1]));
 
-      for (Pair p: (Pair[]) pairs.values().toArray(new Pair[0])) {
+      List pairv = new ArrayList(pairs.values());
+      for (Pair p: (Pair[]) pairv.toArray(new Pair[0])) 
          p.total(boards);
+
+      Collections.sort(pairv, new PairPercentageComparer());
+      for (Pair p: (Pair[]) pairv.toArray(new Pair[0])) 
          System.out.println(p+" "+p.getMPs());
-      }
    }
 }
