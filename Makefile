@@ -37,7 +37,7 @@ classes: .classes
 	$(JAVAC) $(JCFLAGS) -cp $(CLASSPATH) -d classes -cp classes $^
 	touch .classes
 clean:
-	rm -rf classes bin testbin
+	rm -rf classes bin testbin salliere-$(VERSION)
 	rm -f .classes .bin .testbin *.tar.gz *.jar *.1
 
 salliere-$(VERSION).jar: .classes
@@ -54,7 +54,7 @@ debug-$(DEBUG).jar:
 	ln -sf /usr/share/java/debug-$(DEBUG).jar .
 
 bin/%: %.sh .bin
-	sed 's,\%JARPATH\%,$(JARPREFIX),;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
+	sed 's,\%JARPATH\%,$(JARDIR),;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 
 testbin/%: %.sh .testbin salliere-$(VERSION).jar cvs.jar debug-$(DEBUG).jar
 	sed 's,\%JARPATH\%,.,;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
@@ -71,5 +71,6 @@ install: salliere.1 bin/salliere salliere-$(VERSION).jar changelog COPYING INSTA
 	install -d $(DESTDIR)$(JARDIR)
 	install -m 644 salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)
 	ln -sf salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/salliere.jar
+	install -d $(DESTDIR)$(DOCDIR)
 	install -m 644 changelog COPYING INSTALL README todo $(DESTDIR)$(DOCDIR)
 
