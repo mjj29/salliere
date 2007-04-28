@@ -19,7 +19,10 @@
 
 package cx.ath.matthew.salliere;
 
+import cx.ath.matthew.debug.Debug;
+
 import java.io.PrintStream;
+import java.util.Arrays;
 
 public class TablePrinter
 {
@@ -39,6 +42,10 @@ public class TablePrinter
             if (widths[j] < rows[i][j].length())
                widths[j] = rows[i][j].length();
 
+      // gap
+      for (int i = 0; i < widths.length; i++) 
+         widths[i]++;
+
       // print headers
       for (int i = 0; i < headers.length; i++) {
          output.print(headers[i]);
@@ -57,7 +64,7 @@ public class TablePrinter
       for (int i = 0; i < rows.length; i++) {
          for (int j = 0; j < rows[i].length; j++) {
             output.print(rows[i][j]);
-            for (int k = rows[i][j].length(); j < widths[j]; k++)
+            for (int k = rows[i][j].length(); k < widths[j]; k++)
                output.print(' ');
          }
          output.println();
