@@ -24,6 +24,8 @@ import cx.ath.matthew.debug.Debug;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.Set;
 import java.util.Vector;
 
 public class Board
@@ -87,6 +89,23 @@ public class Board
          else if (h.getEW().equals(number))
             return h.getEWMP();
       return 0;
+   }
+   public void validate() throws BoardValidationException
+   {
+      // conditions:
+      // no pair plays the board twice
+      Set seen = new TreeSet();
+      for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
+         if (seen.contains(h.getNS()))
+            throw new BoardValidationException("Board "+number+" has been played by pair "+h.getNS()+" twice.");
+         else if (seen.contains(h.getEW()))
+            throw new BoardValidationException("Board "+number+" has been played by pair "+h.getEW()+" twice.");
+         else {
+            seen.add(h.getNS());
+            seen.add(h.getEW());
+         }
+      }
+
    }
    public String toString() 
    { 

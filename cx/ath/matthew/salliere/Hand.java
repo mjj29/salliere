@@ -19,6 +19,9 @@
 
 package cx.ath.matthew.salliere;
 
+import java.text.DecimalFormat;
+import java.text.FieldPosition;
+
 public class Hand
 {
    String number;
@@ -88,6 +91,9 @@ public class Hand
       nsscore = c.getNSScore();
       if (ewscore != 0 && ewscore != c.getEWScore()) throw new ScoreException("Calculated score as "+c.getEWScore()+" for EW but hand says "+this);
       ewscore = c.getEWScore();
+      if (tricks != 0 && tricks != c.getTricks()) throw new ScoreException("Calculated tricks as "+c.getTricks()+" but hand says "+this);
+      tricks = c.getTricks();
+      contract = c.getContract();
    }
    public String getNumber() { return number; }
    public String getNS() { return ns; }
@@ -135,10 +141,22 @@ public class Hand
       rv[3] = contract;
       rv[4] = ""+declarer;
       rv[5] = ""+tricks;
-      rv[6] = ""+nsscore;
-      rv[7] = ""+ewscore;
-      rv[8] = ""+nsmp;
-      rv[9] = ""+ewmp;
+
+      DecimalFormat format = new DecimalFormat("0.#");
+      FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
+
+      StringBuffer tmp = new StringBuffer();
+      rv[6] = format.format(nsscore, tmp, field).toString();
+
+      tmp = new StringBuffer();
+      rv[7] = format.format(ewscore, tmp, field).toString();
+
+      tmp = new StringBuffer();
+      rv[8] = format.format(nsmp, tmp, field).toString();
+
+      tmp = new StringBuffer();
+      rv[9] = format.format(ewmp, tmp, field).toString();
+
       return rv;
    }
 }

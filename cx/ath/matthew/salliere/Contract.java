@@ -27,14 +27,17 @@ public class Contract
    public static final int NORTH = 1;
    public static final int EAST = 2;
    public static final int ALL = 3;
-   int nsscore;
-   int ewscore;
+   double nsscore;
+   double ewscore;
+   int tricks;
+   String contract;
    public Contract(String contract, char declarer, int vulnerability, int tricks) throws ContractParseException
    {
       char[] cs = contract.toCharArray();
       int val = 0;
       char den = ' ';
       int doubled = 1; 
+loop:
       for (int i = 0; i < cs.length; i++) {
          switch (cs[i]) {
             case ' ': continue;
@@ -75,8 +78,24 @@ public class Contract
             case 'x':
                doubled*=2;
                continue;
+            case '=':
+               tricks = 6+val;
+               break loop;
+            case '-':
+            case '+':
+               StringBuilder sb = new StringBuilder();
+               for (int j = i+1; j < cs.length; j++)
+                  sb.append(cs[j]);
+               int diff = Integer.parseInt(sb.toString());
+
+               if ('+' == cs[i])
+                  tricks = 6+val+diff;
+               else
+                  tricks = 6+val-diff;
+               break loop;
             default:
                throw new ContractParseException("Symbol: "+cs[i]+" not allowed in contract");
+
          }
       }
       if (val < 1 || val > 7) throw new ContractParseException("Value must be between 1 & 7");
@@ -183,6 +202,17 @@ public class Contract
       }
 
       if (Debug.debug) Debug.print("score = "+score);
+
+      this.contract = ""+val+den+
+         (2==doubled?"X":"")+(4==doubled?"X":"");
+      if (tricks == val+6)
+         this.contract += "=";
+      else if (tricks < val+6)
+         this.contract += "-"+(val+6-tricks);
+      else
+         this.contract += "+"+(tricks-val-6);
+
+      this.tricks = tricks;
    }
    public double getNSScore()
    {
@@ -191,5 +221,13 @@ public class Contract
    public double getEWScore()
    {
       return ewscore;
+   }
+   public int getTricks()
+   {
+      return tricks;
+   }
+   public String getContract()
+   {
+      return contract;
    }
 }

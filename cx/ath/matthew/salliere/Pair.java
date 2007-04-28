@@ -19,7 +19,11 @@
 
 package cx.ath.matthew.salliere;
 
+import cx.ath.matthew.debug.Debug;
+
 import java.util.Map;
+import java.text.DecimalFormat;
+import java.text.FieldPosition;
 
 public class Pair
 {
@@ -35,13 +39,13 @@ public class Pair
       System.arraycopy(data, 1, names, 0, names.length);
       switch (data.length) {
          case 6:
-            if (0 > data[5].length())
-               mps = Double.parseDouble(data[5]);
+            if (0 < data[5].length())
+               lps = Double.parseDouble(data[5]);
          case 5:
-            if (0 > data[4].length())
-               mps = Double.parseDouble(data[4]);
+            if (0 < data[4].length())
+               percentage = Double.parseDouble(data[4]);
          case 4:
-            if (0 > data[3].length())
+            if (0 < data[3].length())
                mps = Double.parseDouble(data[3]);
       }
    }
@@ -78,9 +82,20 @@ public class Pair
       String[] rv = new String[names.length+4];
       rv[0] = number;
       System.arraycopy(names, 0, rv, 1, names.length);
-      rv[names.length+1] = ""+mps;
-      rv[names.length+2] = ""+percentage;
-      rv[names.length+3] = ""+lps;
+
+      DecimalFormat format = new DecimalFormat("0.#");
+      FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
+
+      StringBuffer tmp = new StringBuffer();
+      rv[names.length+1] = format.format(mps, tmp, field).toString();
+
+      tmp = new StringBuffer();
+      rv[names.length+3] = format.format(lps, tmp, field).toString();
+
+      format = new DecimalFormat("0.#");
+      tmp = new StringBuffer();
+      rv[names.length+2] = format.format(percentage, tmp, field).toString();
+
       return rv;
    }
 }

@@ -1,0 +1,186 @@
+<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+
+<!-- Process this file with docbook-to-man to generate an nroff manual
+     page: `docbook-to-man manpage.sgml > manpage.1'.  You may view
+     the manual page with: `docbook-to-man manpage.sgml | nroff -man |
+     less'.  A typical entry in a Makefile or Makefile.am is:
+
+manpage.1: manpage.sgml
+	docbook-to-man $< > $@
+
+    
+	The docbook-to-man binary is found in the docbook-to-man package.
+	Please remember that if you create the nroff version in one of the
+	debian/rules file targets (such as build), you will need to include
+	docbook-to-man in your Build-Depends control field.
+
+  -->
+
+  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
+  <!ENTITY dhfirstname "<firstname>Matthew</firstname>">
+  <!ENTITY dhsurname   "<surname>Johnson</surname>">
+  <!-- Please adjust the date whenever revising the manpage. -->
+  <!ENTITY dhdate      "<date>April  28, 2007</date>">
+  <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1). -->
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>&lt;debian@matthew.ath.cx&gt;</email>">
+  <!ENTITY dhusername  "Matthew Johnson">
+  <!ENTITY dhucpackage "<refentrytitle>SALLIERE</refentrytitle>">
+  <!ENTITY dhpackage   "salliere">
+
+  <!ENTITY debian      "<productname>Debian</productname>">
+  <!ENTITY gnu         "<acronym>GNU</acronym>">
+  <!ENTITY gpl         "&gnu; <acronym>GPL</acronym>">
+]>
+
+<refentry>
+  <refentryinfo>
+    <address>
+      &dhemail;
+    </address>
+    <author>
+      &dhfirstname;
+      &dhsurname;
+    </author>
+    <copyright>
+      <year>2007</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &dhdate;
+  </refentryinfo>
+  <refmeta>
+    &dhucpackage;
+
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+
+    <refpurpose>Duplicate Bridge Scorer</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+         <arg><option>commands</option></arg> --
+         <arg>boards.csv</arg>
+         <arg>names.csv</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para>This manual page documents briefly the
+      <command>&dhpackage;</command> command.</para>
+
+    <para>
+
+       <command>&dhpackage;</command> scores, matchpoints and nicely formats
+       the boards for a duplicate pairs evening. The command line is a list of
+       commands followed by two comma-separated files on which to operate. 
+   </para>
+   <para>
+       The boards file must contain lines with at least board number, NS pair
+       number, EW pair number, Contract, Declarer and either tricks or the
+       contract must include whether it made (=) went down (-tricks) or made
+       over tricks (+tricks). The names file must list at least pair number
+       followed by two comma separated lines. 
+   </para>
+   <para>
+      The commands will add tricks, scores and matchpoint columns to the boards
+      file and total matchpoints, percentages and local/orange points to the
+      names file as appropriate.
+   </para>
+   <para>
+      The commands which format the output require the extra fields to be added
+      either by hand or with the appropriate commands so they can be printed.
+   </para>
+
+  </refsect1>
+  <refsect1>
+    <title>COMMANDS</title>
+
+    <para>
+      Here are a list of the available commands and what they do:
+    </para>
+
+    <!-- score matchpoint total localpoint results matrix boards -->
+    <variablelist>
+      <varlistentry>
+        <term>score</term>
+        <listitem>
+          <para>Calculates tricks and score for each contract</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>matchpoint</term>
+        <listitem>
+          <para>Calculates match points for each hand</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>total</term>
+        <listitem>
+          <para>Calculates the total match points for each pair</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>localpoint</term>
+        <listitem>
+          <para>Calculates local or orange points for each pair</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>results</term>
+        <listitem>
+          <para>Prints all the pairs in order with their total match points, percentages and local/orange points as appropriate</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>matrix</term>
+        <listitem>
+          <para>Prints a matrix of match points gained on each board by each pair</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>boards</term>
+        <listitem>
+          <para>Prints out each board with pairs, contract, results and match points</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>AUTHOR</title>
+
+    <para>This manual page was written by &dhusername; &dhemail;. Permission is
+      granted to copy, distribute and/or modify this document under
+      the terms of the &gnu; General Public License, Version 2 as
+      published by the Free Software Foundation.
+    </para>
+	<para>
+	  On Debian systems, the complete text of the GNU General Public
+	  License can be found in /usr/share/common-licenses/GPL.
+	</para>
+
+  </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
+
+
