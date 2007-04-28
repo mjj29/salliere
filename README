@@ -1,2 +1,55 @@
 Salliere Duplicate Bridge Scorer
 --------------------------------
+
+Salliere scores, matchpoints and nicely formats the boards for a duplicate
+pairs evening. The command line is a list of commands followed by two
+comma-separated files on which to operate. 
+
+The syntax is:
+
+   salliere [commands] -- <boards.csv> <names.csv>
+
+The boards file must contain lines with at least board number, NS pair number,
+EW pair number, Contract, Declarer and either tricks or the contract must
+include whether it made (=) went down (-tricks) or made over tricks (+tricks).
+The names file must list at least pair number followed by two comma separated
+lines. 
+
+The commands will add tricks, scores and matchpoint columns to the boards file
+and total matchpoints, percentages and local/orange points to the names file as
+appropriate.
+
+The commands which format the output require the extra fields to be added
+either by hand or with the appropriate commands so they can be printed.
+
+The commands are as follows:
+      
+   score
+        
+      Calculates tricks and score for each contract
+        
+   matchpoint
+        
+      Calculates match points for each hand
+        
+   total
+        
+      Calculates the total match points for each pair
+        
+   localpoint
+        
+      Calculates local or orange points for each pair
+   
+   results
+        
+      Prints all the pairs in order with their total match points, percentages
+      and local/orange points as appropriate
+        
+   matrix
+        
+      Prints a matrix of match points gained on each board by each pair
+        
+   boards
+
+      Prints out each board with pairs, contract, results and match points
+        

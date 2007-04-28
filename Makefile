@@ -11,6 +11,7 @@ JCFLAGS?=-source 5.0
 PREFIX?=/usr/local
 JARDIR?=$(PREFIX)/share/java
 DOCDIR?=$(PREFIX)/share/doc/salliere/
+MANDIR?=$(PREFIX)/share/man/man1/
 SHAREDIR?=$(PREFIX)/share/salliere/
 BINDIR?=$(PREFIX)/bin/
 
@@ -40,9 +41,9 @@ clean:
 	rm -f .classes .bin .testbin *.tar.gz *.jar *.1
 
 salliere-$(VERSION).jar: .classes
-	(cd classes; $(JAR) cf ../$@ cx)
+	(cd classes; $(JAR) cfm ../$@ ../Manifest.txt cx)
 
-salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh
+salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt
 	mkdir -p salliere-$(VERSION)
 	cp -a $^ salliere-$(VERSION)
 	tar zcf $@ salliere-$(VERSION)
@@ -62,5 +63,13 @@ testbin/%: %.sh .testbin salliere-$(VERSION).jar cvs.jar debug-$(DEBUG).jar
 %.1: %.sgml
 	docbook-to-man $< > $@
 
-install:
+install: salliere.1 bin/salliere salliere-$(VERSION).jar changelog COPYING INSTALL README todo
+	install -d $(DESTDIR)$(BINDIR)
+	install bin/salliere $(DESTDIR)$(BINDIR)
+	install -d $(DESTDIR)$(MANDIR)
+	install -m 644 salliere.1 $(DESTDIR)$(MANDIR)
+	install -d $(DESTDIR)$(JARDIR)
+	install -m 644 salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)
+	ln -sf salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/salliere.jar
+	install -m 644 changelog COPYING INSTALL README todo $(DESTDIR)$(DOCDIR)
 

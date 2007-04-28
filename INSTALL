@@ -1,0 +1,24 @@
+Installation Instructions
+-------------------------
+
+To build salliere you will need a 1.5 compatible Java compiler with at least
+1.4 compatible java libraries, libcsv-java
+(http://sourceforge.net/projects/javacsv/) and libmatthew-debug-java
+(http://www.matthew.ath.cx/projects/java/).
+
+To build:
+
+   make all
+
+To install:
+
+   make install
+
+Both of these can be modified by setting variables. See the Makefile for more
+details, but the most likely ones to be changed are:
+
+   PREFIX = install prefix
+   JAVAC = Java compiler
+   JAVA = Java VM
+   CLASSPATH = path to libcsv-java and libmatthew-debug-java
+   DEBUG = enable to enable debugging
