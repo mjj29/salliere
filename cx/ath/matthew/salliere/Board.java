@@ -90,6 +90,15 @@ public class Board
             return h.getEWMP();
       return 0;
    }
+   public boolean played(String number)
+   {
+      for (Hand h: (Hand[]) hands.toArray(new Hand[0]))
+         if (h.getNS().equals(number)) 
+            return true;
+         else if (h.getEW().equals(number))
+            return true;
+      return true;
+   }
    public void validate() throws BoardValidationException
    {
       // conditions:

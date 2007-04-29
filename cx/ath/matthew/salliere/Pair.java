@@ -56,8 +56,10 @@ public class Pair
       mps = 0;
       for (Board b: (Board[]) boards.values().toArray(new Board[0])) {
          top = b.getTop();
-         mps += b.getMPs(number);
-         bds++;
+         if (b.played(number)) {
+            mps += b.getMPs(number);
+            bds++;
+         }
       }
       percentage = (mps*100) / (top*bds);
    }

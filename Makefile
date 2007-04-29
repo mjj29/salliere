@@ -19,7 +19,7 @@ DEBUG?=disable
 
 CLASSPATH=/usr/share/java/csv.jar:/usr/share/java/debug-$(DEBUG).jar
 
-VERSION=0.1
+VERSION=0.2
 
 SRC=$(shell find cx -name '*.java')
 
