@@ -13,7 +13,7 @@ The boards file must contain lines with at least board number, NS pair number,
 EW pair number, Contract, Declarer and either tricks or the contract must
 include whether it made (=) went down (-tricks) or made over tricks (+tricks).
 The names file must list at least pair number followed by two comma separated
-lines. 
+names. 
 
 The commands will add tricks, scores and matchpoint columns to the boards file
 and total matchpoints, percentages and local/orange points to the names file as

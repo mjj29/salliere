@@ -84,7 +84,7 @@ manpage.1: manpage.sgml
        number, EW pair number, Contract, Declarer and either tricks or the
        contract must include whether it made (=) went down (-tricks) or made
        over tricks (+tricks). The names file must list at least pair number
-       followed by two comma separated lines. 
+       followed by two comma separated names. 
    </para>
    <para>
       The commands will add tricks, scores and matchpoint columns to the boards
