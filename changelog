@@ -4,6 +4,8 @@ Version 0.2:
 	  them (Spotted by Elizabeth Roberts <ehr24 -at- cam -dot- ac -dot- uk>
 	* Output to file and output in HTML and PDF formats.
 	* Calculate LP/OPs
+	* Support section numbering for boards
+	* Support vulnerability overriding
 
 Version 0.1:
 

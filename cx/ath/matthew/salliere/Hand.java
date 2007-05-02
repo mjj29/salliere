@@ -19,8 +19,12 @@
 
 package cx.ath.matthew.salliere;
 
+import cx.ath.matthew.debug.Debug;
+
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
+
+import java.util.Arrays;
 
 public class Hand
 {
@@ -63,29 +67,52 @@ public class Hand
    }
    public void score() throws ScoreException, ContractParseException
    {
-      int num = Integer.parseInt(number);
+      String[] n = number.split(":");
+      String[] v = n[n.length-1].split(";");
+      int num = Integer.parseInt(v[0]);
       int vul = Contract.NONE;
-      switch (num%16) {
-         // ns
-         case 4:
-         case 7:
-         case 10:
-         case 13:
-            vul |= Contract.EAST;
-         case 2:
-         case 5:
-         case 12:
-         case 15:
-            vul |= Contract.NORTH;
-            break;
-         // ew
-         case 3:
-         case 6:
-         case 9:
-         case 0:
-            vul |= Contract.EAST;
-            break;
+      if (v.length == 1) {
+         switch (num%16) {
+            // ns
+            case 4:
+            case 7:
+            case 10:
+            case 13:
+               vul |= Contract.EAST;
+            case 2:
+            case 5:
+            case 12:
+            case 15:
+               vul |= Contract.NORTH;
+               break;
+               // ew
+            case 3:
+            case 6:
+            case 9:
+            case 0:
+               vul |= Contract.EAST;
+               break;
+         }
+      } else {
+         // split options
+         String[] opts = v[1].split(",");
+         for (String opt: opts) {
+            String[] keyval = opt.split("=");
+
+            // manual vulnerability
+            if (keyval[0].toLowerCase().equals("vul") && 2 == keyval.length) {
+               if (keyval[1].toLowerCase().equals("ew"))
+                  vul = Contract.EAST;
+               else if (keyval[1].toLowerCase().equals("ns"))
+                  vul = Contract.NORTH;
+               else if (keyval[1].toLowerCase().equals("all"))
+                  vul = Contract.NORTH | Contract.EAST;
+            }
+
+         }
       }
+      if (Debug.debug) Debug.print("number="+number+", num="+num+", n="+Arrays.asList(n)+", v="+Arrays.asList(v)+", vul="+vul);
+
       Contract c = new Contract(contract, declarer, vul, tricks);
       if (nsscore != 0 && nsscore != c.getNSScore()) throw new ScoreException("Calculated score as "+c.getNSScore()+" for NS but hand says "+this);
       nsscore = c.getNSScore();

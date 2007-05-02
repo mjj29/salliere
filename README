@@ -15,6 +15,17 @@ include whether it made (=) went down (-tricks) or made over tricks (+tricks).
 The names file must list at least pair number followed by two comma separated
 names. 
 
+Board numbers are generally just integers, but may have section numbering and
+may have the vulnerability manually overridden. The syntax for a board number
+is: [section:]number[;options], where options are comma separated key=value
+pairs.  The only valid key at the moment is 'vul', which has the possible
+options 'none', 'ew', 'ns' or 'all. The following are all valid board numbers:
+
+   4 - board 4
+   A:12 - board 12 in section A
+   16;vul=ns - board 16 with the vulnerability set to be NS vulnerable, EW non-vulnerable.
+   C:25;vul=all - board 25 from section C with all vulnerable
+
 The commands will add tricks, scores and matchpoint columns to the boards file
 and total matchpoints, percentages and local/orange points to the names file as
 appropriate.
