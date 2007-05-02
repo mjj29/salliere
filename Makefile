@@ -17,7 +17,7 @@ BINDIR?=$(PREFIX)/bin/
 
 DEBUG?=disable
 
-CLASSPATH=/usr/share/java/csv.jar:/usr/share/java/debug-$(DEBUG).jar
+CLASSPATH=/usr/share/java/csv.jar:/usr/share/java/debug-$(DEBUG).jar:/usr/share/java/itext.jar
 
 VERSION=0.2
 
@@ -50,13 +50,15 @@ salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo sa
 
 cvs.jar: 
 	ln -sf /usr/share/java/csv.jar .
+itext.jar: 
+	ln -sf /usr/share/java/itext.jar .
 debug-$(DEBUG).jar: 
 	ln -sf /usr/share/java/debug-$(DEBUG).jar .
 
 bin/%: %.sh .bin
 	sed 's,\%JARPATH\%,$(JARDIR),;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 
-testbin/%: %.sh .testbin salliere-$(VERSION).jar cvs.jar debug-$(DEBUG).jar
+testbin/%: %.sh .testbin salliere-$(VERSION).jar cvs.jar debug-$(DEBUG).jar itext.jar
 	sed 's,\%JARPATH\%,.,;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 	chmod 755 $@
 

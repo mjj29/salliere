@@ -19,57 +19,11 @@
 
 package cx.ath.matthew.salliere;
 
-import cx.ath.matthew.debug.Debug;
-
-import java.io.PrintStream;
-import java.util.Arrays;
-
-public class TablePrinter
+public interface TablePrinter
 {
-   private PrintStream output;
-   public TablePrinter(PrintStream output)
-   {
-      this.output = output;
-   }
-   public void print(String[] headers, String[][] rows)
-   {
-      // calculate column width
-      int[] widths = new int[headers.length];
-      for (int i = 0; i < headers.length; i++)
-         widths[i] = headers[i].length();
-      for (int i = 0; i < rows.length; i++)
-         for (int j = 0; j < rows[i].length; j++)
-            if (widths[j] < rows[i][j].length())
-               widths[j] = rows[i][j].length();
-
-      // gap
-      for (int i = 0; i < widths.length; i++) 
-         widths[i]++;
-
-      // print headers
-      for (int i = 0; i < headers.length; i++) {
-         output.print(headers[i]);
-         for (int j = headers[i].length(); j < widths[i]; j++)
-            output.print(' ');
-      }
-      output.println();
-
-      // print line
-      for (int i = 0; i < widths.length; i++) 
-         for (int j = 0; j < widths[i]; j++)
-            output.print('-');
-      output.println();
-
-      // print rows
-      for (int i = 0; i < rows.length; i++) {
-         for (int j = 0; j < rows[i].length; j++) {
-            output.print(rows[i][j]);
-            for (int k = rows[i][j].length(); k < widths[j]; k++)
-               output.print(' ');
-         }
-         output.println();
-      }
-
-      output.flush();
-   }
+   public void print(String[] headers, String[][] rows);
+   public void header(String header);
+   public void gap();
+   public void init();
+   public void close();
 }

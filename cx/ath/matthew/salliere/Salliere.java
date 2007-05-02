@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -132,8 +133,10 @@ public class Salliere
    private static void syntax()
    {
       System.out.println("Salliere Duplicate Bridge Scorer - version "+System.getProperty("Version"));
-      System.out.println("Syntax: salliere [commands] -- <boards.csv> <names.csv>");
+      System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: score matchpoint total localpoint results matrix boards");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title");
+      System.out.println("   Formats: txt html pdf");
    }
 
 
@@ -165,7 +168,7 @@ public class Salliere
          p.total(boards);
    }
 
-   public static void matrix(Map pairv, Map boardv) 
+   public static void matrix(Map pairv, Map boardv, TablePrinter tabular) 
    {
       List sortedboards = new ArrayList(boardv.values());
       List sortedpairs = new ArrayList(pairv.values());
@@ -191,13 +194,11 @@ public class Salliere
       for (int j = 0; j < pairs.length; j++) 
          headers[j+1] = pairs[j].getNumber()+"  ";
 
-      TablePrinter tabular = new TablePrinter(System.out);
       tabular.print(headers, matrix);
-      System.out.println();
+      tabular.gap();
    }
-   public static void boardbyboard(Map boards) 
+   public static void boardbyboard(Map boards, TablePrinter tabular) 
    {
-      TablePrinter tabular = new TablePrinter(System.out);
       String[] headers = new String[] { "NS", "EW", "Contract", "By", "Tricks", "Score:", "", "MPs:", "" };
       ArrayList boardv = new ArrayList(boards.values());
       Collections.sort(boardv, new BoardNumberComparer());
@@ -210,16 +211,15 @@ public class Salliere
             System.arraycopy(ex, 1, line, 0, line.length);
             lines.add(line);
          }
-         System.out.println("Board: "+b.getNumber());
+         tabular.header("Board: "+b.getNumber());
          tabular.print(headers, (String[][]) lines.toArray(new String[0][]));
-         System.out.println();
+         tabular.gap();
       }
-
    }
 
    public static void localpoint(Map pairs) {}
 
-   public static void results(Map pairs)
+   public static void results(Map pairs, TablePrinter tabulate)
    {
       Vector results = new Vector();
       List pairv = new ArrayList(pairs.values());
@@ -227,10 +227,9 @@ public class Salliere
       for (Pair p: (Pair[]) pairv.toArray(new Pair[0])) 
          results.add(p.export());
 
-      TablePrinter tabulate = new TablePrinter(System.out);
       tabulate.print(new String[] { "Pair#", "Names", "", "MPs", "%age", "OPs" }, 
                (String[][]) results.toArray(new String[0][]));
-      System.out.println();
+      tabulate.gap();
    }
 
    public static void main(String[] args)
@@ -238,13 +237,37 @@ public class Salliere
       try {
          if (Debug.debug) Debug.setThrowableTraces(true);
          Vector commands = new Vector();
+         HashMap options = new HashMap();
+         options.put("--output", "-");
+         options.put("--help", null);
+         options.put("--title", "Salliere Duplicate Bridge Scorer: Results");
          int i;
          for (i = 0; i < args.length; i++) {
             if ("--".equals(args[i])) break;
-            commands.add(args[i]);
+            else if (args[i].startsWith("--")) {
+               String[] opt = args[i].split("=");
+               if (Debug.debug) Debug.print(Arrays.asList(opt));
+               if (options.containsKey(opt[0])) {
+                  if (opt.length == 1)
+                     options.put(opt[0], "true");
+                  else
+                     options.put(opt[0], opt[1]);
+               } else {
+                  System.out.println("Error: unknown option "+opt[0]);
+                  syntax();
+                  System.exit(1);
+               }
+            } else
+               commands.add(args[i]);
          }
 
          if (args.length < (i+3)) {
+            System.out.println("You must specify boards.csv and names.csv");
+            syntax();
+            System.exit(1);
+         }
+
+         if (null != options.get("--help")) {
             syntax();
             System.exit(1);
          }
@@ -258,19 +281,49 @@ public class Salliere
 
          pairs = readPairs(new FileInputStream(args[i+2]));
 
+         TablePrinter tabular = null;
+
+         String[] format = (String[]) ((String) options.get("--output")).split(":");
+         PrintStream out;
+         if ("-".equals(format[format.length-1]))
+            out = System.out;
+         else 
+            out = new PrintStream(new FileOutputStream(format[format.length-1]));
+
+         if (format.length == 1)
+            tabular = new AsciiTablePrinter(out);
+         else if ("txt".equals(format[0].toLowerCase()))
+            tabular = new AsciiTablePrinter(out);
+         else if ("html".equals(format[0].toLowerCase()))
+            tabular = new HTMLTablePrinter((String) options.get("--title"), out);
+         else if ("pdf".equals(format[0].toLowerCase()))
+            tabular = new PDFTablePrinter((String) options.get("--title"), out);
+         else {
+            System.out.println("Unknown format: "+format[0]);
+            syntax();
+            System.exit(1);
+         }
+         
+         tabular.init();
+         tabular.header((String) options.get("--title"));
+
          for (String command: (String[]) commands.toArray(new String[0])) {
             if ("score".equals(command)) score(boards);
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
-            else if ("results".equals(command)) results(pairs);
-            else if ("matrix".equals(command)) matrix(pairs, boards);
-            else if ("boards".equals(command)) boardbyboard(boards);
+            else if ("results".equals(command)) results(pairs, tabular);
+            else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
+            else if ("boards".equals(command)) boardbyboard(boards, tabular);
             else if ("localpoint".equals(command)) localpoint(pairs);
             else {
+               System.out.println("Bad Command: "+command);
                syntax();
                System.exit(1);
             }
          }
+
+         tabular.close();
+         out.close();
      
          writeBoards(boards, new FileOutputStream(args[i+1]));
          writePairs(pairs, new FileOutputStream(args[i+2]));
