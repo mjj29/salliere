@@ -165,7 +165,7 @@ manpage.1: manpage.sgml
     <!-- - -help - -output=[<format>:]file - -title=title- -orange -->
     <variablelist>
       <varlistentry>
-        <term>help</term>
+        <term>--help</term>
         <listitem>
           <para>Prints the help text</para>
         </listitem>

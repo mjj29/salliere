@@ -7,7 +7,7 @@ comma-separated files on which to operate.
 
 The syntax is:
 
-   salliere [commands] -- <boards.csv> <names.csv>
+   salliere [options] [commands] -- <boards.csv> <names.csv>
 
 The boards file must contain lines with at least board number, NS pair number,
 EW pair number, Contract, Declarer and either tricks or the contract must
@@ -18,6 +18,10 @@ names.
 The commands will add tricks, scores and matchpoint columns to the boards file
 and total matchpoints, percentages and local/orange points to the names file as
 appropriate.
+
+By default the commands which print results will do so as ascii to stdout. This
+can be changed with the --output=format:file option. Formats are either pdf,
+html or txt and file is the path to a file or - for stdout.
 
 The commands which format the output require the extra fields to be added
 either by hand or with the appropriate commands so they can be printed.
@@ -52,4 +56,23 @@ The commands are as follows:
    boards
 
       Prints out each board with pairs, contract, results and match points
-        
+
+Here are the possible options:
+
+   --help      
+   
+      Prints the help text
+
+   --orange  
+   
+      Prints "OP" rather than "LP"
+
+   --title=title 
+   
+      Changes the title on the output
+
+   --output=format:file
+      
+      Changes the output format and file. Possible formats are pdf, html or
+      txt.  A file of ’-’ corresponds to stdout.
+
