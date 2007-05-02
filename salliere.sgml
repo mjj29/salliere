@@ -62,7 +62,8 @@ manpage.1: manpage.sgml
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-         <arg><option>commands</option></arg> --
+         <arg><option>options</option></arg> --
+         <arg><option>commands</option></arg>
          <arg>boards.csv</arg>
          <arg>names.csv</arg>
     </cmdsynopsis>
@@ -74,7 +75,6 @@ manpage.1: manpage.sgml
       <command>&dhpackage;</command> command.</para>
 
     <para>
-
        <command>&dhpackage;</command> scores, matchpoints and nicely formats
        the boards for a duplicate pairs evening. The command line is a list of
        commands followed by two comma-separated files on which to operate. 
@@ -90,6 +90,11 @@ manpage.1: manpage.sgml
       The commands will add tricks, scores and matchpoint columns to the boards
       file and total matchpoints, percentages and local/orange points to the
       names file as appropriate.
+   </para>
+   <para>
+      By default the commands which print results will do so as ascii to stdout.
+      This can be changed with the --output=format:file option. Formats are
+      either pdf, html or txt and file is the path to a file or - for stdout.
    </para>
    <para>
       The commands which format the output require the extra fields to be added
@@ -146,6 +151,42 @@ manpage.1: manpage.sgml
         <term>boards</term>
         <listitem>
           <para>Prints out each board with pairs, contract, results and match points</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+
+    <para>
+      Here are a list of the available options and what they do:
+    </para>
+
+    <!-- - -help - -output=[<format>:]file - -title=title- -orange -->
+    <variablelist>
+      <varlistentry>
+        <term>help</term>
+        <listitem>
+          <para>Prints the help text</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--orange</term>
+        <listitem>
+          <para>Prints "OP" rather than "LP"</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--title=title</term>
+        <listitem>
+          <para>Changes the title on the output</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--output=format:file</term>
+        <listitem>
+          <para>Changes the output format and file. Possible formats are pdf, html or txt. 
+          A file of '-' corresponds to stdout.</para>
         </listitem>
       </varlistentry>
     </variablelist>
