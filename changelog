@@ -2,7 +2,8 @@ Version 0.2:
 
 	* Only divide by the number of boards played for percentages, not all of 
 	  them (Spotted by Elizabeth Roberts <ehr24 -at- cam -dot- ac -dot- uk>
-	* output to file and output in HTML and PDF formats.
+	* Output to file and output in HTML and PDF formats.
+	* Calculate LP/OPs
 
 Version 0.1:
 

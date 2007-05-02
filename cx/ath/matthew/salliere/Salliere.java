@@ -135,7 +135,7 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+System.getProperty("Version"));
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: score matchpoint total localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange");
       System.out.println("   Formats: txt html pdf");
    }
 
@@ -217,9 +217,38 @@ public class Salliere
       }
    }
 
-   public static void localpoint(Map pairs) {}
+   public static void localpoint(Map pairs) throws ScoreException
+   {
+      // sort pairs in order
+      List pairv = new ArrayList(pairs.values());
+      Collections.sort(pairv, new PairPercentageComparer());
+      Pair[] ps = (Pair[]) pairv.toArray(new Pair[0]);
 
-   public static void results(Map pairs, TablePrinter tabulate)
+      // check we have enough to give LPs
+      if (ps.length < 6) throw new ScoreException("Must have at least 3 full table to award local points");
+
+      // calculate LP scale based on number of pairs
+      int[] LPs = new int[ps.length];
+      int awarded = (int) Math.ceil(LPs.length/3.0);
+      for (int i = 0, lp=6*awarded; lp > 0; i++, lp -= 6)
+         LPs[i] = lp;
+
+      // award LPs, splitting on draws
+      for (int i = 0; i < ps.length; i++) {
+         int a = i;
+         int total = LPs[i];
+         while (i+1 < ps.length && ps[i].getPercentage()==ps[i+1].getPercentage())
+            total += LPs[++i];
+         double award = total / (1.0+i-a);
+         for (int j = a; j <= i; j++) {
+            if (ps[j].getLPs() != 0 && ps[j].getLPs() != award) 
+               throw new ScoreException("Calculated "+award+" LPs for pair "+ps[j].getNumber()+", but data says "+ps[j].getLPs());
+            ps[j].setLPs(award);
+         }
+      }
+   }
+
+   public static void results(Map pairs, TablePrinter tabulate, String points)
    {
       Vector results = new Vector();
       List pairv = new ArrayList(pairs.values());
@@ -227,7 +256,7 @@ public class Salliere
       for (Pair p: (Pair[]) pairv.toArray(new Pair[0])) 
          results.add(p.export());
 
-      tabulate.print(new String[] { "Pair#", "Names", "", "MPs", "%age", "OPs" }, 
+      tabulate.print(new String[] { "Pair#", "Names", "", "MPs", "%age", points }, 
                (String[][]) results.toArray(new String[0][]));
       tabulate.gap();
    }
@@ -240,6 +269,7 @@ public class Salliere
          HashMap options = new HashMap();
          options.put("--output", "-");
          options.put("--help", null);
+         options.put("--orange", null);
          options.put("--title", "Salliere Duplicate Bridge Scorer: Results");
          int i;
          for (i = 0; i < args.length; i++) {
@@ -311,7 +341,7 @@ public class Salliere
             if ("score".equals(command)) score(boards);
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
-            else if ("results".equals(command)) results(pairs, tabular);
+            else if ("results".equals(command)) results(pairs, tabular, null == options.get("--orange") ? "LPs" : "OPs");
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
             else if ("boards".equals(command)) boardbyboard(boards, tabular);
             else if ("localpoint".equals(command)) localpoint(pairs);

@@ -68,6 +68,7 @@ public class Pair
    public double getMPs() { return mps; }
    public double getLPs() { return lps; }
    public double getPercentage() { return percentage; }
+   public void setLPs(double lps) { this.lps = lps; }
    public String toString() 
    { 
       StringBuilder sb = new StringBuilder();
