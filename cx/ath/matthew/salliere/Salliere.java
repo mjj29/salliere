@@ -85,7 +85,7 @@ public class Salliere
       }
    }
 
-   private static Map/*<String,Board>*/ readBoards(InputStream is) throws IOException
+   static Map/*<String,Board>*/ readBoards(InputStream is) throws IOException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
       HashMap/*<String,Board>*/ boards = new HashMap/*<String,Board>*/();
@@ -107,7 +107,7 @@ public class Salliere
       return boards;
    }
 
-   private static Map/*<String,Pair>*/ readPairs(InputStream is) throws IOException
+   static Map/*<String,Pair>*/ readPairs(InputStream is) throws IOException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
       HashMap/*<String,Pair>*/ pairs = new HashMap/*<String,Board>*/();
@@ -122,7 +122,7 @@ public class Salliere
       return pairs;
    }
 
-   private static void writePairs(Map pairs, OutputStream os) throws IOException
+   static void writePairs(Map pairs, OutputStream os) throws IOException
    {
       CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
       for (Pair p: (Pair[]) pairs.values().toArray(new Pair[0])) 
@@ -130,7 +130,7 @@ public class Salliere
       out.close();
    }
 
-   private static void syntax()
+   static void syntax()
    {
       System.out.println("Salliere Duplicate Bridge Scorer - version "+System.getProperty("Version"));
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
@@ -140,7 +140,7 @@ public class Salliere
    }
 
 
-   private static void writeBoards(Map boards, OutputStream os) throws IOException
+   static void writeBoards(Map boards, OutputStream os) throws IOException
    {
       CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
       for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
