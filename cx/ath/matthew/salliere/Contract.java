@@ -31,9 +31,10 @@ public class Contract
    double ewscore;
    int tricks;
    String contract;
-   public Contract(String contract, char declarer, int vulnerability, int tricks) throws ContractParseException
+   public Contract(String contract, char declarer, int vulnerability, int tricks) throws ContractParseException, NoContractException
    {
       char[] cs = contract.toCharArray();
+      if (cs.length == 0) throw new NoContractException();
       int val = 0;
       char den = ' ';
       int doubled = 1; 
@@ -55,6 +56,7 @@ loop:
             case 'D':
             case 'S':
             case 'N':
+            case 'P':
                den = cs[i];
                continue;
             case 'h':
@@ -73,6 +75,12 @@ loop:
             case 't':
             case 'T':
                den = 'N';
+               continue;
+            case 'p':
+            case 'o':
+            case 'O':
+            case '.':
+               den = 'P';
                continue;
             case 'X':
             case 'x':
@@ -97,6 +105,15 @@ loop:
                throw new ContractParseException("Symbol: "+cs[i]+" not allowed in contract");
 
          }
+      }
+      if (den == 'P') {
+         // pass out board
+         if (Debug.debug) Debug.print("Pass out");
+         this.nsscore = 0;
+         this.ewscore = 0;
+         this.tricks = 0; 
+         this.contract = "P.O.";
+         return;
       }
       if (val < 1 || val > 7) throw new ContractParseException("Value must be between 1 & 7");
       if (den == ' ') throw new ContractParseException("No denomination specified in contract");

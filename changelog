@@ -6,6 +6,8 @@ Version 0.2:
 	* Calculate LP/OPs
 	* Support section numbering for boards
 	* Support vulnerability overriding
+	* Support passouts
+	* Pass through averages without scoring
 
 Version 0.1:
 
