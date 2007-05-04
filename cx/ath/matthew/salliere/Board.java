@@ -97,7 +97,7 @@ public class Board
             return true;
          else if (h.getEW().equals(number))
             return true;
-      return true;
+      return false;
    }
    public void validate() throws BoardValidationException
    {

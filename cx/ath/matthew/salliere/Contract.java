@@ -38,6 +38,20 @@ public class Contract
       int val = 0;
       char den = ' ';
       int doubled = 1; 
+      switch (declarer) {
+         case 'n':
+            declarer = 'N';
+            break;
+         case 's':
+            declarer = 'S';
+            break;
+         case 'e':
+            declarer = 'E';
+            break;
+         case 'w':
+            declarer = 'W';
+            break;
+      }
 loop:
       for (int i = 0; i < cs.length; i++) {
          switch (cs[i]) {
@@ -212,7 +226,7 @@ loop:
          }
 
          // assign to the correct side
-         if ('N' == declarer || 'S' == declarer || 'n' == declarer || 's' == declarer)
+         if ('N' == declarer || 'S' == declarer)
             ewscore = score;
          else
             nsscore = score;
