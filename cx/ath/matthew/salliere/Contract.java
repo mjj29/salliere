@@ -212,7 +212,7 @@ loop:
          }
 
          // assign to the correct side
-         if ('N' == declarer || 'S' == declarer)
+         if ('N' == declarer || 'S' == declarer || 'n' == declarer || 's' == declarer)
             ewscore = score;
          else
             nsscore = score;
