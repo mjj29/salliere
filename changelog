@@ -8,6 +8,7 @@ Version 0.2:
 	* Support vulnerability overriding
 	* Support passouts
 	* Pass through averages without scoring
+	* Assorted bug fixes
 
 Version 0.1:
 

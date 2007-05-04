@@ -35,7 +35,7 @@ public class Hand
    String ns;
    String ew;
    String contract;
-   char declarer;
+   char declarer = ' ';
    int tricks;
    double nsscore;
    double ewscore;
