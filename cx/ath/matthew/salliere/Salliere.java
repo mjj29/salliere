@@ -25,6 +25,7 @@ import com.csvreader.CsvWriter;
 import cx.ath.matthew.debug.Debug;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -40,6 +41,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
@@ -53,19 +56,14 @@ public class Salliere
       {
          String n1 = ((Board) ob1).getNumber();
          String n2 = ((Board) ob2).getNumber();
-         int len = n1.length() > n2.length() ? n1.length() : n2.length();
-         
-         StringBuilder nb1 = new StringBuilder();
-         for (int i = n1.length(); i < len; i++)
-            nb1.append('0');
-         nb1.append(n1);
+         String[] n = n1.split(":");
+         String[] v = n[n.length-1].split(";");
+         int num1 = Integer.parseInt(v[0]);
+         n = n2.split(":");
+         v = n[n.length-1].split(";");
+         int num2 = Integer.parseInt(v[0]);
 
-         StringBuilder nb2 = new StringBuilder();
-         for (int i = n2.length(); i < len; i++)
-            nb2.append('0');
-         nb2.append(n2);
-         
-         return nb1.toString().compareTo(nb2.toString());
+         return num1-num2;
       }
    }
 
@@ -134,7 +132,7 @@ public class Salliere
    {
       System.out.println("Salliere Duplicate Bridge Scorer - version "+System.getProperty("Version"));
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: score matchpoint total localpoint results matrix boards");
+      System.out.println("   Commands: verify score matchpoint total localpoint results matrix boards");
       System.out.println("   Options: --help --output=[<format>:]file --title=title --orange");
       System.out.println("   Formats: txt html pdf");
    }
@@ -154,6 +152,38 @@ public class Salliere
       for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
          for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
             h.score();
+   }
+
+   public static void verify(Map boardv, String setsize) throws MovementVerificationException
+   {
+      if (null == setsize)
+         throw new MovementVerificationException("Can't verify the movement if you don't specify the number of boards per set with --setsize");
+      int size = 0;
+      try {
+         size = Integer.parseInt(setsize);
+      } catch (NumberFormatException NFe) {
+         if (Debug.debug) Debug.print(NFe);
+         throw new MovementVerificationException(setsize+" isn't a number!");
+      }
+
+      
+      List sortedboards = new ArrayList(boardv.values());
+      Collections.sort(sortedboards, new BoardNumberComparer());
+      Board[] boards = (Board[]) sortedboards.toArray(new Board[0]);
+      Set pairs = new TreeSet();
+      for (int i = 0; i < boards.length; i++) {
+         if (0 == (i % size)) {
+            // reset the pairs
+            pairs.clear();
+            for (Hand h: (Hand[]) boards[i].getHands().toArray(new Hand[0])) 
+               pairs.add(h.getNS()+" "+h.getEW());
+         } else {
+            // check the pairs
+            for (Hand h: (Hand[]) boards[i].getHands().toArray(new Hand[0])) 
+               if (!pairs.contains(h.getNS()+" "+h.getEW()))
+                  throw new MovementVerificationException("Board "+boards[i].getNumber()+" was played by "+h.getNS()+" and "+h.getEW()+" which I was not expecting.");
+         }
+      }
    }
 
    public static void matchpoint(Map boards) throws ScoreException
@@ -177,7 +207,7 @@ public class Salliere
       Board[] boards = (Board[]) sortedboards.toArray(new Board[0]);
       Pair[] pairs = (Pair[]) sortedpairs.toArray(new Pair[0]);
 
-      DecimalFormat format = new DecimalFormat("0.#");
+      DecimalFormat format = new DecimalFormat("0.##");
       FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
       
       String[][] matrix = new String[boards.length][pairs.length+1]; 
@@ -264,13 +294,19 @@ public class Salliere
    public static void main(String[] args)
    {
       try {
-         if (Debug.debug) Debug.setThrowableTraces(true);
+         if (Debug.debug) {
+            File f = new File("debug.conf");
+            if (f.exists())
+               Debug.loadConfig(f);
+            Debug.setThrowableTraces(true);
+         }
          Vector commands = new Vector();
          HashMap options = new HashMap();
          options.put("--output", "-");
          options.put("--help", null);
          options.put("--orange", null);
          options.put("--title", "Salliere Duplicate Bridge Scorer: Results");
+         options.put("--setsize", null);
          int i;
          for (i = 0; i < args.length; i++) {
             if ("--".equals(args[i])) break;
@@ -339,6 +375,7 @@ public class Salliere
 
          for (String command: (String[]) commands.toArray(new String[0])) {
             if ("score".equals(command)) score(boards);
+            else if ("verify".equals(command)) verify(boards, (String) options.get("--setsize"));
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
             else if ("results".equals(command)) results(pairs, tabular, null == options.get("--orange") ? "LPs" : "OPs");

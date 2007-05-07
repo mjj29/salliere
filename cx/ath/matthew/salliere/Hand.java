@@ -180,6 +180,7 @@ public class Hand
          if (tricks != 0 && tricks != c.getTricks()) throw new ScoreException("Calculated tricks as "+c.getTricks()+" but hand says "+this);
          tricks = c.getTricks();
          contract = c.getContract();
+         declarer = c.getDeclarer();
          if (Debug.debug) Debug.print(this);
       } catch (NoContractException NCe) {
          if (Debug.debug) Debug.print(NCe);

@@ -1,6 +1,8 @@
 Version 0.3:
 
-	* 
+	* Support b33r card
+	* board ordering knows about sections and vulnerabilities
+	* --setsize parameter to check sets of n boards per round for matching pair numbers
 
 Version 0.2:
 

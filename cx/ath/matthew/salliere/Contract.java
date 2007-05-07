@@ -31,8 +31,11 @@ public class Contract
    double ewscore;
    int tricks;
    String contract;
+   char declarer;
+   boolean beer;
    public Contract(String contract, char declarer, int vulnerability, int tricks) throws ContractParseException, NoContractException
    {
+      if (Debug.debug) Debug.print("contract: "+contract+", declarer: "+declarer+", vulnerability: "+vulnerability+", tricks: "+tricks);
       char[] cs = contract.toCharArray();
       if (cs.length == 0) throw new NoContractException();
       int val = 0;
@@ -52,7 +55,8 @@ public class Contract
             declarer = 'W';
             break;
       }
-loop:
+      this.declarer = declarer;
+
       for (int i = 0; i < cs.length; i++) {
          switch (cs[i]) {
             case ' ': continue;
@@ -64,6 +68,7 @@ loop:
             case '6':
             case '7':
                val = (int) (cs[i] - '0');
+               if (Debug.debug) Debug.print("cs["+i+"] = "+cs[i]+", val = "+val);
                continue;
             case 'H':
             case 'C':
@@ -102,19 +107,30 @@ loop:
                continue;
             case '=':
                tricks = 6+val;
-               break loop;
+               continue;
             case '-':
             case '+':
                StringBuilder sb = new StringBuilder();
-               for (int j = i+1; j < cs.length; j++)
+               int j;
+               for (j = i+1; j < cs.length && cs[j] >= '0' && cs[j] <= '9'; j++)
                   sb.append(cs[j]);
+               if (sb.length() == 0) continue;
                int diff = Integer.parseInt(sb.toString());
 
                if ('+' == cs[i])
                   tricks = 6+val+diff;
                else
                   tricks = 6+val-diff;
-               break loop;
+               i = j-1;
+               continue;
+            case 'B':
+            case 'b':
+            case 'E':
+            case 'e':
+            case 'R':
+            case 'r':
+               beer = true;
+               continue;
             default:
                throw new ContractParseException("Symbol: "+cs[i]+" not allowed in contract");
 
@@ -242,6 +258,8 @@ loop:
          this.contract += "-"+(val+6-tricks);
       else
          this.contract += "+"+(tricks-val-6);
+      if (beer)
+         this.contract += "+beer";
 
       this.tricks = tricks;
    }
@@ -260,5 +278,13 @@ loop:
    public String getContract()
    {
       return contract;
+   }
+   public char getDeclarer()
+   {
+      return declarer;
+   }
+   public boolean getBeer()
+   {
+      return true;
    }
 }
