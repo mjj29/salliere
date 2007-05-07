@@ -2,7 +2,10 @@ Version 0.3:
 
 	* Support b33r card
 	* board ordering knows about sections and vulnerabilities
-	* --setsize parameter to check sets of n boards per round for matching pair numbers
+	* --setsize parameter to check sets of n boards per round for matching 
+	  pair numbers
+	* output hands within boards sorted by NS pair number (Suggested by
+	  Carrie Oliver <cho21 -at- cam -dot- ac -dot- uk>)
 
 Version 0.2:
 

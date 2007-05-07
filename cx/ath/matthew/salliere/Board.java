@@ -114,8 +114,8 @@ public class Board
             seen.add(h.getEW());
          }
       }
-
    }
+   public void setNumber(String number) { this.number = number; }
    public String toString() 
    { 
       return "Board number "+number+", played "+hands.size()+" times.";

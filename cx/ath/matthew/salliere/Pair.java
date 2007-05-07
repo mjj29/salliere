@@ -70,6 +70,10 @@ public class Pair
    public double getLPs() { return lps; }
    public double getPercentage() { return percentage; }
    public void setLPs(double lps) { this.lps = lps; }
+   public void setMPs(double mps) { this.mps = mps; }
+   public void setPercentage(double percentage) { this.percentage = percentage; }
+   public void setNumber(String number) { this.number = number; }
+   public void setNames(String[] names) { this.names = names; }
    public String toString() 
    { 
       StringBuilder sb = new StringBuilder();

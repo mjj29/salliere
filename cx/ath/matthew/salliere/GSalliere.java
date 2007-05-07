@@ -33,43 +33,224 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.TableModel;
+import javax.swing.event.TableModelListener;
 
 public class GSalliere extends Salliere
 {
 
    static class GSalliereMainFrame extends JFrame
    {
+      class BoardTableDataModel implements TableModel
+      {
+         private Board[] boards;
+         public BoardTableDataModel(Map boardv)
+         {
+            if (null == boardv) return;
+            List sortedboards = new ArrayList(boardv.values());
+            Collections.sort(sortedboards, new BoardNumberComparer());
+            this.boards = (Board[]) sortedboards.toArray(new Board[0]);
+         }
+         public int getRowCount()
+         { return null == boards ? 1 : boards.length+1; }
+         public int getColumnCount()
+         { return  3; }
+         public String getColumnName(int columnIndex)
+         {
+            switch (columnIndex) {
+               case 0: return "Number";
+               case 1: return "Played";
+               case 2: return "Pairs";
+               default: return "ERR0R";
+            }
+         }
+         public Class getColumnClass(int columnIndex)
+         {
+            switch (columnIndex) {
+               case 0: 
+               case 2: return String.class;
+               case 1: return Integer.class; 
+               default: return null;
+            }
+         }
+         public boolean isCellEditable(int rowIndex, int columnIndex)
+         { 
+            if (null == boards) return false;
+            else return columnIndex==0 && rowIndex < boards.length; 
+         }
+         public Object getValueAt(int rowIndex, int columnIndex)
+         {
+            if (null == boards) return "";
+            else if (rowIndex >= boards.length) return "";
+            else 
+               switch (columnIndex) {
+                  case 0: return boards[rowIndex].getNumber();
+                  case 1: return boards[rowIndex].getHands().size();
+                  case 2: 
+                     Vector s = new Vector();
+                     for (Hand h: (Hand[]) boards[rowIndex].getHands().toArray(new Hand[0]))  {
+                        s.add(h.getNS());
+                        s.add(h.getEW());
+                     }
+                     return s.toString();
+                  default: return "";
+               }
+         }
+         public void setValueAt(Object aValue, int rowIndex, int columnIndex)
+         {
+            if (null == boards) return;
+            else if (rowIndex >= boards.length) return;
+            else 
+               switch (columnIndex) {
+                  case 0: 
+                     boards[rowIndex].setNumber((String) aValue);
+                     for (Hand h: (Hand[]) boards[rowIndex].getHands().toArray(new Hand[0]))  
+                        h.setNumber((String) aValue);
+                     break;
+                  default:
+                     break;
+               }
+         }
+         public void addTableModelListener(TableModelListener l) {}
+         public void removeTableModelListener(TableModelListener l) {}
+
+      }
+      class PairTableDataModel implements TableModel
+      {
+         private Pair[] pairs;
+         public PairTableDataModel(Map pairv)
+         {
+            if (null == pairv) return;
+            List sortedpairs = new ArrayList(pairv.values());
+            Collections.sort(sortedpairs, new PairNumberComparer());
+            this.pairs = (Pair[]) sortedpairs.toArray(new Pair[0]);
+         }
+         public int getRowCount()
+         { return null == pairs ? 1 : pairs.length+1; }
+         public int getColumnCount()
+         { return 6; }
+         public String getColumnName(int columnIndex)
+         {
+            switch (columnIndex) {
+               case 0: return "Number";
+               case 1: return "Names";
+               case 2: return "";
+               case 3: return "Match Points";
+               case 4: return "Percentage";
+               case 5: return "Local Points";
+               default: return "ERR0R";
+            }
+         }
+         public Class getColumnClass(int columnIndex)
+         {
+            switch (columnIndex) {
+               case 0: 
+               case 1: 
+               case 2: return String.class;
+               case 3: 
+               case 4: 
+               case 5: return Double.class;
+               default: return null;
+            }
+         }
+         public boolean isCellEditable(int rowIndex, int columnIndex)
+         {
+            if (null == pairs) return false;
+            else return rowIndex < pairs.length;
+         }
+         public Object getValueAt(int rowIndex, int columnIndex)
+         {
+            if (null == pairs) return columnIndex > 2 ? 0.0 : "";
+            else if (rowIndex >= pairs.length) 
+               return columnIndex > 2 ? 0.0 : "";
+            else 
+               switch (columnIndex) {
+                  case 0: return pairs[rowIndex].getNumber();
+                  case 1: return pairs[rowIndex].getNames()[0];
+                  case 2: return pairs[rowIndex].getNames()[1];
+                  case 3: return pairs[rowIndex].getMPs();
+                  case 4: return pairs[rowIndex].getPercentage();
+                  case 5: return pairs[rowIndex].getLPs();
+                  default: return null;
+               }
+         }
+         public void setValueAt(Object aValue, int rowIndex, int columnIndex)
+         {
+            if (null == pairs) return;
+            else if (rowIndex >= pairs.length) return;
+            else 
+               switch (columnIndex) {
+                  case 0: pairs[rowIndex].setNumber((String) aValue);
+                          break;
+                  case 1: 
+                          String[] names = pairs[rowIndex].getNames();
+                          names[0] = (String) aValue;
+                          pairs[rowIndex].setNames(names);
+                          break;
+                  case 2: 
+                          names = pairs[rowIndex].getNames();
+                          names[1] = (String) aValue;
+                          pairs[rowIndex].setNames(names);
+                          break;
+                  case 3: pairs[rowIndex].setMPs((Double) aValue);
+                          break;
+                  case 4: pairs[rowIndex].setPercentage((Double) aValue);
+                          break;
+                  case 5: pairs[rowIndex].setLPs((Double) aValue);
+                          break;
+                  default:
+                          break;
+               }
+         }
+         public void addTableModelListener(TableModelListener l) {}
+         public void removeTableModelListener(TableModelListener l) {}
+      }
       class MenuActionListener implements ActionListener
       {
          public void actionPerformed(ActionEvent e)
          {
              String command = e.getActionCommand();
-             if ("loadboards".equals(command)) {
+             if (Debug.debug) Debug.print("Menu Action: "+command);
+             if ("loadscores".equals(command)) {
 
+                status.setText("Loading Boards...");
                 JFileChooser fc;
                 if (null == boardfile)
                    fc = new JFileChooser();
                 else
                    fc = new JFileChooser(new File(boardfile).getParent());
 
+                if (Debug.debug) Debug.print("Showing File Chooser");
                 int rv = fc.showOpenDialog(GSalliereMainFrame.this);
                 if (rv == JFileChooser.APPROVE_OPTION) {
+                   if (Debug.debug) Debug.print("Approved, file="+fc.getSelectedFile());
                    File f = fc.getSelectedFile();
                    try {
                       boardfile = f.getCanonicalPath();
+                      status.setText("Loading Boards from "+boardfile);
                       boards = readBoards(new FileInputStream(f));
                       for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
                          b.validate();
+                      boardtable.setModel(new BoardTableDataModel(boards));
+                      status.setText("Loaded Boards from "+boardfile);
                    } catch (BoardValidationException BVe) {
                       if (Debug.debug) Debug.print(BVe);
                       showerror("Problem loading boards file: "+BVe);
@@ -79,10 +260,13 @@ public class GSalliere extends Salliere
                       showerror("Problem loading boards file: "+IOe);
                       boards = null;
                    }
+                } else {
+                   if (Debug.debug) Debug.print("chooser returned "+rv);
                 }
 
-             } else if ("loadpairs".equals(command)) {
+             } else if ("loadnames".equals(command)) {
 
+                status.setText("Loading Names...");
                 JFileChooser fc;
                 if (null == namesfile)
                    fc = new JFileChooser();
@@ -95,7 +279,10 @@ public class GSalliere extends Salliere
 
                    try {
                       namesfile = f.getCanonicalPath();
+                      status.setText("Loading Names from "+namesfile);
                       pairs = readPairs(new FileInputStream(f));
+                      nametable.setModel(new PairTableDataModel(pairs));
+                      status.setText("Loaded Names from "+namesfile);
                    } catch (IOException IOe) {
                       if (Debug.debug) Debug.print(IOe);
                       showerror("Problem loading names file: "+IOe);
@@ -103,10 +290,11 @@ public class GSalliere extends Salliere
                    }
                 }
 
-             } else if ("saveboards".equals(command)) {
+             } else if ("savescores".equals(command)) {
                 if (null == boards) showerror("Must Load Boards before saving them");
                 else {
 
+                   status.setText("Saving Boards");
                    JFileChooser fc;
                    if (null == boardfile)
                       fc = new JFileChooser();
@@ -118,7 +306,9 @@ public class GSalliere extends Salliere
                       File f = fc.getSelectedFile();
                       try {
                          boardfile = f.getCanonicalPath();
+                         status.setText("Saving Boards to "+boardfile);
                          writeBoards(boards, new FileOutputStream(f));
+                         status.setText("Saved Boards to "+boardfile);
                       } catch (IOException IOe) {
                          if (Debug.debug) Debug.print(IOe);
                          showerror("Problem saving boards file: "+IOe);
@@ -126,10 +316,11 @@ public class GSalliere extends Salliere
                    }
 
                 }
-             } else if ("savepairs".equals(command)) {
+             } else if ("savenames".equals(command)) {
                 if (null == pairs) showerror("Must Load Pairs before saving them");
                 else {
 
+                   status.setText("Saving Names");
                    JFileChooser fc;
                    if (null == namesfile)
                       fc = new JFileChooser();
@@ -141,7 +332,9 @@ public class GSalliere extends Salliere
                       File f = fc.getSelectedFile();
                       try {
                          namesfile = f.getCanonicalPath();
+                         status.setText("Saving Names to "+namesfile);
                          writePairs(pairs, new FileOutputStream(f));
+                         status.setText("Saved Names to "+namesfile);
                       } catch (IOException IOe) {
                          if (Debug.debug) Debug.print(IOe);
                          showerror("Problem saving names file: "+IOe);
@@ -149,9 +342,13 @@ public class GSalliere extends Salliere
                    }
                 }
              } else if ("export".equals(command)) {
+                status.setText("Exporting results");
                 if (null == pairs || null == boards) showerror("Must Load Pairs and boards before exporting");
                 else 
                   export();
+             } else if ("quit".equals(command)) {
+                setVisible(false);
+                System.exit(0);
              }
          }
       }
@@ -162,18 +359,25 @@ public class GSalliere extends Salliere
              String command = e.getActionCommand();
              try {
                 if ("score".equals(command)) {
+                   status.setText("Scoring boards");
                    if (null == boards) showerror("Must Load Boards before Scoring");
                    else score(boards);
                 } else if ("matchpoint".equals(command)) {
+                   status.setText("Matchpointing boards");
                    if (null == boards) showerror("Must Load Boards before Matchpointing");
                    else matchpoint(boards);
                 } else if ("total".equals(command)) {
+                   status.setText("Calculating total matchpoints and percentages");
                    if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before Totalling");
                    else total(pairs, boards);
+                   nametable.repaint();
                 } else if ("localpoint".equals(command)) {
+                   status.setText("Allocating local points");
                    if (null == pairs) showerror("Must Load Pairs before Scoring");
                    else localpoint(pairs);
+                   nametable.repaint();
                 } else if ("results".equals(command)) {
+                   status.setText("Exporting results");
                    if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before exporting results");
                    else export();
                 }
@@ -186,16 +390,20 @@ public class GSalliere extends Salliere
              }
          }
       }
-      private JPanel panel;
+      private JPanel body;
+      private JLabel status;
+      private JTable boardtable;
+      private JTable nametable;
       public GSalliereMainFrame()
       {
          super("GSalliere - Duplicate Bridge Scoring");
-         setDefaultCloseOperation (JFrame.DISPOSE_ON_CLOSE);
+         setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
 
          /* MENU */
          JMenuBar menuBar = new JMenuBar();
          menuBar.setVisible(true);
          setJMenuBar(menuBar);
+         setContentPane(new JPanel(new BorderLayout()));
 
          // file menu
          JMenu file = new JMenu("File");
@@ -237,11 +445,35 @@ public class GSalliere extends Salliere
          item.addActionListener(mal);
          file.add(item);
 
-         /* MAIN BODY */
-         panel = new JPanel(new BorderLayout());
-         panel.setVisible(true);
-         setContentPane(panel);
+         // quit
+         item = new JMenuItem("Quit", KeyEvent.VK_Q);
+         item.setActionCommand("quit");
+         item.addActionListener(mal);
+         file.add(item);
 
+         /* MAIN BODY */
+         body = new JPanel();
+         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
+         body.setVisible(true);
+         add(body, BorderLayout.CENTER);
+
+         body.add(new JLabel("Pairs"));
+
+         nametable = new JTable(new PairTableDataModel(null));
+         nametable.setVisible(true);
+         body.add(new JScrollPane(nametable));
+
+         if (null != pairs)
+            nametable.setModel(new PairTableDataModel(pairs));
+
+         body.add(new JLabel("Boards"));
+
+         boardtable = new JTable(new BoardTableDataModel(null));
+         boardtable.setVisible(true);
+         body.add(new JScrollPane(boardtable));
+
+         if (null != boards)
+            boardtable.setModel(new BoardTableDataModel(boards));
 
          /* BUTTON BAR */
          JPanel buttonbar = new JPanel(new FlowLayout());
@@ -291,10 +523,16 @@ public class GSalliere extends Salliere
          button.addActionListener(bal);
          buttonbar.add(button);
 
+         /* STATUS BAR */
+         status = new JLabel();
+         status.setVisible(true);
+         add(status, BorderLayout.SOUTH);
+
          pack();         
       }
       public void showerror(String text)
       {
+         status.setText("Error: "+text);
          JOptionPane.showMessageDialog(this, text, "Error", JOptionPane.ERROR_MESSAGE);
       }
    }
@@ -335,7 +573,6 @@ public class GSalliere extends Salliere
          tabular.close();
          out.close();
          */
-
    }
 
    private static Map boards;
@@ -347,8 +584,6 @@ public class GSalliere extends Salliere
    public static void main(String[] args)
    {
       try {
-         GSalliereMainFrame main = new GSalliereMainFrame();
-         main.setVisible(true);
          if (Debug.debug) Debug.setThrowableTraces(true);
 
          if (args.length == 2) {
@@ -361,11 +596,11 @@ public class GSalliere extends Salliere
                   b.validate();
             } catch (BoardValidationException BVe) {
                if (Debug.debug) Debug.print(BVe);
-               main.showerror("Problem loading boards file: "+BVe);
+               System.out.println("Problem loading boards file: "+BVe);
                boards = null;
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
-               main.showerror("Problem loading boards file: "+IOe);
+               System.out.println("Problem loading boards file: "+IOe);
                boards = null;
             }
 
@@ -373,11 +608,14 @@ public class GSalliere extends Salliere
                pairs = readPairs(new FileInputStream(namesfile));
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
-               main.showerror("Problem loading names file: "+IOe);
+               System.out.println("Problem loading names file: "+IOe);
                pairs = null;
             }
 
          }
+
+         GSalliereMainFrame main = new GSalliereMainFrame();
+         main.setVisible(true);
 
       } catch (Exception e) {
          if (Debug.debug) Debug.print(e);

@@ -197,6 +197,7 @@ public class Hand
    public double getNSScore() { return nsscore; }
    public void setNSMP(double mp) { nsmp = mp; }
    public void setEWMP(double mp) { ewmp = mp; }
+   public void setNumber(String number) { this.number = number; }
    public int getTricks() { return tricks; }
    public char getDeclarer() { return declarer; }
    public String toString() 

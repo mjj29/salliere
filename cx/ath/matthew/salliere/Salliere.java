@@ -50,6 +50,16 @@ import java.text.FieldPosition;
 public class Salliere
 {
 
+   static class HandNSComparer implements Comparator
+   {
+      public int compare(Object ob1, Object ob2)
+      {
+         String n1 = ((Hand) ob1).getNS();
+         String n2 = ((Hand) ob2).getNS();
+         return n1.compareTo(n2);
+      }
+   }
+
    static class BoardNumberComparer implements Comparator
    {
       public int compare(Object ob1, Object ob2)
@@ -235,7 +245,9 @@ public class Salliere
 
       for (Board b: (Board[]) boardv.toArray(new Board[0])) {
          Vector lines = new Vector();
-         for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) {
+         List hands = b.getHands();
+         Collections.sort(hands, new HandNSComparer());
+         for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
             String[] ex = h.export();
             String[] line = new String[ex.length-1];
             System.arraycopy(ex, 1, line, 0, line.length);
@@ -395,7 +407,10 @@ public class Salliere
          writeBoards(boards, new FileOutputStream(args[i+1]));
          writePairs(pairs, new FileOutputStream(args[i+2]));
       } catch (Exception e) {
-         if (Debug.debug) Debug.print(e);
+         if (Debug.debug) {
+            Debug.setThrowableTraces(true);
+            Debug.print(e);
+         }
          System.out.println("Salliere failed to compute results: "+e.getMessage());
          System.exit(1);
       }
