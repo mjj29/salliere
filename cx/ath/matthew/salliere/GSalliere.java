@@ -727,6 +727,14 @@ public class GSalliere extends Salliere
          button.addActionListener(bal);
          buttonbar.add(button);
 
+         // save
+         button = new JButton("Save");
+         button.setToolTipText("Save both files");
+         button.setActionCommand("save");
+         button.setMnemonic(KeyEvent.VK_A);
+         button.addActionListener(bal);
+         buttonbar.add(button);
+
          /* STATUS BAR */
          status = new JLabel();
          status.setVisible(true);
@@ -845,8 +853,8 @@ public class GSalliere extends Salliere
                System.out.println("Problem loading names file: "+IOe);
                pairs = null;
             }
-
          }
+        
 
          GSalliereMainFrame main = new GSalliereMainFrame();
          main.setVisible(true);

@@ -6,6 +6,7 @@ Version 0.3:
 	  pair numbers
 	* output hands within boards sorted by NS pair number (Suggested by
 	  Carrie Oliver <cho21 -at- cam -dot- ac -dot- uk>)
+	* gsalliere graphical frontend
 
 Version 0.2:
 

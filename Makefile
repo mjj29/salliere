@@ -38,17 +38,20 @@ classes: .classes
 	touch .classes
 clean:
 	rm -rf classes bin testbin salliere-$(VERSION)
-	rm -f .classes .bin .testbin *.tar.gz *.jar *.1
+	rm -f .classes .bin .testbin *.tar.gz *.jar *.1 *Manifest.txt
 
-salliere-$(VERSION).jar: .classes
-	(cd classes; $(JAR) cfm ../$@ ../Manifest.txt cx)
+salliere-$(VERSION).jar: SalliereManifest.txt .classes
+	(cd classes; $(JAR) cfm ../$@ ../$< $(shell cd classes; find cx -name '*.class' -and -not -name 'GSalliere*' | sed 's/\$$/\\$$/g'))
 
-salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt
+gsalliere-$(VERSION).jar: GSalliereManifest.txt .classes
+	(cd classes; $(JAR) cfm ../$@ ../$< cx/ath/matthew/salliere/GSalliere*.class)
+
+salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt.in
 	mkdir -p salliere-$(VERSION)
 	cp -a $^ salliere-$(VERSION)
 	tar zcf $@ salliere-$(VERSION)
 
-cvs.jar: 
+csv.jar: 
 	ln -sf /usr/share/java/csv.jar .
 itext.jar: 
 	ln -sf /usr/share/java/itext.jar .
@@ -58,21 +61,35 @@ debug-$(DEBUG).jar:
 bin/%: %.sh .bin
 	sed 's,\%JARPATH\%,$(JARDIR),;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 
-testbin/%: %.sh .testbin salliere-$(VERSION).jar cvs.jar debug-$(DEBUG).jar itext.jar
+testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itext.jar gsalliere-$(VERSION).jar
 	sed 's,\%JARPATH\%,.,;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 	chmod 755 $@
 
 %.1: %.sgml
 	docbook-to-man $< > $@
 
-install: salliere.1 bin/salliere salliere-$(VERSION).jar changelog COPYING INSTALL README todo
+SalliereManifest.txt: Manifest.txt.in
+	cat $< > $@
+	echo Main-Class: cx.ath.matthew.salliere.Salliere >> $@
+	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/itext.jar >> $@
+
+GSalliereManifest.txt: Manifest.txt.in
+	cat $< > $@
+	echo Main-Class: cx.ath.matthew.salliere.GSalliere >> $@
+	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/itext.jar $(JARDIR)/salliere-$(VERSION).jar >> $@
+
+install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).jar salliere-$(VERSION).jar changelog COPYING INSTALL README todo
 	install -d $(DESTDIR)$(BINDIR)
 	install bin/salliere $(DESTDIR)$(BINDIR)
+	install bin/gsalliere $(DESTDIR)$(BINDIR)
 	install -d $(DESTDIR)$(MANDIR)
 	install -m 644 salliere.1 $(DESTDIR)$(MANDIR)
+	install -m 644 gsalliere.1 $(DESTDIR)$(MANDIR)
 	install -d $(DESTDIR)$(JARDIR)
 	install -m 644 salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)
+	install -m 644 gsalliere-$(VERSION).jar $(DESTDIR)$(JARDIR)
 	ln -sf salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/salliere.jar
+	ln -sf gsalliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/gsalliere.jar
 	install -d $(DESTDIR)$(DOCDIR)
 	install -m 644 changelog COPYING INSTALL README todo $(DESTDIR)$(DOCDIR)
 
