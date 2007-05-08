@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,9 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -52,6 +55,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -489,7 +493,7 @@ public class GSalliere extends Salliere
                 status.setText("Exporting results");
                 if (null == pairs || null == boards) showerror("Must Load Pairs and boards before exporting");
                 else 
-                  export();
+                  export(GSalliereMainFrame.this);
              } else if ("quit".equals(command)) {
                 setVisible(false);
                 System.exit(0);
@@ -528,7 +532,7 @@ public class GSalliere extends Salliere
                 } else if ("results".equals(command)) {
                    status.setText("Exporting results");
                    if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before exporting results");
-                   else export();
+                   else export(GSalliereMainFrame.this);
                 } else if ("validate".equals(command)) {
                    status.setText("Verifying Movement");
                    if (null == boards) showerror("Must Load Boards before Verifying movement");
@@ -736,43 +740,73 @@ public class GSalliere extends Salliere
          JOptionPane.showMessageDialog(this, text, "Error", JOptionPane.ERROR_MESSAGE);
       }
    }
-   public static void export()
+   public static void export(GSalliereMainFrame root)
    {
-      /* if (format.length == 1)
-         tabular = new AsciiTablePrinter(out);
-         else if ("txt".equals(format[0].toLowerCase()))
-         tabular = new AsciiTablePrinter(out);
-         else if ("html".equals(format[0].toLowerCase()))
-         tabular = new HTMLTablePrinter((String) options.get("--title"), out);
-         else if ("pdf".equals(format[0].toLowerCase()))
-         tabular = new PDFTablePrinter((String) options.get("--title"), out);
-         else {
-         System.out.println("Unknown format: "+format[0]);
-         syntax();
-         System.exit(1);
-         }
+      JFileChooser fc = new JFileChooser();
+      JPanel accessories = new JPanel();
+      accessories.setLayout(new BoxLayout(accessories, BoxLayout.Y_AXIS));
+      fc.setAccessory(accessories);
 
-         tabular.init();
-         tabular.header((String) options.get("--title"));
+      JTextField title = new JTextField();
+      ButtonGroup format = new ButtonGroup();
+      JRadioButton textformat = new JRadioButton("Text", true);
+      textformat.setActionCommand("Text");
+      format.add(textformat);
+      JRadioButton htmlformat = new JRadioButton("HTML", true);
+      htmlformat.setActionCommand("HTML");
+      format.add(htmlformat);
+      JRadioButton pdfformat = new JRadioButton("PDF", true);
+      pdfformat.setActionCommand("PDF");
+      format.add(pdfformat);
+      JCheckBox results = new JCheckBox("Results", true);
+      JCheckBox matrix = new JCheckBox("MP Matrix");
+      JCheckBox boardby = new JCheckBox("Board-by-boards");
+      JCheckBox orange = new JCheckBox("Orange Points");
+      accessories.add(new JLabel("Title: "));
+      accessories.add(title);
+      accessories.add(textformat);
+      accessories.add(htmlformat);
+      accessories.add(pdfformat);
+      accessories.add(results);
+      accessories.add(matrix);
+      accessories.add(boardby);
+      accessories.add(orange);
 
-         for (String command: (String[]) commands.toArray(new String[0])) {
-         if ("score".equals(command)) score(boards);
-         else if ("matchpoint".equals(command)) matchpoint(boards);
-         else if ("total".equals(command)) total(pairs, boards);
-         else if ("results".equals(command)) results(pairs, tabular, null == options.get("--orange") ? "LPs" : "OPs");
-         else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
-         else if ("boards".equals(command)) boardbyboard(boards, tabular);
-         else if ("localpoint".equals(command)) localpoint(pairs);
-         else {
-         System.out.println("Bad Command: "+command);
-         syntax();
-         System.exit(1);
-         }
-         }
 
-         tabular.close();
-         out.close();
-         */
+      int rv = fc.showDialog(root, "Export");
+      if (rv == JFileChooser.APPROVE_OPTION) {
+         File exportfile = fc.getSelectedFile();
+         String titlestr = title.getText();
+         boolean orangebool = orange.isSelected();
+
+         String command = format.getSelection().getActionCommand();
+
+         if (Debug.debug) Debug.print("Exporting to "+exportfile+" command="+command);
+         try {
+            FileOutputStream out = new FileOutputStream(exportfile);
+            TablePrinter tabular = null;
+            if ("Text".equals(command))
+               tabular = new AsciiTablePrinter(new PrintStream(out));
+            else if ("HTML".equals(command))
+               tabular = new HTMLTablePrinter(titlestr, new PrintStream(out));
+            else if ("PDF".equals(command))
+               tabular = new PDFTablePrinter(titlestr, out);
+
+            tabular.init();
+            tabular.header(titlestr);
+
+            if (results.isSelected()) 
+               results(pairs, tabular, orangebool ? "OPs":"LPs");
+            if (matrix.isSelected()) matrix(pairs, boards, tabular);
+            if (boardby.isSelected()) boardbyboard(boards, tabular);
+
+            tabular.close();
+            out.close();
+         } catch (IOException IOe) {
+            if (Debug.debug) Debug.print(IOe);
+            root.showerror("Problem while exporting: "+IOe);
+         }
+      }
    }
 
    private static Map boards;
