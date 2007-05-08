@@ -187,6 +187,7 @@ public class Hand
          /* not assigning scores on hands which have no contract. Must be averages or something. */
       }
    }
+
    public String getNumber() { return number; }
    public String getNS() { return ns; }
    public String getEW() { return ew; }
@@ -195,11 +196,20 @@ public class Hand
    public double getEWMP() { return ewmp; }
    public double getEWScore() { return ewscore; }
    public double getNSScore() { return nsscore; }
+   public int getTricks() { return tricks; }
+   public char getDeclarer() { return declarer; }
+
    public void setNSMP(double mp) { nsmp = mp; }
    public void setEWMP(double mp) { ewmp = mp; }
    public void setNumber(String number) { this.number = number; }
-   public int getTricks() { return tricks; }
-   public char getDeclarer() { return declarer; }
+   public void setNS(String ns) { this.ns = ns; }
+   public void setEW(String ew) { this.ew = ew; }
+   public void setContract(String contract) { this.contract = contract; }
+   public void setEWScore(double ewscore) { this.ewscore = ewscore; }
+   public void setNSScore(double nsscore) { this.nsscore = nsscore; }
+   public void setTricks(int tricks) { this.tricks = tricks; }
+   public void setDeclarer(char declarer) { this.declarer = declarer; }
+
    public String toString() 
    { 
       StringBuilder sb = new StringBuilder();

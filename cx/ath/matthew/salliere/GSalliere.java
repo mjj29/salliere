@@ -29,6 +29,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,6 +43,7 @@ import java.util.Vector;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -51,14 +54,39 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelListener;
 
 public class GSalliere extends Salliere
 {
-
    static class GSalliereMainFrame extends JFrame
    {
+      class BoardEditDialog extends JDialog implements ActionListener
+      {
+         private Board board;
+         public BoardEditDialog(Board b)
+         {
+            super(GSalliereMainFrame.this, "Edit Board "+b.getNumber(), true);
+            this.board = b;
+            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            setContentPane(new JPanel(new BorderLayout()));
+
+            JTable data = new JTable(new HandTableDataModel(b.getHands()));
+            setSize(600, data.getRowHeight()*(b.getHands().size()+8));
+            add(new JScrollPane(data), BorderLayout.CENTER);
+
+            JButton button = new JButton("OK");
+            button.addActionListener(this);
+            add(button, BorderLayout.SOUTH);
+
+            doLayout();
+         }
+         public void actionPerformed(ActionEvent e)
+         {
+            dispose();
+         }
+      }
       class BoardTableDataModel implements TableModel
       {
          private Board[] boards;
@@ -131,7 +159,123 @@ public class GSalliere extends Salliere
          }
          public void addTableModelListener(TableModelListener l) {}
          public void removeTableModelListener(TableModelListener l) {}
-
+         public Board getBoardAt(int row) 
+         {
+            if (null == boards) return null;
+            else if (row >= boards.length) return null;
+            else return boards[row];
+         }
+      }
+      class HandTableDataModel implements TableModel
+      {
+         private Hand[] hands;
+         public HandTableDataModel(List handv)
+         {
+            if (null == handv) return;
+            Collections.sort(handv, new HandNSComparer());
+            this.hands = (Hand[]) handv.toArray(new Hand[0]);
+         }
+         public int getRowCount()
+         { return null == hands ? 1 : hands.length+1; }
+         public int getColumnCount()
+         { return 10; }
+         public String getColumnName(int columnIndex)
+         {
+            switch (columnIndex) {
+               case 0: return "Number";
+               case 1: return "NS";
+               case 2: return "EW";
+               case 3: return "Contract";
+               case 4: return "By";
+               case 5: return "Tricks";
+               case 6: return "Score NS";
+               case 7: return "Score EW";
+               case 8: return "MP NS";
+               case 9: return "MP EW";
+               default: return "ERR0R";
+            }
+         }
+         public Class getColumnClass(int columnIndex)
+         {
+            switch (columnIndex) {
+               case 0: 
+               case 1: 
+               case 2: 
+               case 3: return String.class;
+               case 4: return Character.class;
+               case 5: return Integer.class;
+               case 6: 
+               case 7: 
+               case 8: 
+               case 9: return Double.class;
+               default: return null;
+            }
+         }
+         public boolean isCellEditable(int rowIndex, int columnIndex)
+         {
+            if (null == hands) return false;
+            else return rowIndex < hands.length && columnIndex > 0;
+         }
+         public Object getValueAt(int rowIndex, int columnIndex)
+         {
+            if (null == hands || rowIndex >= hands.length) switch (columnIndex) {
+               case 0: 
+               case 1: 
+               case 2: 
+               case 3: return "";
+               case 4: return ' ';
+               case 5: return 0;
+               case 6: 
+               case 7: 
+               case 8: 
+               case 9: return 0.0;
+               default: return null;
+            }
+            else 
+               switch (columnIndex) {
+                  case 0: return hands[rowIndex].getNumber();
+                  case 1: return hands[rowIndex].getNS();
+                  case 2: return hands[rowIndex].getEW();
+                  case 3: return hands[rowIndex].getContract();
+                  case 4: return hands[rowIndex].getDeclarer();
+                  case 5: return hands[rowIndex].getTricks();
+                  case 6: return hands[rowIndex].getNSScore();
+                  case 7: return hands[rowIndex].getEWScore();
+                  case 8: return hands[rowIndex].getNSMP();
+                  case 9: return hands[rowIndex].getEWMP();
+                  default: return null;
+               }
+         }
+         public void setValueAt(Object aValue, int rowIndex, int columnIndex)
+         {
+            if (null == hands) return;
+            else if (rowIndex >= hands.length) return;
+            else 
+               switch (columnIndex) {
+                  case 1: hands[rowIndex].setNS((String) aValue);
+                          break;
+                  case 2: hands[rowIndex].setEW((String) aValue);
+                          break;
+                  case 3: hands[rowIndex].setContract((String) aValue);
+                          break;
+                  case 4: hands[rowIndex].setDeclarer((Character) aValue);
+                          break;
+                  case 5: hands[rowIndex].setTricks((Integer) aValue);
+                          break;
+                  case 6: hands[rowIndex].setNSScore((Double) aValue);
+                          break;
+                  case 7: hands[rowIndex].setEWScore((Double) aValue);
+                          break;
+                  case 8: hands[rowIndex].setNSMP((Double) aValue);
+                          break;
+                  case 9: hands[rowIndex].setEWMP((Double) aValue);
+                          break;
+                  default:
+                          break;
+               }
+         }
+         public void addTableModelListener(TableModelListener l) {}
+         public void removeTableModelListener(TableModelListener l) {}
       }
       class PairTableDataModel implements TableModel
       {
@@ -354,6 +498,11 @@ public class GSalliere extends Salliere
       }
       class ButtonActionListener implements ActionListener
       {
+         private JTextField setsize;
+         public ButtonActionListener(JTextField setsize)
+         {
+            this.setsize = setsize;
+         }
          public void actionPerformed(ActionEvent e)
          {
              String command = e.getActionCommand();
@@ -380,6 +529,10 @@ public class GSalliere extends Salliere
                    status.setText("Exporting results");
                    if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before exporting results");
                    else export();
+                } else if ("validate".equals(command)) {
+                   status.setText("Verifying Movement");
+                   if (null == boards) showerror("Must Load Boards before Verifying movement");
+                   else verify(boards, setsize.getText());
                 }
              } catch (ScoreException Se) {
                if (Debug.debug) Debug.print(Se);
@@ -387,8 +540,32 @@ public class GSalliere extends Salliere
              } catch (ContractParseException CPe) {
                if (Debug.debug) Debug.print(CPe);
                showerror("Problem while performing action: "+CPe);
+             } catch (MovementVerificationException MVe) {
+               if (Debug.debug) Debug.print(MVe);
+               showerror("Problem while performing action: "+MVe);
              }
          }
+      }
+      class MouseActionListener implements MouseListener
+      {
+         public void mouseClicked(MouseEvent e) 
+         {
+            if (Debug.debug) Debug.print(e);
+            int y = e.getY();
+            JTable table = (JTable) e.getSource();
+            int row = y / table.getRowHeight();
+            if (Debug.debug) Debug.print("Clicked on row "+row);
+            Board b = ((BoardTableDataModel) table.getModel()).getBoardAt(row);
+            if (null != b) {
+               BoardEditDialog bed = new BoardEditDialog(b);
+               bed.show();
+               table.repaint();
+            }
+         }
+         public void mousePressed(MouseEvent e) {}
+         public void mouseReleased(MouseEvent e) {}
+         public void mouseEntered(MouseEvent e) {}
+         public void mouseExited(MouseEvent e) {}
       }
       private JPanel body;
       private JLabel status;
@@ -459,6 +636,8 @@ public class GSalliere extends Salliere
 
          body.add(new JLabel("Pairs"));
 
+         MouseListener moal = new MouseActionListener();
+
          nametable = new JTable(new PairTableDataModel(null));
          nametable.setVisible(true);
          body.add(new JScrollPane(nametable));
@@ -469,19 +648,25 @@ public class GSalliere extends Salliere
          body.add(new JLabel("Boards"));
 
          boardtable = new JTable(new BoardTableDataModel(null));
+         boardtable.addMouseListener(moal);
          boardtable.setVisible(true);
          body.add(new JScrollPane(boardtable));
 
          if (null != boards)
             boardtable.setModel(new BoardTableDataModel(boards));
 
-         /* BUTTON BAR */
+         /* BUTTON BAR 1 */
+         JPanel buttonbarholder = new JPanel();
+         buttonbarholder.setLayout(new BoxLayout(buttonbarholder, BoxLayout.Y_AXIS));
+         add(buttonbarholder, BorderLayout.NORTH);
+
          JPanel buttonbar = new JPanel(new FlowLayout());
          buttonbar.setVisible(true);
-         add(buttonbar, BorderLayout.NORTH);
+         buttonbarholder.add(buttonbar);
          
          JButton button;
-         ActionListener bal = new ButtonActionListener();
+         JTextField setsize = new JTextField(2);
+         ActionListener bal = new ButtonActionListener(setsize);
 
          // score
          button = new JButton("Score");
@@ -520,6 +705,21 @@ public class GSalliere extends Salliere
          button.setToolTipText("Export the Results");
          button.setActionCommand("results");
          button.setMnemonic(KeyEvent.VK_R);
+         button.addActionListener(bal);
+         buttonbar.add(button);
+
+         /* BUTTON BAR 2 */
+         buttonbar = new JPanel(new FlowLayout());
+         buttonbar.setVisible(true);
+         buttonbarholder.add(buttonbar);
+         
+         // validate
+         buttonbar.add(new JLabel("Set Size:"));
+         buttonbar.add(setsize);
+         button = new JButton("Validate");
+         button.setToolTipText("Validate the movement");
+         button.setActionCommand("validate");
+         button.setMnemonic(KeyEvent.VK_V);
          button.addActionListener(bal);
          buttonbar.add(button);
 
