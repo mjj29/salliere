@@ -140,7 +140,9 @@ public class Salliere
 
    static void syntax()
    {
-      System.out.println("Salliere Duplicate Bridge Scorer - version "+System.getProperty("Version"));
+      String version = Package.getPackage("cx.ath.matthew.salliere")
+                              .getImplementationVersion();
+      System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint total localpoint results matrix boards");
       System.out.println("   Options: --help --output=[<format>:]file --title=title --orange");

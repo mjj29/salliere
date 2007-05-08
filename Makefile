@@ -6,7 +6,7 @@ GCJ?=gcj
 CC?=gcc
 LD?=ld
 GCJFLAGS?=-fjni
-JCFLAGS?=-source 5.0
+JCFLAGS?=-source 1.5 -Xlint:all
 
 PREFIX?=/usr/local
 JARDIR?=$(PREFIX)/share/java
@@ -23,7 +23,7 @@ VERSION=0.3
 
 SRC=$(shell find cx -name '*.java')
 
-all: salliere-$(VERSION).jar salliere.1 bin/salliere
+all: salliere-$(VERSION).jar salliere.1 bin/salliere gsalliere-$(VERSION).jar gsalliere.1 bin/gsalliere
 
 .bin:
 	mkdir -p bin
@@ -34,7 +34,7 @@ all: salliere-$(VERSION).jar salliere.1 bin/salliere
 classes: .classes 
 .classes: $(SRC)
 	mkdir -p classes
-	$(JAVAC) $(JCFLAGS) -cp $(CLASSPATH) -d classes -cp classes $^
+	$(JAVAC) $(JCFLAGS) -cp $(CLASSPATH):classes -d classes $^
 	touch .classes
 clean:
 	rm -rf classes bin testbin salliere-$(VERSION)
@@ -69,14 +69,16 @@ testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itex
 	docbook-to-man $< > $@
 
 SalliereManifest.txt: Manifest.txt.in
-	cat $< > $@
-	echo Main-Class: cx.ath.matthew.salliere.Salliere >> $@
+	echo Main-Class: cx.ath.matthew.salliere.Salliere > $@
 	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/itext.jar >> $@
+	cat $< >> $@
+	echo "Implementation-Version: $(VERSION)" >> $@
 
 GSalliereManifest.txt: Manifest.txt.in
-	cat $< > $@
-	echo Main-Class: cx.ath.matthew.salliere.GSalliere >> $@
+	echo Main-Class: cx.ath.matthew.salliere.GSalliere > $@
 	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/itext.jar $(JARDIR)/salliere-$(VERSION).jar >> $@
+	cat $< >> $@
+	echo "Implementation-Version: $(VERSION)" >> $@
 
 install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).jar salliere-$(VERSION).jar changelog COPYING INSTALL README todo
 	install -d $(DESTDIR)$(BINDIR)
@@ -93,3 +95,9 @@ install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).
 	install -d $(DESTDIR)$(DOCDIR)
 	install -m 644 changelog COPYING INSTALL README todo $(DESTDIR)$(DOCDIR)
 
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/salliere $(DESTDIR)$(BINDIR)/gsalliere
+	rm -f $(DESTDIR)$(JARDIR)/salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/gsalliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/salliere.jar $(DESTDIR)$(JARDIR)/gsalliere.jar
+	rm -f $(DESTDIR)$(MANDIR)/salliere.1 $(DESTDIR)$(MANDIR)/gsalliere.1
+	rm -f $(DESTDIR)$(DOCDIR)/changelog $(DESTDIR)$(DOCDIR)/COPYING $(DESTDIR)$(DOCDIR)/INSTALL $(DESTDIR)$(DOCDIR)/README $(DESTDIR)$(DOCDIR)/todo
+	-rmdir $(DESTDIR)$(BINDIR) $(DESTDIR)$(MANDIR) $(DESTDIR)$(JARDIR) $(DESTDIR)$(DOCDIR)
