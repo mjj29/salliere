@@ -46,7 +46,7 @@ salliere-$(VERSION).jar: SalliereManifest.txt .classes
 gsalliere-$(VERSION).jar: GSalliereManifest.txt .classes
 	(cd classes; $(JAR) cfm ../$@ ../$< cx/ath/matthew/salliere/GSalliere*.class)
 
-salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt.in
+salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt.in gsalliere.sh gsalliere.sgml
 	mkdir -p salliere-$(VERSION)
 	cp -a $^ salliere-$(VERSION)
 	tar zcf $@ salliere-$(VERSION)
@@ -76,7 +76,7 @@ SalliereManifest.txt: Manifest.txt.in
 
 GSalliereManifest.txt: Manifest.txt.in
 	echo Main-Class: cx.ath.matthew.salliere.GSalliere > $@
-	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/itext.jar $(JARDIR)/salliere-$(VERSION).jar >> $@
+	echo Class-Path: $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/salliere-$(VERSION).jar >> $@
 	cat $< >> $@
 	echo "Implementation-Version: $(VERSION)" >> $@
 
