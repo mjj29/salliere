@@ -93,10 +93,10 @@ public class Salliere
       }
    }
 
-   static Map/*<String,Board>*/ readBoards(InputStream is) throws IOException
+   static List readBoards(InputStream is) throws IOException, BoardValidationException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
-      HashMap/*<String,Board>*/ boards = new HashMap/*<String,Board>*/();
+      Map boards = new HashMap();
       try { 
          while (in.readRecord()) {
             String[] values = in.getValues();
@@ -112,28 +112,28 @@ public class Salliere
          }
       } catch (EOFException EOFe) {}
       in.close();
-      return boards;
+      return new ArrayList(boards.values());
    }
 
-   static Map/*<String,Pair>*/ readPairs(InputStream is) throws IOException
+   static List readPairs(InputStream is) throws IOException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
-      HashMap/*<String,Pair>*/ pairs = new HashMap/*<String,Board>*/();
+      List pairs = new Vector();
       try { 
          while (in.readRecord()) {
             String[] values = in.getValues();
             if (Debug.debug) Debug.print(Arrays.asList(values));
-            pairs.put(values[0],new Pair(values));
+            pairs.add(new Pair(values));
          }
       } catch (EOFException EOFe) {}
       in.close();
       return pairs;
    }
 
-   static void writePairs(Map pairs, OutputStream os) throws IOException
+   static void writePairs(List pairs, OutputStream os) throws IOException
    {
       CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
-      for (Pair p: (Pair[]) pairs.values().toArray(new Pair[0])) 
+      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
          out.writeRecord(p.export());
       out.close();
    }
@@ -150,26 +150,29 @@ public class Salliere
    }
 
 
-   static void writeBoards(Map boards, OutputStream os) throws IOException
+   static void writeBoards(List boards, OutputStream os) throws IOException
    {
       CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
-      for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
+      for (Board b: (Board[]) boards.toArray(new Board[0])) 
          for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
             out.writeRecord(h.export());
       out.close();
    }
 
-   public static void score(Map boards) throws ScoreException, ContractParseException
+   public static void score(List boards) throws ScoreException, ContractParseException, HandParseException
    {
-      for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
+      for (Board b: (Board[]) boards.toArray(new Board[0])) 
          for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
             h.score();
    }
 
-   public static void verify(Map boardv, String setsize) throws MovementVerificationException
+   public static void verify(List boardv, String setsize) throws MovementVerificationException, BoardValidationException
    {
-      if (null == setsize)
-         throw new MovementVerificationException("Can't verify the movement if you don't specify the number of boards per set with --setsize");
+      for (Board b: (Board[]) boardv.toArray(new Board[0])) 
+         b.validate();
+
+      if (null == setsize || setsize.length() == 0) return;
+
       int size = 0;
       try {
          size = Integer.parseInt(setsize);
@@ -177,11 +180,9 @@ public class Salliere
          if (Debug.debug) Debug.print(NFe);
          throw new MovementVerificationException(setsize+" isn't a number!");
       }
-
       
-      List sortedboards = new ArrayList(boardv.values());
-      Collections.sort(sortedboards, new BoardNumberComparer());
-      Board[] boards = (Board[]) sortedboards.toArray(new Board[0]);
+      Collections.sort(boardv, new BoardNumberComparer());
+      Board[] boards = (Board[]) boardv.toArray(new Board[0]);
       Set pairs = new TreeSet();
       for (int i = 0; i < boards.length; i++) {
          if (0 == (i % size)) {
@@ -198,26 +199,24 @@ public class Salliere
       }
    }
 
-   public static void matchpoint(Map boards) throws ScoreException
+   public static void matchpoint(List boards) throws ScoreException
    {
-      for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
+      for (Board b: (Board[]) boards.toArray(new Board[0])) 
          b.matchPoint();
    }
 
-   public static void total(Map pairs, Map boards)
+   public static void total(List pairs, List boards)
    {
-      for (Pair p: (Pair[]) pairs.values().toArray(new Pair[0])) 
+      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
          p.total(boards);
    }
 
-   public static void matrix(Map pairv, Map boardv, TablePrinter tabular) 
+   public static void matrix(List pairv, List boardv, TablePrinter tabular) 
    {
-      List sortedboards = new ArrayList(boardv.values());
-      List sortedpairs = new ArrayList(pairv.values());
-      Collections.sort(sortedboards, new BoardNumberComparer());
-      Collections.sort(sortedpairs, new PairNumberComparer());
-      Board[] boards = (Board[]) sortedboards.toArray(new Board[0]);
-      Pair[] pairs = (Pair[]) sortedpairs.toArray(new Pair[0]);
+      Collections.sort(boardv, new BoardNumberComparer());
+      Collections.sort(pairv, new PairNumberComparer());
+      Board[] boards = (Board[]) boardv.toArray(new Board[0]);
+      Pair[] pairs = (Pair[]) pairv.toArray(new Pair[0]);
 
       DecimalFormat format = new DecimalFormat("0.##");
       FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
@@ -239,13 +238,12 @@ public class Salliere
       tabular.print(headers, matrix);
       tabular.gap();
    }
-   public static void boardbyboard(Map boards, TablePrinter tabular) 
+   public static void boardbyboard(List boards, TablePrinter tabular) 
    {
       String[] headers = new String[] { "NS", "EW", "Contract", "By", "Tricks", "Score:", "", "MPs:", "" };
-      ArrayList boardv = new ArrayList(boards.values());
-      Collections.sort(boardv, new BoardNumberComparer());
+      Collections.sort(boards, new BoardNumberComparer());
 
-      for (Board b: (Board[]) boardv.toArray(new Board[0])) {
+      for (Board b: (Board[]) boards.toArray(new Board[0])) {
          Vector lines = new Vector();
          List hands = b.getHands();
          Collections.sort(hands, new HandNSComparer());
@@ -261,12 +259,11 @@ public class Salliere
       }
    }
 
-   public static void localpoint(Map pairs) throws ScoreException
+   public static void localpoint(List pairs) throws ScoreException
    {
       // sort pairs in order
-      List pairv = new ArrayList(pairs.values());
-      Collections.sort(pairv, new PairPercentageComparer());
-      Pair[] ps = (Pair[]) pairv.toArray(new Pair[0]);
+      Collections.sort(pairs, new PairPercentageComparer());
+      Pair[] ps = (Pair[]) pairs.toArray(new Pair[0]);
 
       // check we have enough to give LPs
       if (ps.length < 6) throw new ScoreException("Must have at least 3 full table to award local points");
@@ -292,12 +289,11 @@ public class Salliere
       }
    }
 
-   public static void results(Map pairs, TablePrinter tabulate, String points)
+   public static void results(List pairs, TablePrinter tabulate, String points)
    {
       Vector results = new Vector();
-      List pairv = new ArrayList(pairs.values());
-      Collections.sort(pairv, new PairPercentageComparer());
-      for (Pair p: (Pair[]) pairv.toArray(new Pair[0])) 
+      Collections.sort(pairs, new PairPercentageComparer());
+      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
          results.add(p.export());
 
       tabulate.print(new String[] { "Pair#", "Names", "", "MPs", "%age", points }, 
@@ -352,12 +348,10 @@ public class Salliere
             System.exit(1);
          }
 
-         Map/*<String,Board>*/ boards;
-         Map/*<String,Pairs>*/ pairs;
+         List boards;
+         List pairs;
 
          boards = readBoards(new FileInputStream(args[i+1]));
-         for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
-            b.validate();
 
          pairs = readPairs(new FileInputStream(args[i+2]));
 

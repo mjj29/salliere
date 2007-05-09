@@ -3,6 +3,5 @@
  * check movements
  * support adjusted scores
  * gsalliere
-   - adding rows / creating new maps
    - save button
    - disable menu entries and save button when they can't be used

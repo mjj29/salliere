@@ -21,17 +21,18 @@ package cx.ath.matthew.salliere;
 
 import cx.ath.matthew.debug.Debug;
 
-import java.util.Map;
+import java.util.List;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 
 public class Pair
 {
-   String number;
-   String[] names;
+   String number = "";
+   String[] names = new String[] { "", "" };
    double mps;
    double percentage;
    double lps;
+   public Pair() {}
    public Pair(String[] data)
    {
       this.number = data[0];
@@ -49,12 +50,12 @@ public class Pair
                mps = Double.parseDouble(data[3]);
       }
    }
-   public void total(Map/*<String,Board>*/ boards)
+   public void total(List boards)
    {
       double top = 0;
       int bds = 0;
       mps = 0;
-      for (Board b: (Board[]) boards.values().toArray(new Board[0])) {
+      for (Board b: (Board[]) boards.toArray(new Board[0])) {
          top = b.getTop();
          if (b.played(number)) {
             mps += b.getMPs(number);

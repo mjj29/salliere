@@ -39,7 +39,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -76,7 +75,7 @@ public class GSalliere extends Salliere
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             setContentPane(new JPanel(new BorderLayout()));
 
-            JTable data = new JTable(new HandTableDataModel(b.getHands()));
+            JTable data = new JTable(new HandTableDataModel(b));
             setSize(600, data.getRowHeight()*(b.getHands().size()+8));
             add(new JScrollPane(data), BorderLayout.CENTER);
 
@@ -94,12 +93,11 @@ public class GSalliere extends Salliere
       class BoardTableDataModel implements TableModel
       {
          private Board[] boards;
-         public BoardTableDataModel(Map boardv)
+         public BoardTableDataModel(List boards)
          {
-            if (null == boardv) return;
-            List sortedboards = new ArrayList(boardv.values());
-            Collections.sort(sortedboards, new BoardNumberComparer());
-            this.boards = (Board[]) sortedboards.toArray(new Board[0]);
+            if (null == boards) return;
+            Collections.sort(boards, new BoardNumberComparer());
+            this.boards = (Board[]) boards.toArray(new Board[0]);
          }
          public int getRowCount()
          { return null == boards ? 1 : boards.length+1; }
@@ -125,8 +123,7 @@ public class GSalliere extends Salliere
          }
          public boolean isCellEditable(int rowIndex, int columnIndex)
          { 
-            if (null == boards) return false;
-            else return columnIndex==0 && rowIndex < boards.length; 
+            return columnIndex==0;
          }
          public Object getValueAt(int rowIndex, int columnIndex)
          {
@@ -148,18 +145,28 @@ public class GSalliere extends Salliere
          }
          public void setValueAt(Object aValue, int rowIndex, int columnIndex)
          {
-            if (null == boards) return;
-            else if (rowIndex >= boards.length) return;
-            else 
-               switch (columnIndex) {
-                  case 0: 
-                     boards[rowIndex].setNumber((String) aValue);
-                     for (Hand h: (Hand[]) boards[rowIndex].getHands().toArray(new Hand[0]))  
-                        h.setNumber((String) aValue);
-                     break;
-                  default:
-                     break;
-               }
+            if (null == boards) {
+               GSalliere.boards = new Vector();
+               boards = new Board[1];
+               boards[0] = new Board();
+               rowIndex = 0;
+               GSalliere.boards.add(boards[0]);
+            }
+            else if (rowIndex >= boards.length) {
+               Board[] t = new Board[boards.length+1];
+               System.arraycopy(boards, 0, t, 0, boards.length);
+               boards = t;
+               rowIndex = boards.length-1;
+               boards[rowIndex] = new Board();
+               GSalliere.boards.add(boards[rowIndex]);
+            }
+            switch (columnIndex) {
+               case 0: 
+                  boards[rowIndex].setNumber((String) aValue);
+                  break;
+               default:
+                  break;
+            }
          }
          public void addTableModelListener(TableModelListener l) {}
          public void removeTableModelListener(TableModelListener l) {}
@@ -173,8 +180,11 @@ public class GSalliere extends Salliere
       class HandTableDataModel implements TableModel
       {
          private Hand[] hands;
-         public HandTableDataModel(List handv)
+         private Board b;
+         public HandTableDataModel(Board b)
          {
+            this.b = b;
+            List handv = b.getHands();
             if (null == handv) return;
             Collections.sort(handv, new HandNSComparer());
             this.hands = (Hand[]) handv.toArray(new Hand[0]);
@@ -206,7 +216,7 @@ public class GSalliere extends Salliere
                case 1: 
                case 2: 
                case 3: return String.class;
-               case 4: return Character.class;
+               case 4: return String.class;
                case 5: return Integer.class;
                case 6: 
                case 7: 
@@ -217,8 +227,7 @@ public class GSalliere extends Salliere
          }
          public boolean isCellEditable(int rowIndex, int columnIndex)
          {
-            if (null == hands) return false;
-            else return rowIndex < hands.length && columnIndex > 0;
+            return columnIndex > 0;
          }
          public Object getValueAt(int rowIndex, int columnIndex)
          {
@@ -252,9 +261,21 @@ public class GSalliere extends Salliere
          }
          public void setValueAt(Object aValue, int rowIndex, int columnIndex)
          {
-            if (null == hands) return;
-            else if (rowIndex >= hands.length) return;
-            else 
+            try {
+               if (null == hands) {
+                  hands = new Hand[1];
+                  hands[0] = new Hand();
+                  rowIndex = 0;
+                  b.addHand(hands[0]);
+               }
+               else if (rowIndex >= hands.length) {
+                  Hand[] t = new Hand[hands.length+1];
+                  System.arraycopy(hands, 0, t, 0, hands.length);
+                  hands = t;
+                  rowIndex = hands.length-1;
+                  hands[rowIndex] = new Hand();
+                  b.addHand(hands[rowIndex]);
+               }
                switch (columnIndex) {
                   case 1: hands[rowIndex].setNS((String) aValue);
                           break;
@@ -262,7 +283,10 @@ public class GSalliere extends Salliere
                           break;
                   case 3: hands[rowIndex].setContract((String) aValue);
                           break;
-                  case 4: hands[rowIndex].setDeclarer((Character) aValue);
+                  case 4: 
+                          for (int i = 0; i < ((String) aValue).length(); i++)
+                             if (((String) aValue).charAt(i) != ' ')
+                                hands[rowIndex].setDeclarer(((String) aValue).charAt(i));
                           break;
                   case 5: hands[rowIndex].setTricks((Integer) aValue);
                           break;
@@ -277,6 +301,10 @@ public class GSalliere extends Salliere
                   default:
                           break;
                }
+            } catch (BoardValidationException BVe) {
+               if (Debug.debug) Debug.print(BVe);
+               showerror("Problem while exporting: "+BVe);
+            }
          }
          public void addTableModelListener(TableModelListener l) {}
          public void removeTableModelListener(TableModelListener l) {}
@@ -284,12 +312,11 @@ public class GSalliere extends Salliere
       class PairTableDataModel implements TableModel
       {
          private Pair[] pairs;
-         public PairTableDataModel(Map pairv)
+         public PairTableDataModel(List pairs)
          {
-            if (null == pairv) return;
-            List sortedpairs = new ArrayList(pairv.values());
-            Collections.sort(sortedpairs, new PairNumberComparer());
-            this.pairs = (Pair[]) sortedpairs.toArray(new Pair[0]);
+            if (null == pairs) return;
+            Collections.sort(pairs, new PairNumberComparer());
+            this.pairs = (Pair[]) pairs.toArray(new Pair[0]);
          }
          public int getRowCount()
          { return null == pairs ? 1 : pairs.length+1; }
@@ -321,8 +348,7 @@ public class GSalliere extends Salliere
          }
          public boolean isCellEditable(int rowIndex, int columnIndex)
          {
-            if (null == pairs) return false;
-            else return rowIndex < pairs.length;
+            return true;
          }
          public Object getValueAt(int rowIndex, int columnIndex)
          {
@@ -342,31 +368,43 @@ public class GSalliere extends Salliere
          }
          public void setValueAt(Object aValue, int rowIndex, int columnIndex)
          {
-            if (null == pairs) return;
-            else if (rowIndex >= pairs.length) return;
-            else 
-               switch (columnIndex) {
-                  case 0: pairs[rowIndex].setNumber((String) aValue);
-                          break;
-                  case 1: 
-                          String[] names = pairs[rowIndex].getNames();
-                          names[0] = (String) aValue;
-                          pairs[rowIndex].setNames(names);
-                          break;
-                  case 2: 
-                          names = pairs[rowIndex].getNames();
-                          names[1] = (String) aValue;
-                          pairs[rowIndex].setNames(names);
-                          break;
-                  case 3: pairs[rowIndex].setMPs((Double) aValue);
-                          break;
-                  case 4: pairs[rowIndex].setPercentage((Double) aValue);
-                          break;
-                  case 5: pairs[rowIndex].setLPs((Double) aValue);
-                          break;
-                  default:
-                          break;
-               }
+            if (null == pairs) {
+               GSalliere.pairs = new Vector();
+               pairs = new Pair[1];
+               pairs[0] = new Pair();
+               rowIndex = 0;
+               GSalliere.pairs.add(pairs[0]);
+            }
+            else if (rowIndex >= pairs.length) {
+               Pair[] t = new Pair[pairs.length+1];
+               System.arraycopy(pairs, 0, t, 0, pairs.length);
+               pairs = t;
+               rowIndex = pairs.length-1;
+               pairs[rowIndex] = new Pair();
+               GSalliere.pairs.add(pairs[rowIndex]);
+            }
+            switch (columnIndex) {
+               case 0: pairs[rowIndex].setNumber((String) aValue);
+                       break;
+               case 1: 
+                       String[] names = pairs[rowIndex].getNames();
+                       names[0] = (String) aValue;
+                       pairs[rowIndex].setNames(names);
+                       break;
+               case 2: 
+                       names = pairs[rowIndex].getNames();
+                       names[1] = (String) aValue;
+                       pairs[rowIndex].setNames(names);
+                       break;
+               case 3: pairs[rowIndex].setMPs((Double) aValue);
+                       break;
+               case 4: pairs[rowIndex].setPercentage((Double) aValue);
+                       break;
+               case 5: pairs[rowIndex].setLPs((Double) aValue);
+                       break;
+               default:
+                       break;
+            }
          }
          public void addTableModelListener(TableModelListener l) {}
          public void removeTableModelListener(TableModelListener l) {}
@@ -395,17 +433,15 @@ public class GSalliere extends Salliere
                       boardfile = f.getCanonicalPath();
                       status.setText("Loading Boards from "+boardfile);
                       boards = readBoards(new FileInputStream(f));
-                      for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
-                         b.validate();
                       boardtable.setModel(new BoardTableDataModel(boards));
                       status.setText("Loaded Boards from "+boardfile);
-                   } catch (BoardValidationException BVe) {
-                      if (Debug.debug) Debug.print(BVe);
-                      showerror("Problem loading boards file: "+BVe);
-                      boards = null;
                    } catch (IOException IOe) {
                       if (Debug.debug) Debug.print(IOe);
                       showerror("Problem loading boards file: "+IOe);
+                      boards = null;
+                   } catch (BoardValidationException BVe) {
+                      if (Debug.debug) Debug.print(BVe);
+                      showerror("Problem loading boards file: "+BVe);
                       boards = null;
                    }
                 } else {
@@ -544,9 +580,15 @@ public class GSalliere extends Salliere
              } catch (ContractParseException CPe) {
                if (Debug.debug) Debug.print(CPe);
                showerror("Problem while performing action: "+CPe);
+             } catch (BoardValidationException BVe) {
+                if (Debug.debug) Debug.print(BVe);
+                showerror("Problem validating boards: "+BVe);
              } catch (MovementVerificationException MVe) {
                if (Debug.debug) Debug.print(MVe);
                showerror("Problem while performing action: "+MVe);
+             } catch (HandParseException HPe) {
+               if (Debug.debug) Debug.print(HPe);
+               showerror("Problem while performing action: "+HPe);
              }
          }
       }
@@ -817,11 +859,11 @@ public class GSalliere extends Salliere
       }
    }
 
-   private static Map boards;
+   private static List boards;
    private static String boardfile;
    private static String namesfile;
    private static String outputfile;
-   private static Map pairs;
+   private static List pairs;
 
    public static void main(String[] args)
    {
@@ -834,12 +876,6 @@ public class GSalliere extends Salliere
 
             try {
                boards = readBoards(new FileInputStream(boardfile));
-               for (Board b: (Board[]) boards.values().toArray(new Board[0])) 
-                  b.validate();
-            } catch (BoardValidationException BVe) {
-               if (Debug.debug) Debug.print(BVe);
-               System.out.println("Problem loading boards file: "+BVe);
-               boards = null;
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
                System.out.println("Problem loading boards file: "+IOe);

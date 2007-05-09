@@ -38,7 +38,11 @@ public class Board
       }
    }
    Vector/*<Hand>*/ hands;
-   String number;
+   String number = "";
+   public Board() 
+   {
+      this.hands = new Vector();
+   }
    public Board(String number)
    {
       this.number = number;
@@ -70,10 +74,13 @@ public class Board
       }
    }
    public String getNumber() { return number; }
-   public void addHand(Hand h) 
+   public void addHand(Hand h) throws BoardValidationException
    {
       if (Debug.debug)
          Debug.print("Adding hand to board: "+number+"/"+hands.size()+" "+h);
+      if (h.getNumber().length() == 0)
+         h.setNumber(number);
+      else if (!h.getNumber().equals(number)) throw new BoardValidationException("This Hand is number "+h.getNumber()+" but this is board "+number);
       hands.add(h); 
    }
    public List/*<Hand>*/ getHands() { return hands; }
@@ -115,7 +122,12 @@ public class Board
          }
       }
    }
-   public void setNumber(String number) { this.number = number; }
+   public void setNumber(String number) 
+   { 
+      this.number = number; 
+      for (Hand h: (Hand[]) hands.toArray(new Hand[0]))
+         h.setNumber(number);
+   }
    public String toString() 
    { 
       return "Board number "+number+", played "+hands.size()+" times.";

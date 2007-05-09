@@ -31,10 +31,10 @@ public class Hand
    public static final int AVERAGE=1;
    public static final int AVERAGE_MINUS=2;
    public static final int AVERAGE_PLUS=3;
-   String number;
-   String ns;
-   String ew;
-   String contract;
+   String number = "";
+   String ns = "";
+   String ew = "";
+   String contract = "";
    char declarer = ' ';
    int tricks;
    double nsscore;
@@ -43,6 +43,9 @@ public class Hand
    double ewmp;
    int ewavetype;
    int nsavetype;
+   public Hand()
+   {
+   }
    public Hand(String[] data) throws HandParseException
    {
       if (data.length < 4) 
@@ -122,11 +125,17 @@ public class Hand
                this.declarer = data[4].charAt(0);
       }
    }
-   public void score() throws ScoreException, ContractParseException
+   public void score() throws ScoreException, ContractParseException, HandParseException
    {
       String[] n = number.split(":");
       String[] v = n[n.length-1].split(";");
-      int num = Integer.parseInt(v[0]);
+      int num = 0;
+      try {
+         num = Integer.parseInt(v[0]);
+      } catch (NumberFormatException NFe) { 
+         if (Debug.debug) Debug.print(NFe); 
+         throw new HandParseException("Invalid Hand Number: "+number);
+      }
       int vul = Contract.NONE;
       if (v.length == 1) {
          switch (num%16) {
