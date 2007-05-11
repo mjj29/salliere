@@ -106,12 +106,13 @@ public class Board
             return true;
       return false;
    }
-   public void validate() throws BoardValidationException
+   public void validate() throws BoardValidationException, HandParseException
    {
       // conditions:
       // no pair plays the board twice
       Set seen = new TreeSet();
       for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
+         h.check();
          if (seen.contains(h.getNS()))
             throw new BoardValidationException("Board "+number+" has been played by pair "+h.getNS()+" twice.");
          else if (seen.contains(h.getEW()))

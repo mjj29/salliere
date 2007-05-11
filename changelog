@@ -9,6 +9,8 @@ Version 0.3:
 	* gsalliere graphical frontend
 	* get version from jar
 	* add itext to INSTALL info
+	* don't write files when they weren't modified
+	* check that only NSEW can be declarer
 
 Version 0.2:
 

@@ -197,6 +197,34 @@ public class Hand
       }
    }
 
+   public void check() throws HandParseException
+   {
+      switch (declarer) {
+         case 'n':
+         case 's':
+         case 'e':
+         case 'w':
+         case 'N':
+         case 'S':
+         case 'E':
+         case 'W':
+            break;
+         default:
+            throw new HandParseException("Declarer should be one of NSEW, it is actually "+declarer);
+      }
+      if (tricks > 13)
+            throw new HandParseException("Cannot take "+tricks+" tricks!");
+      try {
+         new Contract(contract, declarer, 0, tricks);
+      } catch (ContractParseException CPe) {
+         if (Debug.debug) Debug.print(CPe);
+         throw new HandParseException("Failed to parse contract on board "+number+": "+contract);
+      } catch (NoContractException NCe) {
+         if (Debug.debug) Debug.print(NCe);
+         throw new HandParseException("Failed to parse contract on board "+number+": "+contract);
+      }
+   }
+
    public String getNumber() { return number; }
    public String getNS() { return ns; }
    public String getEW() { return ew; }

@@ -164,9 +164,10 @@ public class Salliere
       for (Board b: (Board[]) boards.toArray(new Board[0])) 
          for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
             h.score();
+      modifiedboards = true;
    }
 
-   public static void verify(List boardv, String setsize) throws MovementVerificationException, BoardValidationException
+   public static void verify(List boardv, String setsize) throws MovementVerificationException, BoardValidationException, HandParseException
    {
       for (Board b: (Board[]) boardv.toArray(new Board[0])) 
          b.validate();
@@ -203,12 +204,14 @@ public class Salliere
    {
       for (Board b: (Board[]) boards.toArray(new Board[0])) 
          b.matchPoint();
+      modifiedboards = true;
    }
 
    public static void total(List pairs, List boards)
    {
       for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
          p.total(boards);
+      modifiedpairs = true;
    }
 
    public static void matrix(List pairv, List boardv, TablePrinter tabular) 
@@ -287,6 +290,7 @@ public class Salliere
             ps[j].setLPs(award);
          }
       }
+      modifiedpairs = true;
    }
 
    public static void results(List pairs, TablePrinter tabulate, String points)
@@ -300,6 +304,9 @@ public class Salliere
                (String[][]) results.toArray(new String[0][]));
       tabulate.gap();
    }
+
+   public static boolean modifiedpairs = false;
+   public static boolean modifiedboards = false;
 
    public static void main(String[] args)
    {
@@ -352,7 +359,6 @@ public class Salliere
          List pairs;
 
          boards = readBoards(new FileInputStream(args[i+1]));
-
          pairs = readPairs(new FileInputStream(args[i+2]));
 
          TablePrinter tabular = null;
@@ -400,8 +406,10 @@ public class Salliere
          tabular.close();
          out.close();
      
-         writeBoards(boards, new FileOutputStream(args[i+1]));
-         writePairs(pairs, new FileOutputStream(args[i+2]));
+         if (modifiedboards) 
+            writeBoards(boards, new FileOutputStream(args[i+1]));
+         if (modifiedpairs) 
+            writePairs(pairs, new FileOutputStream(args[i+2]));
       } catch (Exception e) {
          if (Debug.debug) {
             Debug.setThrowableTraces(true);
