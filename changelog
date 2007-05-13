@@ -11,6 +11,7 @@ Version 0.3:
 	* add itext to INSTALL info
 	* don't write files when they weren't modified
 	* check that only NSEW can be declarer
+	* don't add class-path on debug when it's disabled
 
 Version 0.2:
 

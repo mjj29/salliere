@@ -70,13 +70,21 @@ testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itex
 
 SalliereManifest.txt: Manifest.txt.in
 	echo Main-Class: cx.ath.matthew.salliere.Salliere > $@
+ifeq ($(DEBUG),enable)
 	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/itext.jar >> $@
+else
+	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/itext.jar >> $@
+endif
 	cat $< >> $@
 	echo "Implementation-Version: $(VERSION)" >> $@
 
 GSalliereManifest.txt: Manifest.txt.in
 	echo Main-Class: cx.ath.matthew.salliere.GSalliere > $@
+ifeq ($(DEBUG),enable)
 	echo Class-Path: $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/salliere-$(VERSION).jar >> $@
+else
+	echo Class-Path: $(JARDIR)/salliere-$(VERSION).jar >> $@
+endif
 	cat $< >> $@
 	echo "Implementation-Version: $(VERSION)" >> $@
 
