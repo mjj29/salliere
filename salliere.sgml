@@ -112,6 +112,13 @@ manpage.1: manpage.sgml
     <!-- score matchpoint total localpoint results matrix boards -->
     <variablelist>
       <varlistentry>
+        <term>verify</term>
+        <listitem>
+          <para>Checks all the boards look sane; can be used with
+                the --setsize option to check the movement</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term>score</term>
         <listitem>
           <para>Calculates tricks and score for each contract</para>
@@ -168,6 +175,12 @@ manpage.1: manpage.sgml
         <term>--help</term>
         <listitem>
           <para>Prints the help text</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--setsize=N</term>
+        <listitem>
+          <para>Check the movement based on sets of size N</para>
         </listitem>
       </varlistentry>
       <varlistentry>

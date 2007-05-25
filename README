@@ -39,6 +39,11 @@ either by hand or with the appropriate commands so they can be printed.
 
 The commands are as follows:
       
+   verify
+        
+      Checks all the boards look sane; can be used with 
+      the --setsize option to check the movement.
+   
    score
         
       Calculates tricks and score for each contract
@@ -81,6 +86,10 @@ Here are the possible options:
    --title=title 
    
       Changes the title on the output
+
+   --setsize=N 
+   
+      Check the movement based on sets of size N
 
    --output=format:file
       
