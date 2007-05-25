@@ -215,11 +215,11 @@ public class GSalliere extends Salliere
                case 0: 
                case 1: 
                case 2: 
-               case 3: return String.class;
-               case 4: return String.class;
+               case 3: 
+               case 4: 
+               case 6:
+               case 7: return String.class;
                case 5: return Integer.class;
-               case 6: 
-               case 7: 
                case 8: 
                case 9: return Double.class;
                default: return null;
@@ -252,8 +252,18 @@ public class GSalliere extends Salliere
                   case 3: return hands[rowIndex].getContract();
                   case 4: return hands[rowIndex].getDeclarer();
                   case 5: return hands[rowIndex].getTricks();
-                  case 6: return hands[rowIndex].getNSScore();
-                  case 7: return hands[rowIndex].getEWScore();
+                  case 6: switch (hands[rowIndex].getNSAverage()) {
+                             case Hand.AVERAGE: return "av=";
+                             case Hand.AVERAGE_PLUS: return "av+";
+                             case Hand.AVERAGE_MINUS: return "av-";
+                             default: return hands[rowIndex].getNSScore();
+                          }
+                  case 7: switch (hands[rowIndex].getEWAverage()) {
+                             case Hand.AVERAGE: return "av=";
+                             case Hand.AVERAGE_PLUS: return "av+";
+                             case Hand.AVERAGE_MINUS: return "av-";
+                             default: return hands[rowIndex].getEWScore();
+                          }
                   case 8: return hands[rowIndex].getNSMP();
                   case 9: return hands[rowIndex].getEWMP();
                   default: return null;
@@ -290,9 +300,9 @@ public class GSalliere extends Salliere
                           break;
                   case 5: hands[rowIndex].setTricks((Integer) aValue);
                           break;
-                  case 6: hands[rowIndex].setNSScore((Double) aValue);
+                  case 6: hands[rowIndex].setNSScore((String) aValue);
                           break;
-                  case 7: hands[rowIndex].setEWScore((Double) aValue);
+                  case 7: hands[rowIndex].setEWScore((String) aValue);
                           break;
                   case 8: hands[rowIndex].setNSMP((Double) aValue);
                           break;
@@ -301,6 +311,9 @@ public class GSalliere extends Salliere
                   default:
                           break;
                }
+            } catch (HandParseException HPe) {
+               if (Debug.debug) Debug.print(HPe);
+               showerror("Problem while entering score: "+HPe);
             } catch (BoardValidationException BVe) {
                if (Debug.debug) Debug.print(BVe);
                showerror("Problem while exporting: "+BVe);
@@ -871,8 +884,8 @@ public class GSalliere extends Salliere
          if (Debug.debug) Debug.setThrowableTraces(true);
 
          if (args.length == 2) {
-            boardfile = args[0];
-            namesfile = args[1];
+            boardfile = new File(args[0]).getCanonicalPath();
+            namesfile = new File(args[1]).getCanonicalPath();
 
             try {
                boards = readBoards(new FileInputStream(boardfile));

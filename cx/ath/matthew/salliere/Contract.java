@@ -285,6 +285,10 @@ public class Contract
    }
    public boolean getBeer()
    {
-      return true;
+      return beer;
+   }
+   public boolean isPassOut()
+   {
+      return "P.O.".equals(contract);
    }
 }

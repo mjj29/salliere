@@ -50,6 +50,10 @@ public class Board
    }
    public void matchPoint() throws ScoreException
    {
+      if (containsAverage()) {
+         if (Debug.debug) Debug.print("Ignoring board "+number+" because of average");
+         return;
+      }
       Collections.sort(hands, new HandScoreComparer());
       Hand[] hs = (Hand[]) hands.toArray(new Hand[0]);
       for (int i = 0; i < hs.length; i++) {
@@ -96,6 +100,12 @@ public class Board
          else if (h.getEW().equals(number))
             return h.getEWMP();
       return 0;
+   }
+   public boolean containsAverage()
+   {
+      for (Hand h: (Hand[]) hands.toArray(new Hand[0]))
+         if (h.isAveraged()) return true;
+      return false;
    }
    public boolean played(String number)
    {

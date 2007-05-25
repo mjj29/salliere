@@ -163,7 +163,8 @@ public class Salliere
    {
       for (Board b: (Board[]) boards.toArray(new Board[0])) 
          for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
-            h.score();
+            if (!h.isAveraged())
+               h.score();
       modifiedboards = true;
    }
 
@@ -229,7 +230,10 @@ public class Salliere
          matrix[i][0] = boards[i].getNumber();
          for (int j = 0; j < pairs.length; j++) {
             StringBuffer tmp = new StringBuffer();
-            matrix[i][j+1] = format.format(boards[i].getMPs(pairs[j].getNumber()), tmp, field).toString();
+            if (boards[i].played(pairs[j].getNumber()))
+               matrix[i][j+1] = format.format(boards[i].getMPs(pairs[j].getNumber()), tmp, field).toString();
+            else
+               matrix[i][j+1] = " ";
          }
       }
 

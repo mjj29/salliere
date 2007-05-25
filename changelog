@@ -12,11 +12,14 @@ Version 0.3:
 	* don't write files when they weren't modified
 	* check that only NSEW can be declarer
 	* don't add class-path on debug when it's disabled
+	* output a space not a 0 in the matrix when a pair didn't play that board
+	  (Suggested by Ralph Owen <rho21 -at- cam -dot- ac -dot- uk)
+	* better average support
 
 Version 0.2:
 
 	* Only divide by the number of boards played for percentages, not all of 
-	  them (Spotted by Elizabeth Roberts <ehr24 -at- cam -dot- ac -dot- uk>
+	  them (Spotted by Elizabeth Roberts <ehr24 -at- cam -dot- ac -dot- uk>)
 	* Output to file and output in HTML and PDF formats.
 	* Calculate LP/OPs
 	* Support section numbering for boards

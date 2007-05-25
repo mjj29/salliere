@@ -199,29 +199,30 @@ public class Hand
 
    public void check() throws HandParseException
    {
-      switch (declarer) {
-         case 'n':
-         case 's':
-         case 'e':
-         case 'w':
-         case 'N':
-         case 'S':
-         case 'E':
-         case 'W':
-            break;
-         default:
-            throw new HandParseException("Declarer should be one of NSEW, it is actually "+declarer);
-      }
-      if (tricks > 13)
-            throw new HandParseException("Cannot take "+tricks+" tricks!");
       try {
-         new Contract(contract, declarer, 0, tricks);
+         if (tricks > 13)
+               throw new HandParseException("Cannot take "+tricks+" tricks!");
+         Contract c = new Contract(contract, declarer, 0, tricks);
+         if (!c.isPassOut())
+            switch (declarer) {
+               case 'n':
+               case 's':
+               case 'e':
+               case 'w':
+               case 'N':
+               case 'S':
+               case 'E':
+               case 'W':
+                  break;
+               default:
+                  throw new HandParseException("On board "+number+" declarer should be one of NSEW, it is actually "+declarer);
+            }
       } catch (ContractParseException CPe) {
          if (Debug.debug) Debug.print(CPe);
          throw new HandParseException("Failed to parse contract on board "+number+": "+contract);
       } catch (NoContractException NCe) {
          if (Debug.debug) Debug.print(NCe);
-         throw new HandParseException("Failed to parse contract on board "+number+": "+contract);
+         /* not assigning scores on hands which have no contract. Must be averages or something. */
       }
    }
 
@@ -235,6 +236,9 @@ public class Hand
    public double getNSScore() { return nsscore; }
    public int getTricks() { return tricks; }
    public char getDeclarer() { return declarer; }
+   public boolean isAveraged() { return !(0 == ewavetype && 0 == nsavetype); }
+   public int getEWAverage() { return ewavetype; }
+   public int getNSAverage() { return ewavetype; }
 
    public void setNSMP(double mp) { nsmp = mp; }
    public void setEWMP(double mp) { ewmp = mp; }
@@ -246,6 +250,54 @@ public class Hand
    public void setNSScore(double nsscore) { this.nsscore = nsscore; }
    public void setTricks(int tricks) { this.tricks = tricks; }
    public void setDeclarer(char declarer) { this.declarer = declarer; }
+   public void setEWScore(String ewscore) throws HandParseException
+   {
+      if (0 < ewscore.length())
+         try { this.ewscore = Double.parseDouble(ewscore);
+         } catch (NumberFormatException NFe) { 
+            if (Debug.debug) Debug.print(NFe);
+            String av = ewscore.toLowerCase();
+            if (av.startsWith("av") && av.length() == 3)
+               switch (av.charAt(2)) {
+                  case '=':
+                     ewavetype = AVERAGE;
+                     break;
+                  case '+':
+                     ewavetype = AVERAGE_PLUS;
+                     break;
+                  case '-':
+                     ewavetype = AVERAGE_MINUS;
+                     break;
+                  default:
+                     throw new HandParseException("Invalid Average: "+ewscore);
+               }
+            else throw new HandParseException("Invalid Score: "+ewscore);
+         }
+   }
+   public void setNSScore(String nsscore) throws HandParseException
+   { 
+      if (0 < nsscore.length())
+         try { this.nsscore = Double.parseDouble(nsscore);
+         } catch (NumberFormatException NFe) { 
+            if (Debug.debug) Debug.print(NFe);
+            String av = nsscore.toLowerCase();
+            if (av.startsWith("av") && av.length() == 3)
+               switch (av.charAt(2)) {
+                  case '=':
+                     nsavetype = AVERAGE;
+                     break;
+                  case '+':
+                     nsavetype = AVERAGE_PLUS;
+                     break;
+                  case '-':
+                     nsavetype = AVERAGE_MINUS;
+                     break;
+                  default:
+                     throw new HandParseException("Invalid Average: "+nsscore);
+               }
+            else throw new HandParseException("Invalid Score: "+nsscore);
+         }
+   }
 
    public String toString() 
    { 
