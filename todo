@@ -2,6 +2,7 @@
  * Support scaling for split boards
  * check movements
  * support adjusted scores
+ * Support fines
  * gsalliere
    - save button
    - disable menu entries and save button when they can't be used
