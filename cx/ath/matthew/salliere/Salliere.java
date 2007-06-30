@@ -203,8 +203,10 @@ public class Salliere
 
    public static void matchpoint(List boards) throws ScoreException
    {
-      for (Board b: (Board[]) boards.toArray(new Board[0])) 
+      for (Board b: (Board[]) boards.toArray(new Board[0])) {
+         b.matchPointA();
          b.matchPoint();
+      }
       modifiedboards = true;
    }
 
