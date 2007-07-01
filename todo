@@ -1,7 +1,6 @@
- * Support averages
  * Support scaling for split boards
  * check movements
- * support adjusted scores
+ * support adjusted scores (will then support split adjusted scores)
  * Support fines
  * gsalliere
    - save button

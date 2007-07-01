@@ -32,11 +32,20 @@ import java.util.Vector;
 
 public class Board
 {
-   class HandScoreComparer implements Comparator {
+   class HandScoreNSComparer implements Comparator {
       public int compare(Object obj1, Object obj2)
       {
-         return (int) (((Hand) obj2).getNSScore() - ((Hand) obj2).getEWScore() + 
-                       ((Hand) obj1).getEWScore() - ((Hand) obj1).getNSScore());
+         double score1 = ( 0 == ((Hand) obj1).getNSScore() ) ? - ((Hand) obj1).getEWScore() : ((Hand) obj1).getNSScore();
+         double score2 = ( 0 == ((Hand) obj2).getNSScore() ) ? - ((Hand) obj2).getEWScore() : ((Hand) obj2).getNSScore();
+         return (int) (score1 - score2);
+      }
+   }
+   class HandScoreEWComparer implements Comparator {
+      public int compare(Object obj1, Object obj2)
+      {
+         double score1 = ( 0 == ((Hand) obj1).getEWScore() ) ? - ((Hand) obj1).getNSScore() : ((Hand) obj1).getEWScore();
+         double score2 = ( 0 == ((Hand) obj2).getEWScore() ) ? - ((Hand) obj2).getNSScore() : ((Hand) obj2).getEWScore();
+         return (int) (score1 - score2);
       }
    }
    Vector/*<Hand>*/ hands;
@@ -50,37 +59,50 @@ public class Board
       this.number = number;
       this.hands = new Vector/*<Hand>*/();
    }
-   public void matchPointA() throws ScoreException
+   public void matchPoint() throws ScoreException
    {
-      // order by (NS score) - (EW score)
-      Collections.sort(hands, new HandScoreComparer());
-      Hand[] hs = (Hand[]) hands.toArray(new Hand[0]);
+      // order by (NS score) and (EW score)
+      Collections.sort(hands, new HandScoreNSComparer());
+      Hand[] nshs = (Hand[]) hands.toArray(new Hand[0]);
+      Collections.sort(hands, new HandScoreEWComparer());
+      Hand[] ewhs = (Hand[]) hands.toArray(new Hand[0]);
 
       // create score-frequency table
       Map ewfrequencies = new HashMap();
       Map nsfrequencies = new HashMap();
       int avcount = 0;
-      for (int i = 0; i < hs.length; i++) {
-         if (Debug.debug) Debug.print(hs[i]);
-         if (hs[i].isAveraged())
+      for (int i = 0; i < nshs.length; i++) {
+         if (Debug.debug) Debug.print(nshs[i]);
+         double score = (0 == nshs[i].getNSScore()) ? - nshs[i].getEWScore() : nshs[i].getNSScore();
+         if (nshs[i].isAveraged()) {
+            if (Debug.debug) Debug.print("Average on "+nshs[i]);
             avcount++;
-         else {
-            Double freq = (Double) nsfrequencies.get(hs[i].getNSScore());
+         } else {
+            Double freq = (Double) nsfrequencies.get(score);
             if (null != freq)
-               nsfrequencies.put(hs[i].getNSScore(),freq+1.0);
+               nsfrequencies.put(score,freq+1.0);
             else
-               nsfrequencies.put(hs[i].getNSScore(),1.0);
+               nsfrequencies.put(score,1.0);
+         }
+      }
 
-            freq = (Double) ewfrequencies.get(hs[i].getEWScore());
+      for (int i = 0; i < ewhs.length; i++) {
+         if (Debug.debug) Debug.print(ewhs[i]);
+         double score = (0 == ewhs[i].getEWScore()) ? - ewhs[i].getNSScore() : ewhs[i].getEWScore();
+         if (ewhs[i].isAveraged())
+            ;
+         else {
+            Double freq = (Double) ewfrequencies.get(score);
             if (null != freq)
-               ewfrequencies.put(hs[i].getEWScore(),freq+1.0);
+               ewfrequencies.put(score,freq+1.0);
             else
-               ewfrequencies.put(hs[i].getEWScore(),1.0);
+               ewfrequencies.put(score,1.0);
          }
       }
 
       // increase frequencies for averages
-      double increment = 1.0 + ( (double) avcount / (double) ( hs.length - avcount ) );
+      double increment = 1.0 + ( (double) avcount / (double) ( nshs.length - avcount ) );
+      if (Debug.debug) Debug.print("Got "+avcount+" averages, increment = "+increment);
       for (Double f: (Double[]) ewfrequencies.keySet().toArray(new Double[0]))
          ewfrequencies.put(f, ((Double) ewfrequencies.get(f))*increment);
       for (Double f: (Double[]) nsfrequencies.keySet().toArray(new Double[0]))
@@ -90,74 +112,59 @@ public class Board
       double ave = 0.50 * getTop();
       double avm = 0.40 * getTop();
 
-      for (int i = 0; i < hs.length; i++) {
-         double ewmps = 0.0;
+      for (int i = 0; i < nshs.length; i++) {
          double nsmps = 0.0;
-         if (hs[i].isAveraged()) {
-            switch (hs[i].getEWAverage()) {
-               case Hand.AVERAGE: ewmps = ave;
-                                  break;
-               case Hand.AVERAGE_PLUS: ewmps = avp;
-                                       break;
-               case Hand.AVERAGE_MINUS: ewmps = avm;
-                                        break;
-            }
-            switch (hs[i].getNSAverage()) {
+         double score = (0 == nshs[i].getNSScore()) ? - nshs[i].getEWScore() : nshs[i].getNSScore();
+            switch (nshs[i].getNSAverage()) {
                case Hand.AVERAGE: nsmps = ave;
                                   break;
                case Hand.AVERAGE_PLUS: nsmps = avp;
                                        break;
                case Hand.AVERAGE_MINUS: nsmps = avm;
                                         break;
-            }
-         } else {
-            nsmps = ((Double) nsfrequencies.get(hs[i].getNSScore())) - 1;
+               default:
+            nsmps = ((Double) nsfrequencies.get(score)) - 1;
             for (Double f: (Double[]) nsfrequencies.keySet().toArray(new Double[0]))
-               if (f < hs[i].getNSScore()) nsmps += ( 2 * ((Double) nsfrequencies.get(f)) );
+               if (f < score) nsmps += ( 2 * ((Double) nsfrequencies.get(f)) );
 
-            ewmps = ((Double) ewfrequencies.get(hs[i].getEWScore())) - 1;
-            for (Double f: (Double[]) ewfrequencies.keySet().toArray(new Double[0]))
-               if (f < hs[i].getEWScore()) ewmps += ( 2 * ((Double) ewfrequencies.get(f)) );
          }
 
-         if (hs[i].getNSMP() != nsmps && hs[i].getNSMP() > 0) throw new ScoreException("Calculated "+nsmps+" MPs for NS, but hand says: "+hs[i]);
-         hs[i].setNSMP(nsmps);
+         if (nshs[i].getNSMP() == 0 || (
+             nshs[i].getNSMP() - nsmps <= 0.005 &&
+             nshs[i].getNSMP() - nsmps > -0.005))
+            nshs[i].setNSMP(nsmps);
+         else
+            throw new ScoreException("Calculated "+nsmps+" MPs for NS, but hand says: "+nshs[i]);
          if (Debug.debug) Debug.print("Setting NSMP on board "+number+" to "+nsmps);
+      }
 
-         if (hs[i].getEWMP() != ewmps && hs[i].getEWMP() > 0) throw new ScoreException("Calculated "+ewmps+" MPs for EW, but hand says: "+hs[i]);
-         hs[i].setEWMP(ewmps);
+      for (int i = 0; i < ewhs.length; i++) {
+         double ewmps = 0.0;
+         double score = (0 == ewhs[i].getEWScore()) ? - ewhs[i].getNSScore() : ewhs[i].getEWScore();
+            switch (ewhs[i].getEWAverage()) {
+               case Hand.AVERAGE: ewmps = ave;
+                                  break;
+               case Hand.AVERAGE_PLUS: ewmps = avp;
+                                       break;
+               case Hand.AVERAGE_MINUS: ewmps = avm;
+                                        break;
+               default:
+            ewmps = ((Double) ewfrequencies.get(score)) - 1;
+            for (Double f: (Double[]) ewfrequencies.keySet().toArray(new Double[0]))
+               if (f < score) ewmps += ( 2 * ((Double) ewfrequencies.get(f)) );
+
+         }
+
+         if (ewhs[i].getEWMP() == 0 || (
+             ewhs[i].getEWMP() - ewmps <= 0.005 &&
+             ewhs[i].getEWMP() - ewmps > -0.005))
+            ewhs[i].setEWMP(ewmps);
+         else
+            throw new ScoreException("Calculated "+ewmps+" MPs for EW, but hand says: "+ewhs[i]);
          if (Debug.debug) Debug.print("Setting EWMP on board "+number+" to "+ewmps);
       }
-   }
 
-   public void matchPoint() throws ScoreException
-   {
-      if (containsAverage()) {
-         if (Debug.debug) Debug.print("Ignoring board "+number+" because of average");
-         return;
-      }
-      Collections.sort(hands, new HandScoreComparer());
-      Hand[] hs = (Hand[]) hands.toArray(new Hand[0]);
-      for (int i = 0; i < hs.length; i++) {
-         if (Debug.debug) Debug.print(hs[i]);
-         double mps = 0;
-         int j;
-         for (j = i-1; j >=0 && 
-                           hs[i].getNSScore() == hs[j].getNSScore() && 
-                           hs[i].getEWScore() == hs[j].getEWScore(); j--) mps++;
-         for (j = i+1; j < hs.length && 
-                           hs[i].getNSScore() == hs[j].getNSScore() && 
-                           hs[i].getEWScore() == hs[j].getEWScore(); j++) mps++;
-         mps += 2* (hs.length-j);
-         if (hs[i].getNSMP() != mps && hs[i].getNSMP() > 0) throw new ScoreException("Calculated "+mps+" MPs for NS, but hand says: "+hs[i]);
-         hs[i].setNSMP(mps);
-         if (Debug.debug) Debug.print("Setting NSMP on board "+number+" to "+mps);
-         mps = getTop()-mps;
-         if (hs[i].getEWMP() != mps && hs[i].getEWMP() > 0) throw new ScoreException("Calculated "+mps+" MPs for EW, but hand says: "+hs[i]);
-         hs[i].setEWMP(mps);
-         if (Debug.debug) Debug.print("Setting EWMP on board "+number+" to "+mps);
-         if (Debug.debug) Debug.print(hs[i]);
-      }
+
    }
    public String getNumber() { return number; }
    public void addHand(Hand h) throws BoardValidationException
