@@ -30,6 +30,13 @@ The commands will add tricks, scores and matchpoint columns to the boards file
 and total matchpoints, percentages and local/orange points to the names file as
 appropriate.
 
+Assigned/Adjusted scores and matchpoints can be entered into the file by
+prefixing them with an exclamation mark (!). Scores marked as such will
+override the calculated scores/MPs for the board.
+
+Averages are supported by putting av=/av+/av- in the appropriate score fields.
+Split scores are also supportedl
+
 By default the commands which print results will do so as ascii to stdout. This
 can be changed with the --output=format:file option. Formats are either pdf,
 html or txt and file is the path to a file or - for stdout.

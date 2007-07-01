@@ -31,6 +31,16 @@ public class Hand
    public static final int AVERAGE=1;
    public static final int AVERAGE_MINUS=2;
    public static final int AVERAGE_PLUS=3;
+
+   private boolean check_forced(String[] data, int ofs)
+   {
+      if ('!' == data[ofs].charAt(0)) {
+         data[ofs] = data[ofs].substring(1);
+         return true;
+      }
+      else return false;
+   }
+
    String number = "";
    String ns = "";
    String ew = "";
@@ -39,8 +49,12 @@ public class Hand
    int tricks;
    double nsscore;
    double ewscore;
+   boolean forced_nsscore;
+   boolean forced_ewscore;
    double nsmp;
    double ewmp;
+   boolean forced_nsmp;
+   boolean forced_ewmp;
    int ewavetype;
    int nsavetype;
    public Hand()
@@ -56,21 +70,26 @@ public class Hand
       this.contract = data[3];
       switch (data.length) {
          case 10:
-            if (0 < data[9].length())
+            if (0 < data[9].length()) {
+               forced_ewmp = check_forced(data, 9);
                try { this.ewmp = Double.parseDouble(data[9]);
                } catch (NumberFormatException NFe) { 
                   if (Debug.debug) Debug.print(NFe); 
                   throw new HandParseException("Invalid Number of Match Points: "+data[9]);
                }
+            }
          case 9:
-            if (0 < data[8].length())
+            if (0 < data[8].length()) {
+               forced_nsmp = check_forced(data, 8);
                try { this.nsmp = Double.parseDouble(data[8]);
                } catch (NumberFormatException NFe) { 
                   if (Debug.debug) Debug.print(NFe);
                   throw new HandParseException("Invalid Number of Match Points: "+data[8]);
                }
+            }
          case 8:
-            if (0 < data[7].length())
+            if (0 < data[7].length()) {
+               forced_ewscore = check_forced(data, 7);
                try { this.ewscore = Double.parseDouble(data[7]);
                } catch (NumberFormatException NFe) { 
                   if (Debug.debug) Debug.print(NFe);
@@ -91,8 +110,10 @@ public class Hand
                      }
                   else throw new HandParseException("Invalid Score: "+data[7]);
                }
+            }
          case 7:
-            if (0 < data[6].length())
+            if (0 < data[6].length()) {
+               forced_nsscore = check_forced(data, 6);
                try { this.nsscore = Double.parseDouble(data[6]);
                } catch (NumberFormatException NFe) {
                   if (Debug.debug) Debug.print(NFe);
@@ -113,6 +134,7 @@ public class Hand
                      }
                   else throw new HandParseException("Invalid Score: "+data[6]);
                }
+            }
          case 6:
             if (0 < data[5].length())
                try { this.tricks = Integer.parseInt(data[5]);
@@ -182,10 +204,14 @@ public class Hand
       Contract c;
       try {
          c = new Contract(contract, declarer, vul, tricks);
-         if (nsscore != 0 && nsscore != c.getNSScore()) throw new ScoreException("Calculated score as "+c.getNSScore()+" for NS but hand says "+this);
-         nsscore = c.getNSScore();
-         if (ewscore != 0 && ewscore != c.getEWScore()) throw new ScoreException("Calculated score as "+c.getEWScore()+" for EW but hand says "+this);
-         ewscore = c.getEWScore();
+         if (!forced_nsscore) {
+            if (nsscore != 0 && nsscore != c.getNSScore()) throw new ScoreException("Calculated score as "+c.getNSScore()+" for NS but hand says "+this);
+            nsscore = c.getNSScore();
+         }
+         if (!forced_ewscore) {
+            if (ewscore != 0 && ewscore != c.getEWScore()) throw new ScoreException("Calculated score as "+c.getEWScore()+" for EW but hand says "+this);
+            ewscore = c.getEWScore();
+         }
          if (tricks != 0 && tricks != c.getTricks()) throw new ScoreException("Calculated tricks as "+c.getTricks()+" but hand says "+this);
          tricks = c.getTricks();
          contract = c.getContract();
@@ -239,6 +265,10 @@ public class Hand
    public boolean isAveraged() { return !(0 == ewavetype && 0 == nsavetype); }
    public int getEWAverage() { return ewavetype; }
    public int getNSAverage() { return ewavetype; }
+   public boolean hasForcedNSMP() { return forced_nsmp; }
+   public boolean hasForcedEWMP() { return forced_ewmp; }
+   public boolean hasForcedNSScore() { return forced_nsscore; }
+   public boolean hasForcedEWScore() { return forced_ewscore; }
 
    public void setNSMP(double mp) { nsmp = mp; }
    public void setEWMP(double mp) { ewmp = mp; }
@@ -298,6 +328,10 @@ public class Hand
             else throw new HandParseException("Invalid Score: "+nsscore);
          }
    }
+   public void setForcedNSMP(boolean forced) { forced_nsmp = forced; }
+   public void setForcedEWMP(boolean forced) { forced_ewmp = forced; }
+   public void setForcedNSScore(boolean forced) { forced_nsscore = forced; }
+   public void setForcedEWScore(boolean forced) { forced_ewscore = forced; }
 
    public String toString() 
    { 
@@ -315,12 +349,16 @@ public class Hand
       sb.append(tricks);
       sb.append(" tricks. ");
       sb.append(nsscore);
+      if (forced_nsscore) sb.append(" (forced)");
       sb.append(" to NS ");
       sb.append(ewscore);
+      if (forced_ewscore) sb.append(" (forced)");
       sb.append(" to EW ");
       sb.append(nsmp);
+      if (forced_nsmp) sb.append(" (forced)");
       sb.append(" to NS ");
       sb.append(ewmp);
+      if (forced_ewmp) sb.append(" (forced)");
       sb.append(" to EW.");
       return sb.toString();
    }
@@ -349,7 +387,7 @@ public class Hand
             rv[6] = "av+";
             break;
          default:
-            rv[6] = format.format(nsscore, tmp, field).toString();
+            rv[6] = (forced_nsscore?"!":"") + format.format(nsscore, tmp, field).toString();
             break;
       }
 
@@ -365,15 +403,15 @@ public class Hand
             rv[7] = "av+";
             break;
          default:
-            rv[7] = format.format(ewscore, tmp, field).toString();
+            rv[7] = (forced_ewscore?"!":"") + format.format(ewscore, tmp, field).toString();
             break;
       }
 
       tmp = new StringBuffer();
-      rv[8] = format.format(nsmp, tmp, field).toString();
+      rv[8] = (forced_nsmp?"!":"") + format.format(nsmp, tmp, field).toString();
 
       tmp = new StringBuffer();
-      rv[9] = format.format(ewmp, tmp, field).toString();
+      rv[9] = (forced_ewmp?"!":"") + format.format(ewmp, tmp, field).toString();
 
       return rv;
    }

@@ -301,12 +301,16 @@ public class GSalliere extends Salliere
                   case 5: hands[rowIndex].setTricks((Integer) aValue);
                           break;
                   case 6: hands[rowIndex].setNSScore((String) aValue);
+                          hands[rowIndex].setForcedNSScore(true);
                           break;
                   case 7: hands[rowIndex].setEWScore((String) aValue);
+                          hands[rowIndex].setForcedEWScore(true);
                           break;
                   case 8: hands[rowIndex].setNSMP((Double) aValue);
+                          hands[rowIndex].setForcedNSMP(true);
                           break;
                   case 9: hands[rowIndex].setEWMP((Double) aValue);
+                          hands[rowIndex].setForcedEWMP(true);
                           break;
                   default:
                           break;

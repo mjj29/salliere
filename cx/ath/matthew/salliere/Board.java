@@ -129,13 +129,15 @@ public class Board
 
          }
 
-         if (nshs[i].getNSMP() == 0 || (
-             nshs[i].getNSMP() - nsmps <= 0.005 &&
-             nshs[i].getNSMP() - nsmps > -0.005))
-            nshs[i].setNSMP(nsmps);
-         else
-            throw new ScoreException("Calculated "+nsmps+" MPs for NS, but hand says: "+nshs[i]);
-         if (Debug.debug) Debug.print("Setting NSMP on board "+number+" to "+nsmps);
+         if (!nshs[i].hasForcedNSMP()) {
+            if (nshs[i].getNSMP() == 0 || (
+                     nshs[i].getNSMP() - nsmps <= 0.005 &&
+                     nshs[i].getNSMP() - nsmps > -0.005))
+               nshs[i].setNSMP(nsmps);
+            else
+               throw new ScoreException("Calculated "+nsmps+" MPs for NS, but hand says: "+nshs[i]);
+            if (Debug.debug) Debug.print("Setting NSMP on board "+number+" to "+nsmps);
+         }
       }
 
       for (int i = 0; i < ewhs.length; i++) {
@@ -155,16 +157,16 @@ public class Board
 
          }
 
-         if (ewhs[i].getEWMP() == 0 || (
-             ewhs[i].getEWMP() - ewmps <= 0.005 &&
-             ewhs[i].getEWMP() - ewmps > -0.005))
-            ewhs[i].setEWMP(ewmps);
-         else
-            throw new ScoreException("Calculated "+ewmps+" MPs for EW, but hand says: "+ewhs[i]);
-         if (Debug.debug) Debug.print("Setting EWMP on board "+number+" to "+ewmps);
+         if (!ewhs[i].hasForcedEWMP()) {
+            if (ewhs[i].getEWMP() == 0 || (
+                ewhs[i].getEWMP() - ewmps <= 0.005 &&
+                ewhs[i].getEWMP() - ewmps > -0.005))
+               ewhs[i].setEWMP(ewmps);
+            else
+               throw new ScoreException("Calculated "+ewmps+" MPs for EW, but hand says: "+ewhs[i]);
+            if (Debug.debug) Debug.print("Setting EWMP on board "+number+" to "+ewmps);
+         }
       }
-
-
    }
    public String getNumber() { return number; }
    public void addHand(Hand h) throws BoardValidationException
