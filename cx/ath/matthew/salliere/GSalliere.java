@@ -572,6 +572,10 @@ public class GSalliere extends Salliere
                    status.setText("Matchpointing boards");
                    if (null == boards) showerror("Must Load Boards before Matchpointing");
                    else matchpoint(boards);
+                } else if ("ximp".equals(command)) {
+                   status.setText("XIMPing boards");
+                   if (null == boards) showerror("Must Load Boards before Matchpointing");
+                   else ximp(boards);
                 } else if ("total".equals(command)) {
                    status.setText("Calculating total matchpoints and percentages");
                    if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before Totalling");
@@ -744,6 +748,14 @@ public class GSalliere extends Salliere
          button.setToolTipText("Matchpoint the boards");
          button.setActionCommand("matchpoint");
          button.setMnemonic(KeyEvent.VK_M);
+         button.addActionListener(bal);
+         buttonbar.add(button);
+
+         // ximp
+         button = new JButton("XIMP");
+         button.setToolTipText("Cross-IMP the boards");
+         button.setActionCommand("ximp");
+         button.setMnemonic(KeyEvent.VK_X);
          button.addActionListener(bal);
          buttonbar.add(button);
 

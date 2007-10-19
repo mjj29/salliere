@@ -168,6 +168,90 @@ public class Board
          }
       }
    }
+   public double imp(double score)
+   {
+      double abs = Math.abs(score);
+      boolean neg = score < 0;
+      if (abs <= 10) return 0;
+      else if (abs <= 40) return neg ? -1 : 1;
+      else if (abs <= 80) return neg ? -2 : 2;
+      else if (abs <= 120) return neg ? -3 : 3;
+      else if (abs <= 160) return neg ? -4 : 4;
+      else if (abs <= 210) return neg ? -5 : 5;
+      else if (abs <= 260) return neg ? -6 : 6;
+      else if (abs <= 310) return neg ? -7 : 7;
+      else if (abs <= 360) return neg ? -8 : 8;
+      else if (abs <= 420) return neg ? -9 : 9;
+      else if (abs <= 490) return neg ? -10 : 10;
+      else if (abs <= 590) return neg ? -11 : 11;
+      else if (abs <= 740) return neg ? -12 : 12;
+      else if (abs <= 890) return neg ? -13 : 13;
+      else if (abs <= 1090) return neg ? -14 : 14;
+      else if (abs <= 1290) return neg ? -15 : 15;
+      else if (abs <= 1490) return neg ? -16 : 16;
+      else if (abs <= 1740) return neg ? -17 : 17;
+      else if (abs <= 1990) return neg ? -18 : 18;
+      else if (abs <= 2240) return neg ? -19 : 19;
+      else if (abs <= 2490) return neg ? -20 : 20;
+      else if (abs <= 2990) return neg ? -21 : 21;
+      else if (abs <= 3490) return neg ? -22 : 22;
+      else if (abs <= 3990) return neg ? -23 : 23;
+      else return neg ? -24 : 24;
+   }
+   public void ximp() throws ScoreException
+   {
+      double avs = 0;
+      for (Hand h1: (Hand[]) hands.toArray(new Hand[0])) {
+         double nsimps = 0;
+         double ewimps = 0;
+         if (h1.isAveraged()) {
+            // +-2 or 0
+            switch (h1.getNSAverage()) {
+               case Hand.AVERAGE:
+                  nsimps = 0;
+                  break;
+               case Hand.AVERAGE_PLUS:
+                  nsimps = 2;
+                  break;
+               case Hand.AVERAGE_MINUS:
+                  nsimps = -2;
+                  break;
+            }
+            switch (h1.getEWAverage()) {
+               case Hand.AVERAGE:
+                  ewimps = 0;
+                  break;
+               case Hand.AVERAGE_PLUS:
+                  ewimps = 2;
+                  break;
+               case Hand.AVERAGE_MINUS:
+                  ewimps = -2;
+                  break;
+            }
+            avs++;
+         } else {
+            // for each score, IMP against the other scores, sum, 
+            // then divide by the number of scores. 
+            for (Hand h2: (Hand[]) hands.toArray(new Hand[0])) {
+               if (Debug.debug) Debug.print(Debug.DEBUG, h1+" imp "+h2);
+               if (!h2.isAveraged()) {
+                   double s1 = (0 == h1.getNSScore()) ? - h1.getEWScore() : h1.getNSScore();
+                   double s2 = (0 == h2.getNSScore()) ? - h2.getEWScore() : h2.getNSScore();
+                   double diff = s1-s2;
+                   nsimps += imp(diff);
+                   ewimps += imp(-diff);
+               if (Debug.debug) Debug.print(Debug.DEBUG, "s1="+s1+", s2="+s2+", diff="+diff+", nsimps="+nsimps+", ewimps="+ewimps);
+               }
+            }
+            double s = hands.size();
+            nsimps = nsimps * (s / (s-avs) * (s - 1.0));
+            ewimps = ewimps * (s / (s-avs) * (s - 1.0));
+         }
+         h1.setNSMP(nsimps);
+         h1.setEWMP(ewimps);
+         if (Debug.debug) Debug.print(Debug.DEBUG, h1+" NSMP="+nsimps+" EWMP="+ewimps);
+      }
+   }
    public String getNumber() { return number; }
    public void addHand(Hand h) throws BoardValidationException
    {

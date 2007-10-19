@@ -144,7 +144,7 @@ public class Salliere
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint total localpoint results matrix boards");
+      System.out.println("   Commands: verify score matchpoint ximp total localpoint results matrix boards");
       System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N");
       System.out.println("   Formats: txt html pdf");
    }
@@ -205,6 +205,13 @@ public class Salliere
    {
       for (Board b: (Board[]) boards.toArray(new Board[0])) 
          b.matchPoint();
+      modifiedboards = true;
+   }
+
+   public static void ximp(List boards) throws ScoreException
+   {
+      for (Board b: (Board[]) boards.toArray(new Board[0])) 
+         b.ximp();
       modifiedboards = true;
    }
 
@@ -400,6 +407,7 @@ public class Salliere
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
             else if ("boards".equals(command)) boardbyboard(boards, tabular);
             else if ("localpoint".equals(command)) localpoint(pairs);
+            else if ("ximp".equals(command)) ximp(boards);
             else {
                System.out.println("Bad Command: "+command);
                syntax();
