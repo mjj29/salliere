@@ -240,16 +240,16 @@ public class Board
                    double diff = s1-s2;
                    nsimps += imp(diff);
                    ewimps += imp(-diff);
-               if (Debug.debug) Debug.print(Debug.DEBUG, "s1="+s1+", s2="+s2+", diff="+diff+", nsimps="+nsimps+", ewimps="+ewimps);
+               if (Debug.debug) Debug.print(Debug.VERBOSE, "s1="+s1+", s2="+s2+", diff="+diff+", nsimps="+nsimps+", ewimps="+ewimps);
                }
             }
             double s = hands.size();
-            nsimps = nsimps * (s / (s-avs) * (s - 1.0));
-            ewimps = ewimps * (s / (s-avs) * (s - 1.0));
+            nsimps = nsimps * (s / ((s-avs) * (s - 1.0)));
+            ewimps = ewimps * (s / ((s-avs) * (s - 1.0)));
          }
          h1.setNSMP(nsimps);
          h1.setEWMP(ewimps);
-         if (Debug.debug) Debug.print(Debug.DEBUG, h1+" NSMP="+nsimps+" EWMP="+ewimps);
+         if (Debug.debug) Debug.print(Debug.DEBUG, h1.getNumber()+" NSMP="+nsimps+" EWMP="+ewimps);
       }
    }
    public String getNumber() { return number; }

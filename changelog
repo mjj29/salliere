@@ -1,5 +1,9 @@
 Version 0.4:
 
+	* Support XIMP as well as Matchpointing
+
+Version 0.4:
+
 	* Support averages
 	* Support assigned/ajusted/split scores
 	* forcing score supported in GSalliere

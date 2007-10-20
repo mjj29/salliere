@@ -145,7 +145,7 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp total localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp");
       System.out.println("   Formats: txt html pdf");
    }
 
@@ -252,9 +252,9 @@ public class Salliere
       tabular.print(headers, matrix);
       tabular.gap();
    }
-   public static void boardbyboard(List boards, TablePrinter tabular) 
+   public static void boardbyboard(List boards, TablePrinter tabular, boolean ximp) 
    {
-      String[] headers = new String[] { "NS", "EW", "Contract", "By", "Tricks", "Score:", "", "MPs:", "" };
+      String[] headers = new String[] { "NS", "EW", "Contract", "By", "Tricks", "Score:", "", ximp ? "IMPs" : "MPs:", "" };
       Collections.sort(boards, new BoardNumberComparer());
 
       for (Board b: (Board[]) boards.toArray(new Board[0])) {
@@ -304,15 +304,32 @@ public class Salliere
       modifiedpairs = true;
    }
 
-   public static void results(List pairs, TablePrinter tabulate, String points)
+   public static void results(List pairs, TablePrinter tabulate, boolean orange, boolean ximp)
    {
       Vector results = new Vector();
       Collections.sort(pairs, new PairPercentageComparer());
-      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
-         results.add(p.export());
 
-      tabulate.print(new String[] { "Pair#", "Names", "", "MPs", "%age", points }, 
+      String points;
+      if (orange) points = "OPs";
+      else points = "LPs";
+
+      if (ximp) {
+         for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
+            String[] a = p.export();
+            String[] b = new String[a.length-1];
+            System.arraycopy(a, 0, b, 0, 4);
+            System.arraycopy(a, 5, b, 4, a.length-5);
+            results.add(b);
+         }
+         tabulate.print(new String[] { "Pair", "Names", "", "IMPs", points }, 
                (String[][]) results.toArray(new String[0][]));
+      } else {
+         for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
+            results.add(p.export());
+         tabulate.print(new String[] { "Pair", "Names", "", "MPs", "%age", points }, 
+               (String[][]) results.toArray(new String[0][]));
+      }
+
       tabulate.gap();
    }
 
@@ -333,6 +350,7 @@ public class Salliere
          options.put("--output", "-");
          options.put("--help", null);
          options.put("--orange", null);
+         options.put("--ximp", null);
          options.put("--title", "Salliere Duplicate Bridge Scorer: Results");
          options.put("--setsize", null);
          int i;
@@ -403,9 +421,9 @@ public class Salliere
             else if ("verify".equals(command)) verify(boards, (String) options.get("--setsize"));
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
-            else if ("results".equals(command)) results(pairs, tabular, null == options.get("--orange") ? "LPs" : "OPs");
+            else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"));
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
-            else if ("boards".equals(command)) boardbyboard(boards, tabular);
+            else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"));
             else if ("localpoint".equals(command)) localpoint(pairs);
             else if ("ximp".equals(command)) ximp(boards);
             else {

@@ -841,6 +841,7 @@ public class GSalliere extends Salliere
       JCheckBox matrix = new JCheckBox("MP Matrix");
       JCheckBox boardby = new JCheckBox("Board-by-boards");
       JCheckBox orange = new JCheckBox("Orange Points");
+      JCheckBox ximp = new JCheckBox("XIMP");
       accessories.add(new JLabel("Title: "));
       accessories.add(title);
       accessories.add(textformat);
@@ -850,6 +851,7 @@ public class GSalliere extends Salliere
       accessories.add(matrix);
       accessories.add(boardby);
       accessories.add(orange);
+      accessories.add(ximp);
 
 
       int rv = fc.showDialog(root, "Export");
@@ -857,6 +859,7 @@ public class GSalliere extends Salliere
          File exportfile = fc.getSelectedFile();
          String titlestr = title.getText();
          boolean orangebool = orange.isSelected();
+         boolean ximpbool = ximp.isSelected();
 
          String command = format.getSelection().getActionCommand();
 
@@ -875,9 +878,9 @@ public class GSalliere extends Salliere
             tabular.header(titlestr);
 
             if (results.isSelected()) 
-               results(pairs, tabular, orangebool ? "OPs":"LPs");
+               results(pairs, tabular, orangebool, ximpbool);
             if (matrix.isSelected()) matrix(pairs, boards, tabular);
-            if (boardby.isSelected()) boardbyboard(boards, tabular);
+            if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool);
 
             tabular.close();
             out.close();
