@@ -26,16 +26,16 @@ options 'none', 'ew', 'ns' or 'all. The following are all valid board numbers:
    16;vul=ns - board 16 with the vulnerability set to be NS vulnerable, EW non-vulnerable.
    C:25;vul=all - board 25 from section C with all vulnerable
 
-The commands will add tricks, scores and matchpoint columns to the boards file
-and total matchpoints, percentages and local/orange points to the names file as
-appropriate.
+The commands will add tricks, scores and matchpoint/cross-imp columns to the
+boards file and total matchpoints/cross-imps, percentages and local/orange
+points to the names file as appropriate.
 
 Assigned/Adjusted scores and matchpoints can be entered into the file by
 prefixing them with an exclamation mark (!). Scores marked as such will
 override the calculated scores/MPs for the board.
 
 Averages are supported by putting av=/av+/av- in the appropriate score fields.
-Split scores are also supportedl
+Split scores are also supported.
 
 By default the commands which print results will do so as ascii to stdout. This
 can be changed with the --output=format:file option. Formats are either pdf,
@@ -58,7 +58,11 @@ The commands are as follows:
    matchpoint
         
       Calculates match points for each hand
-        
+       
+   ximp
+
+      Calculates the cross-IMPs for each hand
+
    total
         
       Calculates the total match points for each pair
@@ -89,6 +93,10 @@ Here are the possible options:
    --orange  
    
       Prints "OP" rather than "LP"
+
+   --ximp
+
+      Prints "IMP" rather than "MP" and removes percentages from the output
 
    --title=title 
    

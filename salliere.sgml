@@ -20,7 +20,7 @@ manpage.1: manpage.sgml
   <!ENTITY dhfirstname "<firstname>Matthew</firstname>">
   <!ENTITY dhsurname   "<surname>Johnson</surname>">
   <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY dhdate      "<date>April  28, 2007</date>">
+  <!ENTITY dhdate      "<date>October 20, 2007</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
@@ -131,6 +131,12 @@ manpage.1: manpage.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term>ximp</term>
+        <listitem>
+          <para>Calculates cross-imps for each hand</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term>total</term>
         <listitem>
           <para>Calculates the total match points for each pair</para>
@@ -187,6 +193,12 @@ manpage.1: manpage.sgml
         <term>--orange</term>
         <listitem>
           <para>Prints "OP" rather than "LP"</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--ximp</term>
+        <listitem>
+          <para>Adjusts output for IMPs rather than matchpoints</para>
         </listitem>
       </varlistentry>
       <varlistentry>
