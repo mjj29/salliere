@@ -115,7 +115,7 @@ public class Salliere
       return new ArrayList(boards.values());
    }
 
-   static List readPairs(InputStream is) throws IOException
+   static List readPairs(InputStream is, boolean individual) throws IOException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
       List pairs = new Vector();
@@ -123,7 +123,10 @@ public class Salliere
          while (in.readRecord()) {
             String[] values = in.getValues();
             if (Debug.debug) Debug.print(Arrays.asList(values));
-            pairs.add(new Pair(values));
+            if (individual)
+               pairs.add(new Individual(values));
+            else
+               pairs.add(new Pair(values));
          }
       } catch (EOFException EOFe) {}
       in.close();
@@ -145,7 +148,7 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp total localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual");
       System.out.println("   Formats: txt html pdf");
    }
 
@@ -273,8 +276,9 @@ public class Salliere
       }
    }
 
-   public static void localpoint(List pairs) throws ScoreException
+   public static void localpoint(List pairs, boolean individual) throws ScoreException
    {
+      int rate = individual ? 3 : 6;
       // sort pairs in order
       Collections.sort(pairs, new PairPercentageComparer());
       Pair[] ps = (Pair[]) pairs.toArray(new Pair[0]);
@@ -285,7 +289,7 @@ public class Salliere
       // calculate LP scale based on number of pairs
       int[] LPs = new int[ps.length];
       int awarded = (int) Math.ceil(LPs.length/3.0);
-      for (int i = 0, lp=6*awarded; lp > 0; i++, lp -= 6)
+      for (int i = 0, lp=rate*awarded; lp > 0; i++, lp -= rate)
          LPs[i] = lp;
 
       // award LPs, splitting on draws
@@ -353,6 +357,7 @@ public class Salliere
          options.put("--ximp", null);
          options.put("--title", "Salliere Duplicate Bridge Scorer: Results");
          options.put("--setsize", null);
+         options.put("--individual", null);
          int i;
          for (i = 0; i < args.length; i++) {
             if ("--".equals(args[i])) break;
@@ -388,7 +393,7 @@ public class Salliere
          List pairs;
 
          boards = readBoards(new FileInputStream(args[i+1]));
-         pairs = readPairs(new FileInputStream(args[i+2]));
+         pairs = readPairs(new FileInputStream(args[i+2]), null != options.get("--individual"));
 
          TablePrinter tabular = null;
 
@@ -424,7 +429,7 @@ public class Salliere
             else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"));
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"));
-            else if ("localpoint".equals(command)) localpoint(pairs);
+            else if ("localpoint".equals(command)) localpoint(pairs, null != options.get("--individual"));
             else if ("ximp".equals(command)) ximp(boards);
             else {
                System.out.println("Bad Command: "+command);

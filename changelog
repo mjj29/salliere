@@ -1,6 +1,7 @@
-Version 0.4:
+Version 0.5:
 
 	* Support XIMP as well as Matchpointing
+	* Support for individuals (currently only in cmd line)
 
 Version 0.4:
 

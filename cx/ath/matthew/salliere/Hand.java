@@ -62,8 +62,12 @@ public class Hand
    }
    public Hand(String[] data) throws HandParseException
    {
-      if (data.length < 4) 
-         throw new HandParseException("Insufficient fields. I cannot parse a board without at least board number, pair numbers and contract");
+      if (data.length < 4) {
+         String extra = "";
+         if (data.length > 0)
+            extra = " (board might be number "+data[0]+")";
+         throw new HandParseException("Insufficient fields. I cannot parse a board without at least board number, pair numbers and contract"+extra);
+      }
       this.number = data[0];
       this.ns = data[1];
       this.ew = data[2];

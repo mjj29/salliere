@@ -481,7 +481,7 @@ public class GSalliere extends Salliere
                    try {
                       namesfile = f.getCanonicalPath();
                       status.setText("Loading Names from "+namesfile);
-                      pairs = readPairs(new FileInputStream(f));
+                      pairs = readPairs(new FileInputStream(f), false);
                       nametable.setModel(new PairTableDataModel(pairs));
                       status.setText("Loaded Names from "+namesfile);
                    } catch (IOException IOe) {
@@ -584,7 +584,7 @@ public class GSalliere extends Salliere
                 } else if ("localpoint".equals(command)) {
                    status.setText("Allocating local points");
                    if (null == pairs) showerror("Must Load Pairs before Scoring");
-                   else localpoint(pairs);
+                   else localpoint(pairs, false);
                    nametable.repaint();
                 } else if ("results".equals(command)) {
                    status.setText("Exporting results");
@@ -915,7 +915,7 @@ public class GSalliere extends Salliere
             }
 
             try {
-               pairs = readPairs(new FileInputStream(namesfile));
+               pairs = readPairs(new FileInputStream(namesfile), false);
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
                System.out.println("Problem loading names file: "+IOe);

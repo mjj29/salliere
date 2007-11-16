@@ -274,6 +274,14 @@ public class Board
             return h.getNSMP();
          else if (h.getEW().equals(number))
             return h.getEWMP();
+         else if (h.getEW().startsWith(number+"."))
+            return h.getEWMP();
+         else if (h.getEW().endsWith("."+number))
+            return h.getEWMP();
+         else if (h.getNS().startsWith(number+"."))
+            return h.getNSMP();
+         else if (h.getNS().endsWith("."+number))
+            return h.getNSMP();
       return 0;
    }
    public boolean containsAverage()
@@ -288,6 +296,14 @@ public class Board
          if (h.getNS().equals(number)) 
             return true;
          else if (h.getEW().equals(number))
+            return true;
+         else if (h.getEW().startsWith(number+"."))
+            return true;
+         else if (h.getEW().endsWith("."+number))
+            return true;
+         else if (h.getNS().startsWith(number+"."))
+            return true;
+         else if (h.getNS().endsWith("."+number))
             return true;
       return false;
    }
