@@ -284,13 +284,21 @@ public class Salliere
       Pair[] ps = (Pair[]) pairs.toArray(new Pair[0]);
 
       // check we have enough to give LPs
-      if (ps.length < 6) throw new ScoreException("Must have at least 3 full table to award local points");
+      if (ps.length < (individual?8:6)) throw new ScoreException("Must have at least 3 full tables at pairs or 2 full tables at individuals to award local points");
 
       // calculate LP scale based on number of pairs
       int[] LPs = new int[ps.length];
       int awarded = (int) Math.ceil(LPs.length/3.0);
-      for (int i = 0, lp=rate*awarded; lp > 0; i++, lp -= rate)
-         LPs[i] = lp;
+      int top;
+      if (individual) {
+         int tables = (int) Math.floor(ps.length/4.0);
+         top = (3 * (int) Math.ceil(tables/3.0)) + (3 * tables);
+      } else
+         top = rate*awarded;
+      if (top > 100) top = 100;
+      if (Debug.debug) Debug.print(Debug.DEBUG, "Awarding LPs to "+ps.length+" pairs, top is "+top+" rate is "+rate+" number receiving LPs: "+awarded);
+      for (int i = 0, lp=top; i < awarded; i++, lp -= rate)
+         LPs[i] = lp > 6 ? lp : 6;
 
       // award LPs, splitting on draws
       for (int i = 0; i < ps.length; i++) {
@@ -299,6 +307,7 @@ public class Salliere
          while (i+1 < ps.length && ps[i].getPercentage()==ps[i+1].getPercentage())
             total += LPs[++i];
          double award = total / (1.0+i-a);
+         if (award < 6 && award > 0) award = 6;
          for (int j = a; j <= i; j++) {
             if (ps[j].getLPs() != 0 && ps[j].getLPs() != award) 
                throw new ScoreException("Calculated "+award+" LPs for pair "+ps[j].getNumber()+", but data says "+ps[j].getLPs());
@@ -308,7 +317,7 @@ public class Salliere
       modifiedpairs = true;
    }
 
-   public static void results(List pairs, TablePrinter tabulate, boolean orange, boolean ximp)
+   public static void results(List pairs, TablePrinter tabulate, boolean orange, boolean ximp, boolean individual)
    {
       Vector results = new Vector();
       Collections.sort(pairs, new PairPercentageComparer());
@@ -317,7 +326,17 @@ public class Salliere
       if (orange) points = "OPs";
       else points = "LPs";
 
-      if (ximp) {
+      String[] header;
+      if (ximp && individual)
+         header = new String[] { "Num", "Name", "IMPs", points };
+      else if (ximp && !individual)
+         header = new String[] { "Pair", "Names", "", "IMPs", points };
+      else if (!ximp && individual)
+         header = new String[] { "Num", "Name", "MPs", "%age", points };
+      else
+         header = new String[] { "Pair", "Names", "", "MPs", "%age", points };
+
+      if (ximp)
          for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
             String[] a = p.export();
             String[] b = new String[a.length-1];
@@ -325,15 +344,11 @@ public class Salliere
             System.arraycopy(a, 5, b, 4, a.length-5);
             results.add(b);
          }
-         tabulate.print(new String[] { "Pair", "Names", "", "IMPs", points }, 
-               (String[][]) results.toArray(new String[0][]));
-      } else {
+      else
          for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
             results.add(p.export());
-         tabulate.print(new String[] { "Pair", "Names", "", "MPs", "%age", points }, 
-               (String[][]) results.toArray(new String[0][]));
-      }
-
+      tabulate.print(header, 
+            (String[][]) results.toArray(new String[0][]));
       tabulate.gap();
    }
 
@@ -426,7 +441,7 @@ public class Salliere
             else if ("verify".equals(command)) verify(boards, (String) options.get("--setsize"));
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
-            else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"));
+            else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), null != options.get("--individual"));
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"));
             else if ("localpoint".equals(command)) localpoint(pairs, null != options.get("--individual"));
