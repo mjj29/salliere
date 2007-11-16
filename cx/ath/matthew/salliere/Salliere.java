@@ -306,7 +306,7 @@ public class Salliere
          int total = LPs[i];
          while (i+1 < ps.length && ps[i].getPercentage()==ps[i+1].getPercentage())
             total += LPs[++i];
-         double award = total / (1.0+i-a);
+         double award = Math.ceil(total / (1.0+i-a));
          if (award < 6 && award > 0) award = 6;
          for (int j = a; j <= i; j++) {
             if (ps[j].getLPs() != 0 && ps[j].getLPs() != award) 
