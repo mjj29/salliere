@@ -880,7 +880,7 @@ public class GSalliere extends Salliere
             if (results.isSelected()) 
                results(pairs, tabular, orangebool, ximpbool, false);
             if (matrix.isSelected()) matrix(pairs, boards, tabular);
-            if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool);
+            if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool, false);
 
             tabular.close();
             out.close();

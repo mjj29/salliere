@@ -21,6 +21,7 @@ package cx.ath.matthew.salliere;
 
 import cx.ath.matthew.debug.Debug;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,6 +33,15 @@ import java.util.Vector;
 
 public class Board
 {
+   public static final int NORTH = 0;
+   public static final int SOUTH = 1;
+   public static final int EAST = 2;
+   public static final int WEST = 3;
+   public static final int CLUBS = 0;
+   public static final int DIAMONDS = 1;
+   public static final int HEARTS = 2;
+   public static final int SPADES = 3;
+   public static final int NOTRUMPS = 4;
    class HandScoreNSComparer implements Comparator {
       public int compare(Object obj1, Object obj2)
       {
@@ -49,7 +59,9 @@ public class Board
       }
    }
    Vector/*<Hand>*/ hands;
+   byte[] tricks;
    String number = "";
+   Contract par;
    public Board() 
    {
       this.hands = new Vector();
@@ -198,6 +210,51 @@ public class Board
       else if (abs <= 3990) return neg ? -23 : 23;
       else return neg ? -24 : 24;
    }
+   public void parimp() throws ScoreException
+   {
+      double avs = 0;
+      for (Hand h1: (Hand[]) hands.toArray(new Hand[0])) {
+         double nsimps = 0;
+         double ewimps = 0;
+         if (h1.isAveraged()) {
+            // +-2 or 0
+            switch (h1.getNSAverage()) {
+               case Hand.AVERAGE:
+                  nsimps = 0;
+                  break;
+               case Hand.AVERAGE_PLUS:
+                  nsimps = 2;
+                  break;
+               case Hand.AVERAGE_MINUS:
+                  nsimps = -2;
+                  break;
+            }
+            switch (h1.getEWAverage()) {
+               case Hand.AVERAGE:
+                  ewimps = 0;
+                  break;
+               case Hand.AVERAGE_PLUS:
+                  ewimps = 2;
+                  break;
+               case Hand.AVERAGE_MINUS:
+                  ewimps = -2;
+                  break;
+            }
+            avs++;
+         } else {
+            // for each score, IMP against the par score
+            double s1 = (0 == h1.getNSScore()) ? - h1.getEWScore() : h1.getNSScore();
+            double s2 = getParScore();
+            double diff = s1-s2;
+            nsimps = imp(diff);
+            ewimps = imp(-diff);
+            if (Debug.debug) Debug.print(Debug.VERBOSE, "score="+s1+", par="+s2+", diff="+diff+", nsimps="+nsimps+", ewimps="+ewimps);
+         }
+         h1.setNSMP(nsimps);
+         h1.setEWMP(ewimps);
+         if (Debug.debug) Debug.print(Debug.DEBUG, h1.getNumber()+" NSMP="+nsimps+" EWMP="+ewimps);
+      }
+   }
    public void ximp() throws ScoreException
    {
       double avs = 0;
@@ -252,6 +309,168 @@ public class Board
          if (Debug.debug) Debug.print(Debug.DEBUG, h1.getNumber()+" NSMP="+nsimps+" EWMP="+ewimps);
       }
    }
+   public void importTricks(String s)
+   {
+      String[] ss = s.split(",");
+      tricks = new byte[ss.length];
+      for (int i = 0; i < ss.length; i++)
+         tricks[i] = Byte.parseByte(ss[i]);
+      if (Debug.debug) {
+         Vector v = new Vector();
+         for (int i = 0; i < tricks.length; i++) 
+            v.add(tricks[i]);
+         Debug.print(Debug.INFO, "Read avaiable tricks for board "+number+": "+v);
+      }
+   }
+   private Contract getScore(int v, int d, int p, int vuln) throws ContractParseException, NoContractException
+   {
+      if (null == tricks) return null;
+      char decl = ' ';
+      switch (p) {
+         case NORTH: decl = 'n'; break;
+         case SOUTH: decl = 's'; break;
+         case EAST: decl = 'e'; break;
+         case WEST: decl = 'w'; break;
+      }
+      String contr = ""+v;
+      switch (d) {
+         case CLUBS: contr += "c"; break;
+         case DIAMONDS: contr += "d"; break;
+         case HEARTS: contr += "h"; break;
+         case SPADES: contr += "s"; break;
+         case NOTRUMPS: contr += "n"; break;
+      }
+      int tr = tricks[(4-d)+5*p];
+      if (tr < 6+v) contr += 'x';
+      if (Debug.debug) Debug.print(Debug.VERBOSE, "getScore("+v+", "+d+", "+p+", "+vuln+") tricks = "+tr+" decl = "+decl+" contr = "+contr);
+      return new Contract(contr, decl, vuln, tr);
+   }
+
+   private int vuln()
+   {
+      String[] n = number.split(":");
+      String[] v = n[n.length-1].split(";");
+      int num = 0;
+      try {
+         num = Integer.parseInt(v[0]);
+      } catch (NumberFormatException NFe) { 
+         if (Debug.debug) Debug.print(NFe); 
+      }
+      int vul = Contract.NONE;
+      if (v.length == 1) {
+         switch (num%16) {
+            // ns
+            case 4:
+            case 7:
+            case 10:
+            case 13:
+               vul |= Contract.EAST;
+            case 2:
+            case 5:
+            case 12:
+            case 15:
+               vul |= Contract.NORTH;
+               break;
+               // ew
+            case 3:
+            case 6:
+            case 9:
+            case 0:
+               vul |= Contract.EAST;
+               break;
+         }
+      } else {
+         // split options
+         String[] opts = v[1].split(",");
+         for (String opt: opts) {
+            String[] keyval = opt.split("=");
+
+            // manual vulnerability
+            if (keyval[0].toLowerCase().equals("vul") && 2 == keyval.length) {
+               if (keyval[1].toLowerCase().equals("ew"))
+                  vul = Contract.EAST;
+               else if (keyval[1].toLowerCase().equals("ns"))
+                  vul = Contract.NORTH;
+               else if (keyval[1].toLowerCase().equals("all"))
+                  vul = Contract.NORTH | Contract.EAST;
+            }
+
+         }
+      }
+      return vul;
+   }
+   /**
+    * @return new int[] { value, denom, declarer, nsscore }
+    */
+   private Contract findPar() throws ContractParseException, NoContractException
+   {
+      if (null == tricks) return null;
+      int denom = 0;
+      int value = 1;
+      int savedenom = -2;
+      int savevalue = -2;
+      int declarer = -1;
+      int score = 0;
+      Contract par = new Contract("P.O.", ' ', Contract.NONE, 0);
+
+      int vuln = vuln();
+
+      while (denom != savedenom || value != savevalue) {
+         savevalue = value;
+         savedenom = denom;
+         for (int p = NORTH; p <= WEST; p++)
+            PLAYER:
+            for (int v = value; v <=7; v++)
+               for (int d = (v == value) ? denom : CLUBS; d <= NOTRUMPS; d++) {
+                  Contract c = getScore(v, d, p, vuln);
+                  int newscore = (int) (c.getNSScore() - c.getEWScore());
+                  if (Debug.debug) Debug.print(Debug.DEBUG, "Testing "+c.getContract()+" scores "+newscore+". Current score "+score);
+                  if (((newscore > score) && 
+                       (p == NORTH || p == SOUTH)) ||
+                      ((newscore < score) && 
+                       (p == WEST || p == EAST)))
+                  {
+                     par = c;
+                     denom = d;
+                     value = v;
+                     declarer = p;
+                     score = newscore;
+                     break PLAYER;
+                  }
+               }
+         if (Debug.debug) Debug.print(Debug.VERBOSE, "denom="+denom+" savedenom="+savedenom+" value="+value+" savevalue="+savevalue);
+      }
+      return par;
+   }
+   public String getParContract() 
+   {
+      try {
+         if (null == par) par = findPar();
+      } catch (Exception e) {
+         if (Debug.debug) Debug.print(e);
+      }
+      return par.getContract();
+   }
+   public Contract getPar()
+   {
+      try {
+         if (null == par) par = findPar();
+      } catch (Exception e) {
+         if (Debug.debug) Debug.print(e);
+      }
+      return par;
+   }
+   public int getParScore() 
+   { 
+      try { 
+         if (null == par) par = findPar();
+      } catch (Exception e) {
+         if (Debug.debug) Debug.print(e);
+      }
+      return (int) (par.getNSScore()-par.getEWScore()); 
+   }
+   public byte[] getTricks() { return tricks; }
+   public void setTricks(byte[] tricks) { this.tricks = tricks; }
    public String getNumber() { return number; }
    public void addHand(Hand h) throws BoardValidationException
    {

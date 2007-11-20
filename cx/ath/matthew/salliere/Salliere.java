@@ -24,6 +24,7 @@ import com.csvreader.CsvWriter;
 
 import cx.ath.matthew.debug.Debug;
 
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -93,6 +94,20 @@ public class Salliere
       }
    }
 
+   static void readTrickData(List boards, InputStream trickdatafile) throws IOException
+   {
+      Collections.sort(boards, new BoardNumberComparer());
+
+      BufferedReader br = new BufferedReader(new InputStreamReader(trickdatafile));
+
+      for (Board b: (Board[]) boards.toArray(new Board[0])) {
+         String s;
+         if (null != (s = br.readLine()))
+            b.importTricks(s);
+      }
+
+   }
+
    static List readBoards(InputStream is) throws IOException, BoardValidationException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
@@ -147,8 +162,8 @@ public class Salliere
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint ximp total localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual");
+      System.out.println("   Commands: verify score matchpoint ximp parimp total localpoint results matrix boards");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par");
       System.out.println("   Formats: txt html pdf");
    }
 
@@ -218,6 +233,13 @@ public class Salliere
       modifiedboards = true;
    }
 
+   public static void parimp(List boards) throws ScoreException
+   {
+      for (Board b: (Board[]) boards.toArray(new Board[0])) 
+         b.parimp();
+      modifiedboards = true;
+   }
+
    public static void total(List pairs, List boards)
    {
       for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
@@ -255,7 +277,7 @@ public class Salliere
       tabular.print(headers, matrix);
       tabular.gap();
    }
-   public static void boardbyboard(List boards, TablePrinter tabular, boolean ximp) 
+   public static void boardbyboard(List boards, TablePrinter tabular, boolean ximp, boolean withpar) 
    {
       String[] headers = new String[] { "NS", "EW", "Contract", "By", "Tricks", "Score:", "", ximp ? "IMPs" : "MPs:", "" };
       Collections.sort(boards, new BoardNumberComparer());
@@ -270,7 +292,10 @@ public class Salliere
             System.arraycopy(ex, 1, line, 0, line.length);
             lines.add(line);
          }
-         tabular.header("Board: "+b.getNumber());
+         if (withpar)
+            tabular.header("Board: "+b.getNumber()+" [ "+b.getParContract()+" by "+b.getPar().getDeclarer()+" ]");
+         else
+            tabular.header("Board: "+b.getNumber());
          tabular.print(headers, (String[][]) lines.toArray(new String[0][]));
          tabular.gap();
       }
@@ -373,6 +398,8 @@ public class Salliere
          options.put("--title", "Salliere Duplicate Bridge Scorer: Results");
          options.put("--setsize", null);
          options.put("--individual", null);
+         options.put("--with-par", null);
+         options.put("--trickdata", null);
          int i;
          for (i = 0; i < args.length; i++) {
             if ("--".equals(args[i])) break;
@@ -410,6 +437,10 @@ public class Salliere
          boards = readBoards(new FileInputStream(args[i+1]));
          pairs = readPairs(new FileInputStream(args[i+2]), null != options.get("--individual"));
 
+         if (null != options.get("--trickdata")) {
+            readTrickData(boards, new FileInputStream((String) options.get("--trickdata")));
+         }
+
          TablePrinter tabular = null;
 
          String[] format = (String[]) ((String) options.get("--output")).split(":");
@@ -443,9 +474,10 @@ public class Salliere
             else if ("total".equals(command)) total(pairs, boards);
             else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), null != options.get("--individual"));
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
-            else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"));
+            else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"), null != options.get("--with-par"));
             else if ("localpoint".equals(command)) localpoint(pairs, null != options.get("--individual"));
             else if ("ximp".equals(command)) ximp(boards);
+            else if ("parimp".equals(command)) parimp(boards);
             else {
                System.out.println("Bad Command: "+command);
                syntax();
