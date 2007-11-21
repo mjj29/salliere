@@ -469,10 +469,12 @@ public class GSalliere extends Salliere
 
                 status.setText("Loading Names...");
                 JFileChooser fc;
-                if (null == namesfile)
-                   fc = new JFileChooser();
-                else
+                if (null != namesfile)
                    fc = new JFileChooser(new File(namesfile).getParent());
+                else if (null != boardfile)
+                   fc = new JFileChooser(new File(boardfile).getParent());
+                else
+                   fc = new JFileChooser();
 
                 int rv = fc.showOpenDialog(GSalliereMainFrame.this);
                 if (rv == JFileChooser.APPROVE_OPTION) {
@@ -488,6 +490,35 @@ public class GSalliere extends Salliere
                       if (Debug.debug) Debug.print(IOe);
                       showerror("Problem loading names file: "+IOe);
                       pairs = null;
+                   }
+                }
+
+             } else if ("loadtricks".equals(command)) {
+
+                status.setText("Loading Tricks...");
+                if (null == boards) showerror("Must Load Boards before loading trick data");
+                else {
+                   JFileChooser fc;
+                   if (null == boardfile)
+                      fc = new JFileChooser();
+                   else
+                      fc = new JFileChooser(new File(boardfile).getParent());
+
+                   int rv = fc.showOpenDialog(GSalliereMainFrame.this);
+                   if (rv == JFileChooser.APPROVE_OPTION) {
+                      File f = fc.getSelectedFile();
+
+                      try {
+                         namesfile = f.getCanonicalPath();
+                         status.setText("Loading Tricks from "+namesfile);
+                         readTrickData(boards, new FileInputStream(f));
+                         nametable.setModel(new PairTableDataModel(pairs));
+                         status.setText("Loaded Tricks from "+namesfile);
+                      } catch (IOException IOe) {
+                         if (Debug.debug) Debug.print(IOe);
+                         showerror("Problem loading names file: "+IOe);
+                         pairs = null;
+                      }
                    }
                 }
 
@@ -574,8 +605,12 @@ public class GSalliere extends Salliere
                    else matchpoint(boards);
                 } else if ("ximp".equals(command)) {
                    status.setText("XIMPing boards");
-                   if (null == boards) showerror("Must Load Boards before Matchpointing");
+                   if (null == boards) showerror("Must Load Boards before XIMPing");
                    else ximp(boards);
+                } else if ("parimp".equals(command)) {
+                   status.setText("IMPing boards against par");
+                   if (null == boards) showerror("Must Load Boards before IMPing");
+                   else parimp(boards);
                 } else if ("total".equals(command)) {
                    status.setText("Calculating total matchpoints and percentages");
                    if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before Totalling");
@@ -671,6 +706,12 @@ public class GSalliere extends Salliere
          item.addActionListener(mal);
          file.add(item);
 
+         // load tricks file
+         item = new JMenuItem("Load Tricks File", KeyEvent.VK_T);
+         item.setActionCommand("loadtricks");
+         item.addActionListener(mal);
+         file.add(item);
+
          // save score file
          item = new JMenuItem("Save Score File", KeyEvent.VK_S);
          item.setActionCommand("savescores");
@@ -759,6 +800,14 @@ public class GSalliere extends Salliere
          button.addActionListener(bal);
          buttonbar.add(button);
 
+         // parimp
+         button = new JButton("IMP-Par");
+         button.setToolTipText("IMP the boards against par");
+         button.setActionCommand("parimp");
+         button.setMnemonic(KeyEvent.VK_P);
+         button.addActionListener(bal);
+         buttonbar.add(button);
+
          // total
          button = new JButton("Total");
          button.setToolTipText("Total the match points for the pairs");
@@ -841,7 +890,8 @@ public class GSalliere extends Salliere
       JCheckBox matrix = new JCheckBox("MP Matrix");
       JCheckBox boardby = new JCheckBox("Board-by-boards");
       JCheckBox orange = new JCheckBox("Orange Points");
-      JCheckBox ximp = new JCheckBox("XIMP");
+      JCheckBox ximp = new JCheckBox("IMP");
+      JCheckBox par = new JCheckBox("Show Par");
       accessories.add(new JLabel("Title: "));
       accessories.add(title);
       accessories.add(textformat);
@@ -852,6 +902,7 @@ public class GSalliere extends Salliere
       accessories.add(boardby);
       accessories.add(orange);
       accessories.add(ximp);
+      accessories.add(par);
 
 
       int rv = fc.showDialog(root, "Export");
@@ -860,6 +911,7 @@ public class GSalliere extends Salliere
          String titlestr = title.getText();
          boolean orangebool = orange.isSelected();
          boolean ximpbool = ximp.isSelected();
+         boolean parbool = par.isSelected();
 
          String command = format.getSelection().getActionCommand();
 
@@ -880,7 +932,7 @@ public class GSalliere extends Salliere
             if (results.isSelected()) 
                results(pairs, tabular, orangebool, ximpbool, false);
             if (matrix.isSelected()) matrix(pairs, boards, tabular);
-            if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool, false);
+            if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool, parbool);
 
             tabular.close();
             out.close();
