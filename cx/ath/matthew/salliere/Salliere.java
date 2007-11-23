@@ -163,7 +163,7 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp parimp total localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt>");
       System.out.println("   Formats: txt html pdf");
    }
 

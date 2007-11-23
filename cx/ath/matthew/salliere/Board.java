@@ -411,13 +411,15 @@ public class Board
       int savevalue = -2;
       int declarer = -1;
       int score = 0;
+      int savescore = -1;
       Contract par = new Contract("P.O.", ' ', Contract.NONE, 0);
 
       int vuln = vuln();
 
-      while (denom != savedenom || value != savevalue) {
+      while (denom != savedenom || value != savevalue || score != savescore) {
          savevalue = value;
          savedenom = denom;
+         savescore = score;
          for (int p = NORTH; p <= WEST; p++)
             PLAYER:
             for (int v = value; v <=7; v++)
