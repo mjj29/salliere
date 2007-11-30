@@ -1,3 +1,4 @@
+ * support ignoring boards from a flag, for parimping
  * Support scaling for split boards
  * check movements
  * Support fines
