@@ -4,6 +4,8 @@ Version 0.5:
 	* Support for individuals (currently only in cmd line)
 	* Support for imping against par
 	* Correct masterpoint awards
+	* Open all file choosers in dir of last file operation
+	* Fix display of redoubled contracts
 
 Version 0.4:
 

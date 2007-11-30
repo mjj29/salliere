@@ -67,7 +67,7 @@ public class Contract
             case '5':
             case '6':
             case '7':
-               val = (int) (cs[i] - '0');
+               val = (cs[i] - '0');
                if (Debug.debug) Debug.print("cs["+i+"] = "+cs[i]+", val = "+val);
                continue;
             case 'H':
@@ -251,7 +251,7 @@ public class Contract
       if (Debug.debug) Debug.print("score = "+score);
 
       this.contract = ""+val+den+
-         (2==doubled?"X":"")+(4==doubled?"X":"");
+         (1<doubled?"X":"")+(2<doubled?"X":"");
       if (tricks == val+6)
          this.contract += "=";
       else if (tricks < val+6)
