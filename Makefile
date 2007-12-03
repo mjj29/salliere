@@ -33,9 +33,9 @@ all: salliere-$(VERSION).jar salliere.1 bin/salliere gsalliere-$(VERSION).jar gs
 	mkdir -p testbin
 	touch .testbin
 classes: .classes 
-.classes: $(SRC)
+.classes: $(SRC) translations/*.po
 	mkdir -p classes
-	$(JAVAC) $(JCFLAGS) -cp $(CLASSPATH):classes -d classes $^
+	$(JAVAC) $(JCFLAGS) -cp $(CLASSPATH):classes -d classes $(SRC)
 	(cd translations; for i in *.po; do $(MSGFMT) --java2 -r salliere_localized -d ../classes -l $${i%.po} $$i; done)
 	$(MSGFMT) --java2 -r salliere_localized -d classes translations/en_GB.po
 	touch .classes
