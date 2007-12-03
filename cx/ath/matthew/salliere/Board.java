@@ -20,6 +20,7 @@
 package cx.ath.matthew.salliere;
 
 import cx.ath.matthew.debug.Debug;
+import static cx.ath.matthew.salliere.Gettext._;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,8 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Set;
 import java.util.Vector;
+
+import java.text.MessageFormat;
 
 public class Board
 {
@@ -147,7 +150,7 @@ public class Board
                      nshs[i].getNSMP() - nsmps > -0.005))
                nshs[i].setNSMP(nsmps);
             else
-               throw new ScoreException("Calculated "+nsmps+" MPs for NS, but hand says: "+nshs[i]);
+               throw new ScoreException(MessageFormat.format(_("Calculated {0} MPs for NS, but hand says: {1}"), new Object[] { nsmps, nshs[i]}));
             if (Debug.debug) Debug.print("Setting NSMP on board "+number+" to "+nsmps);
          }
       }
@@ -175,7 +178,7 @@ public class Board
                 ewhs[i].getEWMP() - ewmps > -0.005))
                ewhs[i].setEWMP(ewmps);
             else
-               throw new ScoreException("Calculated "+ewmps+" MPs for EW, but hand says: "+ewhs[i]);
+               throw new ScoreException(MessageFormat.format(_("Calculated {0} MPs for EW, but hand says: {1}"), new Object[] { ewmps, ewhs[i]}));
             if (Debug.debug) Debug.print("Setting EWMP on board "+number+" to "+ewmps);
          }
       }
@@ -480,7 +483,11 @@ public class Board
          Debug.print("Adding hand to board: "+number+"/"+hands.size()+" "+h);
       if (h.getNumber().length() == 0)
          h.setNumber(number);
-      else if (!h.getNumber().equals(number)) throw new BoardValidationException("This Hand is number "+h.getNumber()+" but this is board "+number);
+      else if (!h.getNumber().equals(number)) 
+         throw new BoardValidationException(
+                     MessageFormat.format(
+                        _("This Hand is number {0} but this is board {1}."),
+                        new Object[] { h.getNumber(), number }));
       hands.add(h); 
    }
    public List/*<Hand>*/ getHands() { return hands; }
@@ -536,9 +543,9 @@ public class Board
       for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
          h.check();
          if (seen.contains(h.getNS()))
-            throw new BoardValidationException("Board "+number+" has been played by pair "+h.getNS()+" twice.");
+            throw new BoardValidationException(MessageFormat.format(_("Board {0} has been played by pair {1} twice."), new Object[] {number, h.getNS()}));
          else if (seen.contains(h.getEW()))
-            throw new BoardValidationException("Board "+number+" has been played by pair "+h.getEW()+" twice.");
+            throw new BoardValidationException(MessageFormat.format(_("Board {0} has been played by pair {1} twice."), new Object[] {number, h.getEW()}));
          else {
             seen.add(h.getNS());
             seen.add(h.getEW());

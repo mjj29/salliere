@@ -20,9 +20,11 @@
 package cx.ath.matthew.salliere;
 
 import cx.ath.matthew.debug.Debug;
+import static cx.ath.matthew.salliere.Gettext._;
 
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
+import java.text.MessageFormat;
 
 import java.util.Arrays;
 
@@ -65,8 +67,8 @@ public class Hand
       if (data.length < 4) {
          String extra = "";
          if (data.length > 0)
-            extra = " (board might be number "+data[0]+")";
-         throw new HandParseException("Insufficient fields. I cannot parse a board without at least board number, pair numbers and contract"+extra);
+            extra = MessageFormat.format(_(" (board might be number {0})"), new Object[] { data[0] });
+         throw new HandParseException(_("Insufficient fields. I cannot parse a board without at least board number, pair numbers and contract")+extra);
       }
       this.number = data[0];
       this.ns = data[1];
@@ -79,7 +81,7 @@ public class Hand
                try { this.ewmp = Double.parseDouble(data[9]);
                } catch (NumberFormatException NFe) { 
                   if (Debug.debug) Debug.print(NFe); 
-                  throw new HandParseException("Invalid Number of Match Points: "+data[9]);
+                  throw new HandParseException(_("Invalid Number of Match Points: ")+data[9]);
                }
             }
          case 9:
@@ -88,7 +90,7 @@ public class Hand
                try { this.nsmp = Double.parseDouble(data[8]);
                } catch (NumberFormatException NFe) { 
                   if (Debug.debug) Debug.print(NFe);
-                  throw new HandParseException("Invalid Number of Match Points: "+data[8]);
+                  throw new HandParseException(_("Invalid Number of Match Points: ")+data[8]);
                }
             }
          case 8:
@@ -110,9 +112,9 @@ public class Hand
                            ewavetype = AVERAGE_MINUS;
                            break;
                         default:
-                           throw new HandParseException("Invalid Average: "+data[7]);
+                           throw new HandParseException(_("Invalid Average: ")+data[7]);
                      }
-                  else throw new HandParseException("Invalid Score: "+data[7]);
+                  else throw new HandParseException(_("Invalid Score: ")+data[7]);
                }
             }
          case 7:
@@ -134,9 +136,9 @@ public class Hand
                            nsavetype = AVERAGE_MINUS;
                            break;
                         default:
-                           throw new HandParseException("Invalid Average: "+data[6]);
+                           throw new HandParseException(_("Invalid Average: ")+data[6]);
                      }
-                  else throw new HandParseException("Invalid Score: "+data[6]);
+                  else throw new HandParseException(_("Invalid Score: ")+data[6]);
                }
             }
          case 6:
@@ -144,7 +146,7 @@ public class Hand
                try { this.tricks = Integer.parseInt(data[5]);
                } catch (NumberFormatException NFe) { 
                   if (Debug.debug) Debug.print(NFe); 
-                  throw new HandParseException("Invalid Number of Tricks: "+data[5]);
+                  throw new HandParseException(_("Invalid Number of Tricks: ")+data[5]);
                }
          case 5:
             if (data[4].length() > 0)
@@ -160,7 +162,7 @@ public class Hand
          num = Integer.parseInt(v[0]);
       } catch (NumberFormatException NFe) { 
          if (Debug.debug) Debug.print(NFe); 
-         throw new HandParseException("Invalid Hand Number: "+number);
+         throw new HandParseException(_("Invalid Hand Number: ")+number);
       }
       int vul = Contract.NONE;
       if (v.length == 1) {
@@ -209,14 +211,26 @@ public class Hand
       try {
          c = new Contract(contract, declarer, vul, tricks);
          if (!forced_nsscore) {
-            if (nsscore != 0 && nsscore != c.getNSScore()) throw new ScoreException("Calculated score as "+c.getNSScore()+" for NS but hand says "+this);
+            if (nsscore != 0 && nsscore != c.getNSScore()) 
+               throw new ScoreException(
+                     MessageFormat.format(
+                        _("Calculated score as {0} for NS but hand says {1}."),
+                        new Object[] { c.getNSScore(), this }));
             nsscore = c.getNSScore();
          }
          if (!forced_ewscore) {
-            if (ewscore != 0 && ewscore != c.getEWScore()) throw new ScoreException("Calculated score as "+c.getEWScore()+" for EW but hand says "+this);
+            if (ewscore != 0 && ewscore != c.getEWScore())
+               throw new ScoreException(
+                     MessageFormat.format(
+                        _("Calculated score as {0} for EW but hand says {1}."),
+                        new Object[] { c.getEWScore(), this }));
             ewscore = c.getEWScore();
          }
-         if (tricks != 0 && tricks != c.getTricks()) throw new ScoreException("Calculated tricks as "+c.getTricks()+" but hand says "+this);
+         if (tricks != 0 && tricks != c.getTricks())
+            throw new ScoreException(
+                  MessageFormat.format(
+                     _("Calculated tricks as {0} but hand says {1}."),
+                     new Object[] { c.getTricks(), this }));
          tricks = c.getTricks();
          contract = c.getContract();
          declarer = c.getDeclarer();
@@ -231,7 +245,7 @@ public class Hand
    {
       try {
          if (tricks > 13)
-               throw new HandParseException("Cannot take "+tricks+" tricks!");
+               throw new HandParseException(MessageFormat.format(_("Cannot take  {0} tricks!"), new Object[] { tricks }));
          Contract c = new Contract(contract, declarer, 0, tricks);
          if (!c.isPassOut())
             switch (declarer) {
@@ -245,11 +259,11 @@ public class Hand
                case 'W':
                   break;
                default:
-                  throw new HandParseException("On board "+number+" declarer should be one of NSEW, it is actually "+declarer);
+                  throw new HandParseException(MessageFormat.format(_("On board {0} declarer should be one of NSEW, it is actually {1}."), new Object[] { number, declarer}));
             }
       } catch (ContractParseException CPe) {
          if (Debug.debug) Debug.print(CPe);
-         throw new HandParseException("Failed to parse contract on board "+number+": "+contract);
+         throw new HandParseException(MessageFormat.format(_("Failed to parse contract on board {0}: {1}"), new Object[] { number, contract}));
       } catch (NoContractException NCe) {
          if (Debug.debug) Debug.print(NCe);
          /* not assigning scores on hands which have no contract. Must be averages or something. */
@@ -303,9 +317,9 @@ public class Hand
                      ewavetype = AVERAGE_MINUS;
                      break;
                   default:
-                     throw new HandParseException("Invalid Average: "+ewscore);
+                     throw new HandParseException(_("Invalid Average: ")+ewscore);
                }
-            else throw new HandParseException("Invalid Score: "+ewscore);
+            else throw new HandParseException(_("Invalid Score: ")+ewscore);
          }
    }
    public void setNSScore(String nsscore) throws HandParseException
@@ -327,9 +341,9 @@ public class Hand
                      nsavetype = AVERAGE_MINUS;
                      break;
                   default:
-                     throw new HandParseException("Invalid Average: "+nsscore);
+                     throw new HandParseException(_("Invalid Average: ")+nsscore);
                }
-            else throw new HandParseException("Invalid Score: "+nsscore);
+            else throw new HandParseException(_("Invalid Score: ")+nsscore);
          }
    }
    public void setForcedNSMP(boolean forced) { forced_nsmp = forced; }
@@ -343,27 +357,27 @@ public class Hand
       sb.append(number);
       sb.append(": ");
       sb.append(ns);
-      sb.append(" vs ");
+      sb.append(_(" vs "));
       sb.append(ew);
       sb.append(" ");
       sb.append(contract);
-      sb.append(" by ");
+      sb.append(_(" by "));
       sb.append(declarer);
-      sb.append(" making ");
+      sb.append(_(" making "));
       sb.append(tricks);
-      sb.append(" tricks. ");
+      sb.append(_(" tricks. "));
       sb.append(nsscore);
-      if (forced_nsscore) sb.append(" (forced)");
-      sb.append(" to NS ");
+      if (forced_nsscore) sb.append(_(" (forced)"));
+      sb.append(_(" to NS "));
       sb.append(ewscore);
-      if (forced_ewscore) sb.append(" (forced)");
-      sb.append(" to EW ");
+      if (forced_ewscore) sb.append(_(" (forced)"));
+      sb.append(_(" to EW "));
       sb.append(nsmp);
-      if (forced_nsmp) sb.append(" (forced)");
-      sb.append(" to NS ");
+      if (forced_nsmp) sb.append(_(" (forced)"));
+      sb.append(_(" to NS "));
       sb.append(ewmp);
-      if (forced_ewmp) sb.append(" (forced)");
-      sb.append(" to EW.");
+      if (forced_ewmp) sb.append(_(" (forced)"));
+      sb.append(_(" to EW."));
       return sb.toString();
    }
    public String[] export()

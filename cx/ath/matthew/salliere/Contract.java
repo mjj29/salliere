@@ -20,6 +20,9 @@
 package cx.ath.matthew.salliere;
 
 import cx.ath.matthew.debug.Debug;
+import static cx.ath.matthew.salliere.Gettext._;
+
+import java.text.MessageFormat;
 
 public class Contract
 {
@@ -132,7 +135,7 @@ public class Contract
                beer = true;
                continue;
             default:
-               throw new ContractParseException("Symbol: "+cs[i]+" not allowed in contract");
+               throw new ContractParseException(MessageFormat.format(_("Symbol: {0} not allowed in contract"), new Object[] { cs[i] }));
 
          }
       }
@@ -145,9 +148,9 @@ public class Contract
          this.contract = "P.O.";
          return;
       }
-      if (val < 1 || val > 7) throw new ContractParseException("Value must be between 1 & 7");
-      if (den == ' ') throw new ContractParseException("No denomination specified in contract");
-      if (doubled > 4) throw new ContractParseException("Cannot re-re-double contracts!"); 
+      if (val < 1 || val > 7) throw new ContractParseException(_("Value must be between 1 & 7"));
+      if (den == ' ') throw new ContractParseException(_("No denomination specified in contract"));
+      if (doubled > 4) throw new ContractParseException(_("Cannot re-re-double contracts!")); 
 
       if (Debug.debug) Debug.print(""+val+den+(1<doubled?"X":"")+(2<doubled?"X":"")+" by "+declarer+" making "+tricks);
 

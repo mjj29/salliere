@@ -7,6 +7,7 @@ CC?=gcc
 LD?=ld
 GCJFLAGS?=-fjni
 JCFLAGS?=-source 1.5 -Xlint:all
+MSGFMT?=msgfmt
 
 PREFIX?=/usr/local
 JARDIR?=$(PREFIX)/share/java
@@ -35,18 +36,20 @@ classes: .classes
 .classes: $(SRC)
 	mkdir -p classes
 	$(JAVAC) $(JCFLAGS) -cp $(CLASSPATH):classes -d classes $^
+	(cd translations; for i in *.po; do $(MSGFMT) --java2 -r salliere_localized -d ../classes -l $${i%.po} $$i; done)
+	$(MSGFMT) --java2 -r salliere_localized -d classes translations/en_GB.po
 	touch .classes
 clean:
 	rm -rf classes bin testbin salliere-$(VERSION)
 	rm -f .classes .bin .testbin *.tar.gz *.jar *.1 *Manifest.txt
 
 salliere-$(VERSION).jar: SalliereManifest.txt .classes
-	(cd classes; $(JAR) cfm ../$@ ../$< $(shell cd classes; find cx -name '*.class' -and -not -name 'GSalliere*' | sed 's/\$$/\\$$/g'))
+	(cd classes; $(JAR) cfm ../$@ ../$< $(shell cd classes; find cx -name '*.class' -and -not -name 'GSalliere*' | sed 's/\$$/\\$$/g') *localized*.class)
 
 gsalliere-$(VERSION).jar: GSalliereManifest.txt .classes
 	(cd classes; $(JAR) cfm ../$@ ../$< cx/ath/matthew/salliere/GSalliere*.class)
 
-salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt.in gsalliere.sh gsalliere.sgml
+salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt.in gsalliere.sh gsalliere.sgml translations
 	mkdir -p salliere-$(VERSION)
 	cp -a $^ salliere-$(VERSION)
 	tar zcf $@ salliere-$(VERSION)
@@ -87,6 +90,10 @@ else
 endif
 	cat $< >> $@
 	echo "Implementation-Version: $(VERSION)" >> $@
+
+translations/en_GB.po: $(SRC)
+	echo "#java-format" > $@
+	sed -n '/_(/s/.*_("\([^"]*\)").*/\1/p' $^ | sort -u | sed 's/\(.*\)/msgid "\1"\nmsgstr "\1"/' >> $@
 
 install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).jar salliere-$(VERSION).jar changelog COPYING INSTALL README todo
 	install -d $(DESTDIR)$(BINDIR)

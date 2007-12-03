@@ -23,6 +23,7 @@ import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 
 import cx.ath.matthew.debug.Debug;
+import static cx.ath.matthew.salliere.Gettext._;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -70,7 +71,7 @@ public class GSalliere extends Salliere
          private Board board;
          public BoardEditDialog(Board b)
          {
-            super(GSalliereMainFrame.this, "Edit Board "+b.getNumber(), true);
+            super(GSalliereMainFrame.this, _("Edit Board ")+b.getNumber(), true);
             this.board = b;
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             setContentPane(new JPanel(new BorderLayout()));
@@ -106,10 +107,10 @@ public class GSalliere extends Salliere
          public String getColumnName(int columnIndex)
          {
             switch (columnIndex) {
-               case 0: return "Number";
-               case 1: return "Played";
-               case 2: return "Pairs";
-               default: return "ERR0R";
+               case 0: return _("Number");
+               case 1: return _("Played");
+               case 2: return _("Pairs");
+               default: return _("ERR0R");
             }
          }
          public Class getColumnClass(int columnIndex)
@@ -196,17 +197,17 @@ public class GSalliere extends Salliere
          public String getColumnName(int columnIndex)
          {
             switch (columnIndex) {
-               case 0: return "Number";
-               case 1: return "NS";
-               case 2: return "EW";
-               case 3: return "Contract";
-               case 4: return "By";
-               case 5: return "Tricks";
-               case 6: return "Score NS";
-               case 7: return "Score EW";
-               case 8: return "MP NS";
-               case 9: return "MP EW";
-               default: return "ERR0R";
+               case 0: return _("Number");
+               case 1: return _("NS");
+               case 2: return _("EW");
+               case 3: return _("Contract");
+               case 4: return _("By");
+               case 5: return _("Tricks");
+               case 6: return _("Score NS");
+               case 7: return _("Score EW");
+               case 8: return _("MP NS");
+               case 9: return _("MP EW");
+               default: return _("ERR0R");
             }
          }
          public Class getColumnClass(int columnIndex)
@@ -317,10 +318,10 @@ public class GSalliere extends Salliere
                }
             } catch (HandParseException HPe) {
                if (Debug.debug) Debug.print(HPe);
-               showerror("Problem while entering score: "+HPe);
+               showerror(_("Problem while entering score: ")+HPe);
             } catch (BoardValidationException BVe) {
                if (Debug.debug) Debug.print(BVe);
-               showerror("Problem while exporting: "+BVe);
+               showerror(_("Problem while exporting: ")+BVe);
             }
          }
          public void addTableModelListener(TableModelListener l) {}
@@ -342,13 +343,13 @@ public class GSalliere extends Salliere
          public String getColumnName(int columnIndex)
          {
             switch (columnIndex) {
-               case 0: return "Number";
-               case 1: return "Names";
+               case 0: return _("Number");
+               case 1: return _("Names");
                case 2: return "";
-               case 3: return "Match Points";
-               case 4: return "Percentage";
-               case 5: return "Local Points";
-               default: return "ERR0R";
+               case 3: return _("Match Points");
+               case 4: return _("Percentage");
+               case 5: return _("Local Points");
+               default: return _("ERR0R");
             }
          }
          public Class getColumnClass(int columnIndex)
@@ -434,7 +435,7 @@ public class GSalliere extends Salliere
              if (Debug.debug) Debug.print("Menu Action: "+command);
              if ("loadscores".equals(command)) {
 
-                status.setText("Loading Boards...");
+                status.setText(_("Loading Boards..."));
                 JFileChooser fc;
                 if (null == boardfile)
                    fc = new JFileChooser();
@@ -448,17 +449,17 @@ public class GSalliere extends Salliere
                    File f = fc.getSelectedFile();
                    try {
                       boardfile = f.getCanonicalPath();
-                      status.setText("Loading Boards from "+boardfile);
+                      status.setText(_("Loading Boards from ")+boardfile);
                       boards = readBoards(new FileInputStream(f));
                       boardtable.setModel(new BoardTableDataModel(boards));
-                      status.setText("Loaded Boards from "+boardfile);
+                      status.setText(_("Loaded Boards from ")+boardfile);
                    } catch (IOException IOe) {
                       if (Debug.debug) Debug.print(IOe);
-                      showerror("Problem loading boards file: "+IOe);
+                      showerror(_("Problem loading boards file: ")+IOe);
                       boards = null;
                    } catch (BoardValidationException BVe) {
                       if (Debug.debug) Debug.print(BVe);
-                      showerror("Problem loading boards file: "+BVe);
+                      showerror(_("Problem loading boards file: ")+BVe);
                       boards = null;
                    }
                 } else {
@@ -467,7 +468,7 @@ public class GSalliere extends Salliere
 
              } else if ("loadnames".equals(command)) {
 
-                status.setText("Loading Names...");
+                status.setText(_("Loading Names..."));
                 JFileChooser fc;
                 if (null != namesfile)
                    fc = new JFileChooser(new File(namesfile).getParent());
@@ -482,21 +483,21 @@ public class GSalliere extends Salliere
 
                    try {
                       namesfile = f.getCanonicalPath();
-                      status.setText("Loading Names from "+namesfile);
+                      status.setText(_("Loading Names from ")+namesfile);
                       pairs = readPairs(new FileInputStream(f), false);
                       nametable.setModel(new PairTableDataModel(pairs));
-                      status.setText("Loaded Names from "+namesfile);
+                      status.setText(_("Loaded Names from ")+namesfile);
                    } catch (IOException IOe) {
                       if (Debug.debug) Debug.print(IOe);
-                      showerror("Problem loading names file: "+IOe);
+                      showerror(_("Problem loading names file: ")+IOe);
                       pairs = null;
                    }
                 }
 
              } else if ("loadtricks".equals(command)) {
 
-                status.setText("Loading Tricks...");
-                if (null == boards) showerror("Must Load Boards before loading trick data");
+                status.setText(_("Loading Tricks..."));
+                if (null == boards) showerror(_("Must Load Boards before loading trick data"));
                 else {
                    JFileChooser fc;
                    if (null == boardfile)
@@ -510,23 +511,23 @@ public class GSalliere extends Salliere
 
                       try {
                          namesfile = f.getCanonicalPath();
-                         status.setText("Loading Tricks from "+namesfile);
+                         status.setText(_("Loading Tricks from ")+namesfile);
                          readTrickData(boards, new FileInputStream(f));
                          nametable.setModel(new PairTableDataModel(pairs));
-                         status.setText("Loaded Tricks from "+namesfile);
+                         status.setText(_("Loaded Tricks from ")+namesfile);
                       } catch (IOException IOe) {
                          if (Debug.debug) Debug.print(IOe);
-                         showerror("Problem loading names file: "+IOe);
+                         showerror(_("Problem loading names file: ")+IOe);
                          pairs = null;
                       }
                    }
                 }
 
              } else if ("savescores".equals(command)) {
-                if (null == boards) showerror("Must Load Boards before saving them");
+                if (null == boards) showerror(_("Must Load Boards before saving them"));
                 else {
 
-                   status.setText("Saving Boards");
+                   status.setText(_("Saving Boards"));
                    JFileChooser fc;
                    if (null == boardfile)
                       fc = new JFileChooser();
@@ -538,21 +539,21 @@ public class GSalliere extends Salliere
                       File f = fc.getSelectedFile();
                       try {
                          boardfile = f.getCanonicalPath();
-                         status.setText("Saving Boards to "+boardfile);
+                         status.setText(_("Saving Boards to ")+boardfile);
                          writeBoards(boards, new FileOutputStream(f));
-                         status.setText("Saved Boards to "+boardfile);
+                         status.setText(_("Saved Boards to ")+boardfile);
                       } catch (IOException IOe) {
                          if (Debug.debug) Debug.print(IOe);
-                         showerror("Problem saving boards file: "+IOe);
+                         showerror(_("Problem saving boards file: ")+IOe);
                       }
                    }
 
                 }
              } else if ("savenames".equals(command)) {
-                if (null == pairs) showerror("Must Load Pairs before saving them");
+                if (null == pairs) showerror(_("Must Load Pairs before saving them"));
                 else {
 
-                   status.setText("Saving Names");
+                   status.setText(_("Saving Names"));
                    JFileChooser fc;
                    if (null == namesfile)
                       fc = new JFileChooser();
@@ -564,18 +565,18 @@ public class GSalliere extends Salliere
                       File f = fc.getSelectedFile();
                       try {
                          namesfile = f.getCanonicalPath();
-                         status.setText("Saving Names to "+namesfile);
+                         status.setText(_("Saving Names to ")+namesfile);
                          writePairs(pairs, new FileOutputStream(f));
-                         status.setText("Saved Names to "+namesfile);
+                         status.setText(_("Saved Names to ")+namesfile);
                       } catch (IOException IOe) {
                          if (Debug.debug) Debug.print(IOe);
-                         showerror("Problem saving names file: "+IOe);
+                         showerror(_("Problem saving names file: ")+IOe);
                       }
                    }
                 }
              } else if ("export".equals(command)) {
-                status.setText("Exporting results");
-                if (null == pairs || null == boards) showerror("Must Load Pairs and boards before exporting");
+                status.setText(_("Exporting results"));
+                if (null == pairs || null == boards) showerror(_("Must Load Pairs and boards before exporting"));
                 else 
                   export(GSalliereMainFrame.this);
              } else if ("quit".equals(command)) {
@@ -596,55 +597,55 @@ public class GSalliere extends Salliere
              String command = e.getActionCommand();
              try {
                 if ("score".equals(command)) {
-                   status.setText("Scoring boards");
-                   if (null == boards) showerror("Must Load Boards before Scoring");
+                   status.setText(_("Scoring boards"));
+                   if (null == boards) showerror(_("Must Load Boards before Scoring"));
                    else score(boards);
                 } else if ("matchpoint".equals(command)) {
-                   status.setText("Matchpointing boards");
-                   if (null == boards) showerror("Must Load Boards before Matchpointing");
+                   status.setText(_("Matchpointing boards"));
+                   if (null == boards) showerror(_("Must Load Boards before Matchpointing"));
                    else matchpoint(boards);
                 } else if ("ximp".equals(command)) {
-                   status.setText("XIMPing boards");
-                   if (null == boards) showerror("Must Load Boards before XIMPing");
+                   status.setText(_("XIMPing boards"));
+                   if (null == boards) showerror(_("Must Load Boards before XIMPing"));
                    else ximp(boards);
                 } else if ("parimp".equals(command)) {
-                   status.setText("IMPing boards against par");
-                   if (null == boards) showerror("Must Load Boards before IMPing");
+                   status.setText(_("IMPing boards against par"));
+                   if (null == boards) showerror(_("Must Load Boards before IMPing"));
                    else parimp(boards);
                 } else if ("total".equals(command)) {
-                   status.setText("Calculating total matchpoints and percentages");
-                   if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before Totalling");
+                   status.setText(_("Calculating total matchpoints and percentages"));
+                   if (null == boards || null == pairs) showerror(_("Must Load Boards and Pairs before Totalling"));
                    else total(pairs, boards);
                    nametable.repaint();
                 } else if ("localpoint".equals(command)) {
-                   status.setText("Allocating local points");
-                   if (null == pairs) showerror("Must Load Pairs before Scoring");
+                   status.setText(_("Allocating local points"));
+                   if (null == pairs) showerror(_("Must Load Pairs before allocating local points"));
                    else localpoint(pairs, false);
                    nametable.repaint();
                 } else if ("results".equals(command)) {
-                   status.setText("Exporting results");
-                   if (null == boards || null == pairs) showerror("Must Load Boards and Pairs before exporting results");
+                   status.setText(_("Exporting results"));
+                   if (null == boards || null == pairs) showerror(_("Must Load Boards and Pairs before exporting results"));
                    else export(GSalliereMainFrame.this);
                 } else if ("validate".equals(command)) {
-                   status.setText("Verifying Movement");
-                   if (null == boards) showerror("Must Load Boards before Verifying movement");
+                   status.setText(_("Verifying Movement"));
+                   if (null == boards) showerror(_("Must Load Boards before Verifying movement"));
                    else verify(boards, setsize.getText());
                 }
              } catch (ScoreException Se) {
                if (Debug.debug) Debug.print(Se);
-               showerror("Problem while performing action: "+Se);
+               showerror(_("Problem while performing action: ")+Se);
              } catch (ContractParseException CPe) {
                if (Debug.debug) Debug.print(CPe);
-               showerror("Problem while performing action: "+CPe);
+               showerror(_("Problem while performing action: ")+CPe);
              } catch (BoardValidationException BVe) {
                 if (Debug.debug) Debug.print(BVe);
-                showerror("Problem validating boards: "+BVe);
+                showerror(_("Problem validating boards: ")+BVe);
              } catch (MovementVerificationException MVe) {
                if (Debug.debug) Debug.print(MVe);
-               showerror("Problem while performing action: "+MVe);
+               showerror(_("Problem while performing action: ")+MVe);
              } catch (HandParseException HPe) {
                if (Debug.debug) Debug.print(HPe);
-               showerror("Problem while performing action: "+HPe);
+               showerror(_("Problem while performing action: ")+HPe);
              }
          }
       }
@@ -675,7 +676,7 @@ public class GSalliere extends Salliere
       private JTable nametable;
       public GSalliereMainFrame()
       {
-         super("GSalliere - Duplicate Bridge Scoring");
+         super(_("GSalliere - Duplicate Bridge Scoring"));
          setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
 
          /* MENU */
@@ -685,53 +686,53 @@ public class GSalliere extends Salliere
          setContentPane(new JPanel(new BorderLayout()));
 
          // file menu
-         JMenu file = new JMenu("File");
+         JMenu file = new JMenu(_("File"));
          file.setMnemonic(KeyEvent.VK_F);
          file.getAccessibleContext().setAccessibleDescription(
-                       "Has options to load and save score files and export results");
+                       _("Has options to load and save score files and export results"));
          menuBar.add(file);
 
          JMenuItem item;
          ActionListener mal = new MenuActionListener();
 
          // load score file
-         item = new JMenuItem("Load Score File", KeyEvent.VK_L);
+         item = new JMenuItem(_("Load Score File"), KeyEvent.VK_L);
          item.setActionCommand("loadscores");
          item.addActionListener(mal);
          file.add(item);
 
          // load names file
-         item = new JMenuItem("Load Names File", KeyEvent.VK_N);
+         item = new JMenuItem(_("Load Names File"), KeyEvent.VK_N);
          item.setActionCommand("loadnames");
          item.addActionListener(mal);
          file.add(item);
 
          // load tricks file
-         item = new JMenuItem("Load Tricks File", KeyEvent.VK_T);
+         item = new JMenuItem(_("Load Tricks File"), KeyEvent.VK_T);
          item.setActionCommand("loadtricks");
          item.addActionListener(mal);
          file.add(item);
 
          // save score file
-         item = new JMenuItem("Save Score File", KeyEvent.VK_S);
+         item = new JMenuItem(_("Save Score File"), KeyEvent.VK_S);
          item.setActionCommand("savescores");
          item.addActionListener(mal);
          file.add(item);
 
          // save names file
-         item = new JMenuItem("Save Names File", KeyEvent.VK_A);
+         item = new JMenuItem(_("Save Names File"), KeyEvent.VK_A);
          item.setActionCommand("savenames");
          item.addActionListener(mal);
          file.add(item);
 
          // export results
-         item = new JMenuItem("Export Results", KeyEvent.VK_E);
+         item = new JMenuItem(_("Export Results"), KeyEvent.VK_E);
          item.setActionCommand("export");
          item.addActionListener(mal);
          file.add(item);
 
          // quit
-         item = new JMenuItem("Quit", KeyEvent.VK_Q);
+         item = new JMenuItem(_("Quit"), KeyEvent.VK_Q);
          item.setActionCommand("quit");
          item.addActionListener(mal);
          file.add(item);
@@ -742,7 +743,7 @@ public class GSalliere extends Salliere
          body.setVisible(true);
          add(body, BorderLayout.CENTER);
 
-         body.add(new JLabel("Pairs"));
+         body.add(new JLabel(_("Pairs")));
 
          MouseListener moal = new MouseActionListener();
 
@@ -753,7 +754,7 @@ public class GSalliere extends Salliere
          if (null != pairs)
             nametable.setModel(new PairTableDataModel(pairs));
 
-         body.add(new JLabel("Boards"));
+         body.add(new JLabel(_("Boards")));
 
          boardtable = new JTable(new BoardTableDataModel(null));
          boardtable.addMouseListener(moal);
@@ -777,56 +778,56 @@ public class GSalliere extends Salliere
          ActionListener bal = new ButtonActionListener(setsize);
 
          // score
-         button = new JButton("Score");
-         button.setToolTipText("Score the contracts");
+         button = new JButton(_("Score"));
+         button.setToolTipText(_("Score the contracts"));
          button.setActionCommand("score");
          button.setMnemonic(KeyEvent.VK_S);
          button.addActionListener(bal);
          buttonbar.add(button);
 
          // matchpoint
-         button = new JButton("Match Point");
-         button.setToolTipText("Matchpoint the boards");
+         button = new JButton(_("Match Point"));
+         button.setToolTipText(_("Matchpoint the boards"));
          button.setActionCommand("matchpoint");
          button.setMnemonic(KeyEvent.VK_M);
          button.addActionListener(bal);
          buttonbar.add(button);
 
          // ximp
-         button = new JButton("XIMP");
-         button.setToolTipText("Cross-IMP the boards");
+         button = new JButton(_("XIMP"));
+         button.setToolTipText(_("Cross-IMP the boards"));
          button.setActionCommand("ximp");
          button.setMnemonic(KeyEvent.VK_X);
          button.addActionListener(bal);
          buttonbar.add(button);
 
          // parimp
-         button = new JButton("IMP-Par");
-         button.setToolTipText("IMP the boards against par");
+         button = new JButton(_("IMP-Par"));
+         button.setToolTipText(_("IMP the boards against par"));
          button.setActionCommand("parimp");
          button.setMnemonic(KeyEvent.VK_P);
          button.addActionListener(bal);
          buttonbar.add(button);
 
          // total
-         button = new JButton("Total");
-         button.setToolTipText("Total the match points for the pairs");
+         button = new JButton(_("Total"));
+         button.setToolTipText(_("Total the match points for the pairs"));
          button.setActionCommand("total");
          button.setMnemonic(KeyEvent.VK_T);
          button.addActionListener(bal);
          buttonbar.add(button);
 
          // localpoint
-         button = new JButton("Local Point");
-         button.setToolTipText("Calculate local points for the pairs");
+         button = new JButton(_("Local Point"));
+         button.setToolTipText(_("Calculate local points for the pairs"));
          button.setActionCommand("localpoint");
          button.setMnemonic(KeyEvent.VK_M);
          button.addActionListener(bal);
          buttonbar.add(button);
 
          // results
-         button = new JButton("Results");
-         button.setToolTipText("Export the Results");
+         button = new JButton(_("Results"));
+         button.setToolTipText(_("Export the Results"));
          button.setActionCommand("results");
          button.setMnemonic(KeyEvent.VK_R);
          button.addActionListener(bal);
@@ -838,18 +839,18 @@ public class GSalliere extends Salliere
          buttonbarholder.add(buttonbar);
          
          // validate
-         buttonbar.add(new JLabel("Set Size:"));
+         buttonbar.add(new JLabel(_("Set Size:")));
          buttonbar.add(setsize);
-         button = new JButton("Validate");
-         button.setToolTipText("Validate the movement");
+         button = new JButton(_("Validate"));
+         button.setToolTipText(_("Validate the movement"));
          button.setActionCommand("validate");
          button.setMnemonic(KeyEvent.VK_V);
          button.addActionListener(bal);
          buttonbar.add(button);
 
          // save
-         button = new JButton("Save");
-         button.setToolTipText("Save both files");
+         button = new JButton(_("Save"));
+         button.setToolTipText(_("Save both files"));
          button.setActionCommand("save");
          button.setMnemonic(KeyEvent.VK_A);
          button.addActionListener(bal);
@@ -864,8 +865,8 @@ public class GSalliere extends Salliere
       }
       public void showerror(String text)
       {
-         status.setText("Error: "+text);
-         JOptionPane.showMessageDialog(this, text, "Error", JOptionPane.ERROR_MESSAGE);
+         status.setText(_("Error: ")+text);
+         JOptionPane.showMessageDialog(this, text, _("Error"), JOptionPane.ERROR_MESSAGE);
       }
    }
    public static void export(GSalliereMainFrame root)
@@ -877,22 +878,22 @@ public class GSalliere extends Salliere
 
       JTextField title = new JTextField();
       ButtonGroup format = new ButtonGroup();
-      JRadioButton textformat = new JRadioButton("Text", true);
+      JRadioButton textformat = new JRadioButton(_("Text"), true);
       textformat.setActionCommand("Text");
       format.add(textformat);
-      JRadioButton htmlformat = new JRadioButton("HTML", true);
+      JRadioButton htmlformat = new JRadioButton(_("HTML"), true);
       htmlformat.setActionCommand("HTML");
       format.add(htmlformat);
-      JRadioButton pdfformat = new JRadioButton("PDF", true);
+      JRadioButton pdfformat = new JRadioButton(_("PDF"), true);
       pdfformat.setActionCommand("PDF");
       format.add(pdfformat);
-      JCheckBox results = new JCheckBox("Results", true);
-      JCheckBox matrix = new JCheckBox("MP Matrix");
-      JCheckBox boardby = new JCheckBox("Board-by-boards");
-      JCheckBox orange = new JCheckBox("Orange Points");
+      JCheckBox results = new JCheckBox(_("Results"), true);
+      JCheckBox matrix = new JCheckBox(_("MP Matrix"));
+      JCheckBox boardby = new JCheckBox(_("Board-by-boards"));
+      JCheckBox orange = new JCheckBox(_("Orange Points"));
       JCheckBox ximp = new JCheckBox("IMP");
-      JCheckBox par = new JCheckBox("Show Par");
-      accessories.add(new JLabel("Title: "));
+      JCheckBox par = new JCheckBox(_("Show Par"));
+      accessories.add(new JLabel(_("Title: ")));
       accessories.add(title);
       accessories.add(textformat);
       accessories.add(htmlformat);
@@ -905,7 +906,7 @@ public class GSalliere extends Salliere
       accessories.add(par);
 
 
-      int rv = fc.showDialog(root, "Export");
+      int rv = fc.showDialog(root, _("Export"));
       if (rv == JFileChooser.APPROVE_OPTION) {
          File exportfile = fc.getSelectedFile();
          String titlestr = title.getText();
@@ -938,7 +939,7 @@ public class GSalliere extends Salliere
             out.close();
          } catch (IOException IOe) {
             if (Debug.debug) Debug.print(IOe);
-            root.showerror("Problem while exporting: "+IOe);
+            root.showerror(_("Problem while exporting: ")+IOe);
          }
       }
    }
@@ -962,7 +963,7 @@ public class GSalliere extends Salliere
                boards = readBoards(new FileInputStream(boardfile));
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
-               System.out.println("Problem loading boards file: "+IOe);
+               System.out.println(_("Problem loading boards file: ")+IOe);
                boards = null;
             }
 
@@ -970,7 +971,7 @@ public class GSalliere extends Salliere
                pairs = readPairs(new FileInputStream(namesfile), false);
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
-               System.out.println("Problem loading names file: "+IOe);
+               System.out.println(_("Problem loading names file: ")+IOe);
                pairs = null;
             }
          }
@@ -981,7 +982,7 @@ public class GSalliere extends Salliere
 
       } catch (Exception e) {
          if (Debug.debug) Debug.print(e);
-         System.out.println("There was a problem during the execution of GSalliere: "+e.getMessage());
+         System.out.println(_("There was a problem during the execution of GSalliere: ")+e.getMessage());
          System.exit(1);
       }
    }

@@ -23,6 +23,7 @@ import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 
 import cx.ath.matthew.debug.Debug;
+import static cx.ath.matthew.salliere.Gettext._;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -47,6 +48,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
+import java.text.MessageFormat;
 
 public class Salliere
 {
@@ -198,7 +200,7 @@ public class Salliere
          size = Integer.parseInt(setsize);
       } catch (NumberFormatException NFe) {
          if (Debug.debug) Debug.print(NFe);
-         throw new MovementVerificationException(setsize+" isn't a number!");
+         throw new MovementVerificationException(setsize+_(" isn't a number!"));
       }
       
       Collections.sort(boardv, new BoardNumberComparer());
@@ -214,7 +216,9 @@ public class Salliere
             // check the pairs
             for (Hand h: (Hand[]) boards[i].getHands().toArray(new Hand[0])) 
                if (!pairs.contains(h.getNS()+" "+h.getEW()))
-                  throw new MovementVerificationException("Board "+boards[i].getNumber()+" was played by "+h.getNS()+" and "+h.getEW()+" which I was not expecting.");
+                  throw new MovementVerificationException(
+                        MessageFormat.format(_("Board {0} was played by {1} and {2}, which I was not expecting."), 
+                           new Object[] { boards[i].getNumber(), h.getNS(), h.getEW() }));
          }
       }
    }
@@ -270,7 +274,7 @@ public class Salliere
       }
 
       String[] headers = new String[pairs.length+1];
-      headers[0] = "Board";
+      headers[0] = _("Board");
       for (int j = 0; j < pairs.length; j++) 
          headers[j+1] = pairs[j].getNumber()+"  ";
 
@@ -279,7 +283,7 @@ public class Salliere
    }
    public static void boardbyboard(List boards, TablePrinter tabular, boolean ximp, boolean withpar) 
    {
-      String[] headers = new String[] { "NS", "EW", "Contract", "By", "Tricks", "Score:", "", ximp ? "IMPs" : "MPs:", "" };
+      String[] headers = new String[] { _("NS"), _("EW"), _("Contract"), _("By"), _("Tricks"), _("Score:"), "", ximp ? "IMPs" : _("MPs:"), "" };
       Collections.sort(boards, new BoardNumberComparer());
 
       for (Board b: (Board[]) boards.toArray(new Board[0])) {
@@ -293,9 +297,9 @@ public class Salliere
             lines.add(line);
          }
          if (withpar)
-            tabular.header("Board: "+b.getNumber()+" [ "+b.getParContract()+" by "+b.getPar().getDeclarer()+" ]");
+            tabular.header(_("Board: ")+b.getNumber()+" [ "+b.getParContract()+" by "+b.getPar().getDeclarer()+" ]");
          else
-            tabular.header("Board: "+b.getNumber());
+            tabular.header(_("Board: ")+b.getNumber());
          tabular.print(headers, (String[][]) lines.toArray(new String[0][]));
          tabular.gap();
       }
@@ -309,7 +313,7 @@ public class Salliere
       Pair[] ps = (Pair[]) pairs.toArray(new Pair[0]);
 
       // check we have enough to give LPs
-      if (ps.length < (individual?8:6)) throw new ScoreException("Must have at least 3 full tables at pairs or 2 full tables at individuals to award local points");
+      if (ps.length < (individual?8:6)) throw new ScoreException(_("Must have at least 3 full tables at pairs or 2 full tables at individuals to award local points"));
 
       // calculate LP scale based on number of pairs
       int[] LPs = new int[ps.length];
@@ -335,7 +339,9 @@ public class Salliere
          if (award < 6 && award > 0) award = 6;
          for (int j = a; j <= i; j++) {
             if (ps[j].getLPs() != 0 && ps[j].getLPs() != award) 
-               throw new ScoreException("Calculated "+award+" LPs for pair "+ps[j].getNumber()+", but data says "+ps[j].getLPs());
+               throw new ScoreException(
+                     MessageFormat.format(_("Calculated {0} LPs for pair {1} but data says {2}."),
+                        new Object[] { award, ps[j].getNumber(), ps[j].getLPs() }));
             ps[j].setLPs(award);
          }
       }
@@ -348,18 +354,18 @@ public class Salliere
       Collections.sort(pairs, new PairPercentageComparer());
 
       String points;
-      if (orange) points = "OPs";
-      else points = "LPs";
+      if (orange) points = _("OPs");
+      else points = _("LPs");
 
       String[] header;
       if (ximp && individual)
-         header = new String[] { "Num", "Name", "IMPs", points };
+         header = new String[] { _("Num"), _("Name"), _("IMPs"), points };
       else if (ximp && !individual)
-         header = new String[] { "Pair", "Names", "", "IMPs", points };
+         header = new String[] { _("Pair"), _("Names"), "", _("IMPs"), points };
       else if (!ximp && individual)
-         header = new String[] { "Num", "Name", "MPs", "%age", points };
+         header = new String[] { _("Num"), _("Name"), _("MPs"), _("%age"), points };
       else
-         header = new String[] { "Pair", "Names", "", "MPs", "%age", points };
+         header = new String[] { _("Pair"), _("Names"), "", _("MPs"), _("%age"), points };
 
       if (ximp)
          for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
@@ -395,7 +401,7 @@ public class Salliere
          options.put("--help", null);
          options.put("--orange", null);
          options.put("--ximp", null);
-         options.put("--title", "Salliere Duplicate Bridge Scorer: Results");
+         options.put("--title", _("Salliere Duplicate Bridge Scorer: Results"));
          options.put("--setsize", null);
          options.put("--individual", null);
          options.put("--with-par", null);
@@ -412,7 +418,7 @@ public class Salliere
                   else
                      options.put(opt[0], opt[1]);
                } else {
-                  System.out.println("Error: unknown option "+opt[0]);
+                  System.out.println(_("Error: unknown option ")+opt[0]);
                   syntax();
                   System.exit(1);
                }
@@ -421,7 +427,7 @@ public class Salliere
          }
 
          if (args.length < (i+3)) {
-            System.out.println("You must specify boards.csv and names.csv");
+            System.out.println(_("You must specify boards.csv and names.csv"));
             syntax();
             System.exit(1);
          }
@@ -459,7 +465,7 @@ public class Salliere
          else if ("pdf".equals(format[0].toLowerCase()))
             tabular = new PDFTablePrinter((String) options.get("--title"), out);
          else {
-            System.out.println("Unknown format: "+format[0]);
+            System.out.println(_("Unknown format: ")+format[0]);
             syntax();
             System.exit(1);
          }
@@ -479,7 +485,7 @@ public class Salliere
             else if ("ximp".equals(command)) ximp(boards);
             else if ("parimp".equals(command)) parimp(boards);
             else {
-               System.out.println("Bad Command: "+command);
+               System.out.println(_("Bad Command: ")+command);
                syntax();
                System.exit(1);
             }
@@ -497,7 +503,7 @@ public class Salliere
             Debug.setThrowableTraces(true);
             Debug.print(e);
          }
-         System.out.println("Salliere failed to compute results: "+e.getMessage());
+         System.out.println(_("Salliere failed to compute results: ")+e.getMessage());
          System.exit(1);
       }
    }
