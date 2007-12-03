@@ -245,7 +245,7 @@ public class Hand
    {
       try {
          if (tricks > 13)
-               throw new HandParseException(MessageFormat.format(_("Cannot take  {0} tricks!"), new Object[] { tricks }));
+               throw new HandParseException(MessageFormat.format(_("Cannot take {0} tricks!"), new Object[] { tricks }));
          Contract c = new Contract(contract, declarer, 0, tricks);
          if (!c.isPassOut())
             switch (declarer) {
