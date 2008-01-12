@@ -10,11 +10,12 @@ JCFLAGS?=-source 1.5 -Xlint:all
 MSGFMT?=msgfmt
 
 PREFIX?=/usr/local
-JARDIR?=$(PREFIX)/share/java
-DOCDIR?=$(PREFIX)/share/doc/salliere/
-MANDIR?=$(PREFIX)/share/man/man1/
-SHAREDIR?=$(PREFIX)/share/salliere/
-BINDIR?=$(PREFIX)/bin/
+JARLIBDIR?=$(PREFIX)/share/java
+JARINSTALLDIR?=$(PREFIX)/share/salliere
+DOCDIR?=$(PREFIX)/share/doc/salliere
+MANDIR?=$(PREFIX)/share/man/man1
+SHAREDIR?=$(PREFIX)/share/salliere
+BINDIR?=$(PREFIX)/bin
 
 DEBUG?=disable
 
@@ -62,7 +63,7 @@ debug-$(DEBUG).jar:
 	ln -sf /usr/share/java/debug-$(DEBUG).jar .
 
 bin/%: %.sh .bin
-	sed 's,\%JARPATH\%,$(JARDIR),;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
+	sed 's,\%JARINSTPATH\%,$(JARINSTALLDIR),;s,\%JARLIBPATH\%,$(JARLIBDIR),;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 
 testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itext.jar gsalliere-$(VERSION).jar
 	sed 's,\%JARPATH\%,.,;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
@@ -74,9 +75,9 @@ testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itex
 SalliereManifest.txt: Manifest.txt.in
 	echo Main-Class: cx.ath.matthew.salliere.Salliere > $@
 ifeq ($(DEBUG),enable)
-	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/itext.jar >> $@
+	echo Class-Path: $(JARLIBDIR)/csv.jar $(JARLIBDIR)/debug-$(DEBUG).jar $(JARLIBDIR)/itext.jar >> $@
 else
-	echo Class-Path: $(JARDIR)/csv.jar $(JARDIR)/itext.jar >> $@
+	echo Class-Path: $(JARLIBDIR)/csv.jar $(JARLIBDIR)/itext.jar >> $@
 endif
 	cat $< >> $@
 	echo "Implementation-Version: $(VERSION)" >> $@
@@ -84,9 +85,9 @@ endif
 GSalliereManifest.txt: Manifest.txt.in
 	echo Main-Class: cx.ath.matthew.salliere.GSalliere > $@
 ifeq ($(DEBUG),enable)
-	echo Class-Path: $(JARDIR)/debug-$(DEBUG).jar $(JARDIR)/salliere-$(VERSION).jar >> $@
+	echo Class-Path: $(JARLIBDIR)/debug-$(DEBUG).jar $(JARINSTALLDIR)/salliere-$(VERSION).jar >> $@
 else
-	echo Class-Path: $(JARDIR)/salliere-$(VERSION).jar >> $@
+	echo Class-Path: $(JARINSTALLDIR)/salliere-$(VERSION).jar >> $@
 endif
 	cat $< >> $@
 	echo "Implementation-Version: $(VERSION)" >> $@
@@ -102,17 +103,15 @@ install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).
 	install -d $(DESTDIR)$(MANDIR)
 	install -m 644 salliere.1 $(DESTDIR)$(MANDIR)
 	install -m 644 gsalliere.1 $(DESTDIR)$(MANDIR)
-	install -d $(DESTDIR)$(JARDIR)
-	install -m 644 salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)
-	install -m 644 gsalliere-$(VERSION).jar $(DESTDIR)$(JARDIR)
-	ln -sf salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/salliere.jar
-	ln -sf gsalliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/gsalliere.jar
+	install -d $(DESTDIR)$(JARINSTALLDIR)
+	install -m 644 salliere-$(VERSION).jar $(DESTDIR)$(JARINSTALLDIR)
+	install -m 644 gsalliere-$(VERSION).jar $(DESTDIR)$(JARINSTALLDIR)
 	install -d $(DESTDIR)$(DOCDIR)
 	install -m 644 changelog COPYING INSTALL README todo $(DESTDIR)$(DOCDIR)
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/salliere $(DESTDIR)$(BINDIR)/gsalliere
-	rm -f $(DESTDIR)$(JARDIR)/salliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/gsalliere-$(VERSION).jar $(DESTDIR)$(JARDIR)/salliere.jar $(DESTDIR)$(JARDIR)/gsalliere.jar
+	rm -f $(DESTDIR)$(JARINSTALLDIR)/salliere-$(VERSION).jar $(DESTDIR)$(JARINSTALLDIR)/gsalliere-$(VERSION).jar
 	rm -f $(DESTDIR)$(MANDIR)/salliere.1 $(DESTDIR)$(MANDIR)/gsalliere.1
 	rm -f $(DESTDIR)$(DOCDIR)/changelog $(DESTDIR)$(DOCDIR)/COPYING $(DESTDIR)$(DOCDIR)/INSTALL $(DESTDIR)$(DOCDIR)/README $(DESTDIR)$(DOCDIR)/todo
-	-rmdir $(DESTDIR)$(BINDIR) $(DESTDIR)$(MANDIR) $(DESTDIR)$(JARDIR) $(DESTDIR)$(DOCDIR)
+	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(BINDIR) $(DESTDIR)$(MANDIR) $(DESTDIR)$(JARINSTALLDIR) $(DESTDIR)$(DOCDIR)
