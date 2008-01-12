@@ -1,3 +1,8 @@
+Version 0.5.1:
+
+	* Move installation directories around, 
+	  only install into $PREFIX/share/salliere/
+
 Version 0.5:
 
 	* Support XIMP as well as Matchpointing
