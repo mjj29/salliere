@@ -21,7 +21,7 @@ DEBUG?=disable
 
 CLASSPATH=/usr/share/java/csv.jar:/usr/share/java/debug-$(DEBUG).jar:/usr/share/java/itext.jar
 
-VERSION=0.6
+VERSION=$(shell sed -n '1s/Version \(.*\):/\1/p' changelog)
 
 SRC=$(shell find cx -name '*.java')
 
