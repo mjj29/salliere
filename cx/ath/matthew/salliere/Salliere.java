@@ -283,7 +283,17 @@ public class Salliere
    }
    public static void boardbyboard(List boards, TablePrinter tabular, boolean ximp, boolean withpar) 
    {
-      String[] headers = new String[] { _("NS"), _("EW"), _("Contract"), _("By"), _("Tricks"), _("Score:"), "", ximp ? "IMPs" : _("MPs:"), "" };
+      String[] headers = new String[] {
+            _("NS"),
+            _("EW"),
+            _("Contract"), 
+            _("By"), 
+            _("Tricks"),
+            _("Score:"),
+            "",
+            ximp ? _("IMPs") 
+                 : _("MPs:"), 
+            "" };
       Collections.sort(boards, new BoardNumberComparer());
 
       for (Board b: (Board[]) boards.toArray(new Board[0])) {
@@ -359,13 +369,29 @@ public class Salliere
 
       String[] header;
       if (ximp && individual)
-         header = new String[] { _("Num"), _("Name"), _("IMPs"), points };
+         header = new String[] { _("Num"), 
+            _("Name"), 
+            _("IMPs"),
+            points };
       else if (ximp && !individual)
-         header = new String[] { _("Pair"), _("Names"), "", _("IMPs"), points };
+         header = new String[] { _("Pair"), 
+            _("Names"), 
+            "",
+            _("IMPs"),
+            points };
       else if (!ximp && individual)
-         header = new String[] { _("Num"), _("Name"), _("MPs"), _("%age"), points };
+         header = new String[] { _("Num"),
+            _("Name"),
+            _("MPs"),
+            _("%age"), 
+            points };
       else
-         header = new String[] { _("Pair"), _("Names"), "", _("MPs"), _("%age"), points };
+         header = new String[] { _("Pair"), 
+            _("Names"),
+            "",
+            _("MPs"), 
+            _("%age"),
+            points };
 
       if (ximp)
          for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {

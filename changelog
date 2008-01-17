@@ -1,4 +1,9 @@
+Version 0.5.2:
+
+	* Fix translation keys
+
 Version 0.5.1:
+
 	* Move installation directories around, 
 	  only install into $PREFIX/share/salliere/
 
