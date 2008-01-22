@@ -96,10 +96,11 @@ translations/en_GB.po: $(SRC)
 	echo "#java-format" > $@
 	sed -n '/_(/s/.*_("\([^"]*\)").*/\1/p' $^ | sort -u | sed 's/\(.*\)/msgid "\1"\nmsgstr "\1"/' >> $@
 
-install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).jar salliere-$(VERSION).jar changelog COPYING INSTALL README todo
+install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).jar salliere-$(VERSION).jar changelog COPYING INSTALL README todo bin/ecl2salliere
 	install -d $(DESTDIR)$(BINDIR)
 	install bin/salliere $(DESTDIR)$(BINDIR)
 	install bin/gsalliere $(DESTDIR)$(BINDIR)
+	install bin/ecl2salliere $(DESTDIR)$(BINDIR)
 	install -d $(DESTDIR)$(MANDIR)
 	install -m 644 salliere.1 $(DESTDIR)$(MANDIR)
 	install -m 644 gsalliere.1 $(DESTDIR)$(MANDIR)
@@ -110,7 +111,7 @@ install: salliere.1 gsalliere.1 bin/salliere bin/gsalliere gsalliere-$(VERSION).
 	install -m 644 changelog COPYING INSTALL README todo $(DESTDIR)$(DOCDIR)
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/salliere $(DESTDIR)$(BINDIR)/gsalliere
+	rm -f $(DESTDIR)$(BINDIR)/salliere $(DESTDIR)$(BINDIR)/gsalliere $(DESTDIR)$(BINDIR)/ecl2salliere
 	rm -f $(DESTDIR)$(JARINSTALLDIR)/salliere-$(VERSION).jar $(DESTDIR)$(JARINSTALLDIR)/gsalliere-$(VERSION).jar
 	rm -f $(DESTDIR)$(MANDIR)/salliere.1 $(DESTDIR)$(MANDIR)/gsalliere.1
 	rm -f $(DESTDIR)$(DOCDIR)/changelog $(DESTDIR)$(DOCDIR)/COPYING $(DESTDIR)$(DOCDIR)/INSTALL $(DESTDIR)$(DOCDIR)/README $(DESTDIR)$(DOCDIR)/todo
