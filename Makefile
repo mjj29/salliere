@@ -50,7 +50,7 @@ salliere-$(VERSION).jar: SalliereManifest.txt .classes
 gsalliere-$(VERSION).jar: GSalliereManifest.txt .classes
 	(cd classes; $(JAR) cfm ../$@ ../$< cx/ath/matthew/salliere/GSalliere*.class)
 
-salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt.in gsalliere.sh gsalliere.sgml translations ecl2salliere
+salliere-$(VERSION).tar.gz: Makefile cx README INSTALL COPYING changelog todo salliere.sh salliere.sgml Manifest.txt.in gsalliere.sh gsalliere.sgml translations ecl2salliere.sh
 	mkdir -p salliere-$(VERSION)
 	cp -a $^ salliere-$(VERSION)
 	tar zcf $@ salliere-$(VERSION)
