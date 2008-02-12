@@ -351,6 +351,7 @@ public class Salliere
          double handicap = (Double) handicaps.get(p);
          p.setPercentage(p.getPercentage()-handicap+normalize);
       }
+      modifiedpairs = true;
    }
    public static void localpoint(List pairs, boolean individual) throws ScoreException
    {
