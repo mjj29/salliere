@@ -931,7 +931,7 @@ public class GSalliere extends Salliere
             tabular.header(titlestr);
 
             if (results.isSelected()) 
-               results(pairs, tabular, orangebool, ximpbool, false);
+               results(pairs, tabular, orangebool, ximpbool, false, null, false);
             if (matrix.isSelected()) matrix(pairs, boards, tabular);
             if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool, parbool);
 
