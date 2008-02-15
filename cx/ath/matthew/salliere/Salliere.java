@@ -163,9 +163,9 @@ public class Salliere
       String version = Package.getPackage("cx.ath.matthew.salliere")
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
-      System.out.println("Syntax: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint ximp parimp total localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt>");
+      System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
+      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps");
       System.out.println("   Formats: txt html pdf");
    }
 
@@ -443,7 +443,11 @@ public class Salliere
             String[] r = (String[]) results.get(i);
             String[] n = new String[r.length+1];
             System.arraycopy(r, 0, n, 0, r.length-2);
-            n[r.length-2] = handicapdata.get(p).toString();
+            DecimalFormat format = new DecimalFormat("0.#");
+            FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
+            StringBuffer tmp = new StringBuffer();
+
+            n[r.length-2] = format.format(handicapdata.get(p), tmp, field).toString();
             if (Debug.debug) Debug.print("Printing handicap "+n[r.length-2]+" for "+p);
             System.arraycopy(r, r.length-2, n, r.length-1, 2);
             results.set(i, n);
