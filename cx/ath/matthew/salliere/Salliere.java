@@ -165,7 +165,7 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicapoffset=<num>");
       System.out.println("   Formats: txt html pdf");
    }
 
