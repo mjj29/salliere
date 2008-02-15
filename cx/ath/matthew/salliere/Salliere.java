@@ -25,6 +25,8 @@ import com.csvreader.CsvWriter;
 import cx.ath.matthew.debug.Debug;
 import static cx.ath.matthew.salliere.Gettext._;
 
+import org.apache.commons.net.ftp.FTPClient;
+
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
@@ -52,6 +54,12 @@ import java.text.MessageFormat;
 
 public class Salliere
 {
+   // data gathered from looking at ecats-ftp sessions
+   public static final String ECATS_SERVER = "sims.ecats.co.uk";
+   public static final String ECATS_USERNAME = "simsuser";
+   public static final String ECATS_PASSWORD = "simsuser32";
+   public static final String ECATS_UPLOAD_DIR = "\\sims";
+   public static final String ECATS_PROGRAM_VERSION = "5.6.28";
 
    static class HandNSComparer implements Comparator
    {
@@ -164,9 +172,21 @@ public class Salliere
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num>");
+      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...>");
       System.out.println("   Formats: txt html pdf");
+      System.out.println("   ECATS options: ");
+      System.out.println("      clubName = name of club (required)");
+      System.out.println("      session = ECATS session number (required)");
+      System.out.println("      phone = contact phone number (required)");
+      System.out.println("      country = club country (required)");
+      System.out.println("      name = contact name");
+      System.out.println("      fax = contact fax number");
+      System.out.println("      email = contact email");
+      System.out.println("      town = club town");
+      System.out.println("      county = club county");
+      System.out.println("      date = event date");
+      System.out.println("      event = event name");
    }
 
 
@@ -177,6 +197,245 @@ public class Salliere
          for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
             out.writeRecord(h.export());
       out.close();
+   }
+
+   private static void doC(PrintStream out, List boards, Map options)
+   {
+      // write C.txt
+      out.print("\t");
+      out.print("1"); //spare = 1
+      out.print("\t");
+      out.print("\"false\""); // true iff 2 winner movement
+      out.print("\t");
+      out.print(""+boards.size()); // # boards played (not important)
+      out.print("\t");
+      out.print("0"); // #boards/round (not important)
+      out.print("\t");
+      out.print("\"true\""); // true iff contracts were recorded
+      out.print("\t");
+      out.print('"'+(String) options.get("clubName")+'"'); //club name, compulsory (max 50 chars)
+      out.print("\t");
+      out.print('"'+(String) options.get("town")+'"'); //town (max 50 chars)
+      out.print("\t");
+      out.print('"'+(String) options.get("county")+'"'); //county (max 50 chars)
+      out.print("\t");
+      out.print('"'+(String) options.get("country")+'"'); //country, compulsory, spelling agreed in advance (max 50 chars)
+      out.print("\t");
+      out.print('"'+(String) options.get("name")+'"'); //name (max 50 chars)
+      out.print("\t");
+      out.print('"'+(String) options.get("phone")+'"'); //phone, compulsory (max 50 chars)
+      out.print("\t");
+      out.print('"'+(String) options.get("fax")+'"'); //fax (max 50 chars)
+      out.print("\t");
+      out.print('"'+(String) options.get("email")+'"'); //email (max 50 chars)
+      out.print("\t");
+      out.print("\"false\""); //spare = false
+      out.print("\t");
+      out.print((String) options.get("session")); //session #, compulsory, numeric
+      out.print("\t");
+      out.print('"'+ECATS_PROGRAM_VERSION+'"'); // program version. Important. My program? their program? this number seems to work...
+      out.print("\t");
+      out.print('"'+(String) options.get("date")+'"'); // "dd/mm/yyyy" 
+      out.print("\t");
+      out.print('"'+(String) options.get("event")+'"'); // event name, text (max 50 chars)
+      out.print("\r\n");
+   }
+
+   private static void doP(PrintStream out, List pairs)
+   {
+      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
+         out.print("\t");
+         out.print("0"); // spare = 0
+         out.print("\t");
+         out.print("0"); // spare = 0
+         out.print("\t");
+         out.print(p.getNumber()); // pair number (int)
+         out.print("\t");
+         String[] names = p.getNames();
+         out.print('"'+names[0]+" & "+names[1]+'"');
+         out.print("\t");
+         out.print('"'+names[0]+'"');
+         out.print("\t");
+         out.print('"'+names[1]+'"');
+         out.print("\t");
+         out.print("\"NS\""); // for a 2 winner movement, set this to the direction they were sitting. 
+         out.print("\r\n");
+      }
+   }
+   private static void doR(PrintStream out, List boards, String session)
+   {
+      for (Board bd: (Board[]) boards.toArray(new Board[0])) {
+         for (Hand b: (Hand[]) bd.getHands().toArray(new Hand[0])) {
+            out.print("\t");
+            out.print("0"); // spare == 0
+            out.print("\t");
+            out.print("\"\""); // spare == ""
+            out.print("\t");
+            out.print("\"\""); // section, not used == ""
+            out.print("\t");
+            out.print(b.getNumber()); // int, non zero
+            out.print("\t");
+            out.print(b.getNS());
+            out.print("\t");
+            out.print(b.getEW());
+            out.print("\t");
+            out.print(""+(int) b.getNSScore());
+            out.print("\t");
+            out.print(""+(int) b.getEWScore());
+            out.print("\t");
+            out.print("0"); // spare = 0
+            out.print("\t");
+            out.print('"'+b.getContract()+'"'); // text, not used
+            out.print("\t");
+            out.print("\""+b.getTricks()+'"'); // text, not used
+            out.print("\t");
+            out.print("\""+b.getDeclarer()+'"'); // text, not used
+            out.print("\t");
+            out.print(""+b.getNSMP()); // double, recalculated
+            out.print("\t");
+            out.print(""+b.getEWMP()); // double, recalculated
+            out.print("\t");
+            out.print('"');
+            if (b.isAveraged()) {
+               out.print("A");
+               switch (b.getNSAverage()) {
+                  case Hand.AVERAGE_PLUS:
+                     out.print("60");
+                     break;
+                  case Hand.AVERAGE_MINUS:
+                     out.print("40");
+                     break;
+                  default:
+                     out.print("50");
+               }
+               switch (b.getEWAverage()) {
+                  case Hand.AVERAGE_PLUS:
+                     out.print("60");
+                     break;
+                  case Hand.AVERAGE_MINUS:
+                     out.print("40");
+                     break;
+                  default:
+                     out.print("50");
+               }
+            }
+            out.print('"');
+            out.print("\t");
+            out.print(session); // session number again
+            out.print("\t");
+            out.print("0"); //spare = 0
+            out.print("\t");
+            out.print("0"); //spare = 0
+            out.print("\r\n");
+         }
+      }
+   }
+
+   public static void exportToECATS(List boards, List pairs, Map options, String exportdir) throws ScoreException
+   {
+      try {
+         if (null == exportdir)
+            exportdir = new File (".").getCanonicalPath();
+         System.err.println(_("Exporting scores in ECATS format to ")+exportdir);
+
+         String session = (String) options.get("session");
+   
+         // write club file
+         PrintStream out = new PrintStream(new FileOutputStream(exportdir+"/C.txt"));
+         doC(out, boards, options);
+         out.close();
+
+         // write pairs file
+         out = new PrintStream(new FileOutputStream(exportdir+"/P.txt"));
+         doP(out, pairs);
+         out.close();
+
+         // write boards file
+         out = new PrintStream(new FileOutputStream(exportdir+"/R.txt"));
+         doR(out, boards, session);
+         out.close();
+
+         // write end file
+         out = new PrintStream(new FileOutputStream(exportdir+"/E.txt"));
+         out.print("End\r\n");
+         out.close();
+
+      } catch (IOException IOe) {
+         if (Debug.debug) Debug.print(IOe);
+         throw new ScoreException(_("Exception occurred while trying to upload to ECATS: ")+IOe.getMessage());
+      }
+
+      System.err.println(_("ECATS files have been written. Email the files C.txt, P.txt, R.txt and E.txt to results@simpairs.com"));
+   }
+
+
+   public static void uploadToECATS(List boards, List pairs, Map options) throws ScoreException
+   {
+      System.err.println(_("Uploading scores to ECATS"));
+
+      // connect
+      FTPClient ftp = new FTPClient();
+      try {
+         ftp.connect(ECATS_SERVER);
+         ftp.login(ECATS_USERNAME, ECATS_PASSWORD);
+         ftp.changeWorkingDirectory(ECATS_UPLOAD_DIR);
+         ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
+         ftp.enterLocalPassiveMode();
+
+         // get options
+         String session = (String) options.get("session");
+         String clubName = (String) options.get("clubName");
+         String phone = (String) options.get("phone");
+
+         // calculate file prefix
+         StringBuffer prefixb = new StringBuffer();
+         for (int i = session.length(); i < 6; i++)
+            prefixb.append('0');
+         prefixb.append(session);
+         prefixb.append(clubName.replaceAll(" ", ""));
+         prefixb.append(phone.replaceAll(" ", ""));
+         String prefix = prefixb.toString();
+
+         // write club file
+         PrintStream out = new PrintStream(ftp.storeFileStream(prefix+"C.txt"));
+         doC(out, boards, options);
+         out.close();
+         if (!ftp.completePendingCommand()) throw new IOException(_("Uploading club details failed"));
+
+         // write pairs file
+         System.err.print(_("Uploading pair details"));
+         out = new PrintStream(ftp.storeFileStream(prefix+"P.txt"));
+         doP(out, pairs);
+         out.close();
+         if (!ftp.completePendingCommand()) throw new IOException(_("Uploading pairs failed"));
+         System.err.println();
+
+         // write boards file
+         System.err.print(_("Uploading results"));
+         out = new PrintStream(ftp.storeFileStream(prefix+"R.txt"));
+         doR(out, boards, session);
+         out.close();
+         System.err.println();
+         if (!ftp.completePendingCommand()) throw new IOException(_("Uploading results failed"));
+
+         // write end file
+         out = new PrintStream(ftp.storeFileStream(prefix+"E.txt"));
+         out.print("End\r\n");
+         out.close();
+         if (!ftp.completePendingCommand()) throw new IOException(_("Uploading end file failed"));
+
+         // log out
+         System.err.println(_("Upload complete"));
+         ftp.logout();
+         ftp.disconnect();
+      } catch (IOException IOe) {
+         if (Debug.debug) Debug.print(IOe);
+         try {
+            ftp.logout();
+            ftp.disconnect();
+         } catch (IOException e) {}
+         throw new ScoreException(_("Exception occurred while trying to upload to ECATS: ")+IOe.getMessage());
+      }
    }
 
    public static void score(List boards) throws ScoreException, ContractParseException, HandParseException
@@ -484,6 +743,8 @@ public class Salliere
          options.put("--trickdata", null);
          options.put("--handicapdata", null);
          options.put("--handicap-normalizer", "0.0");
+         options.put("--ecats-options", null);
+         options.put("--ecats-export-dir", null);
          int i;
          for (i = 0; i < args.length; i++) {
             if ("--".equals(args[i])) break;
@@ -531,6 +792,8 @@ public class Salliere
             handicapdata = readHandicapData(pairs, new FileInputStream((String) options.get("--handicapdata")));
          }
 
+         Map ecatsoptions = new ECatsOptionsMap((String) options.get("--ecats-options"));
+
          TablePrinter tabular = null;
 
          String[] format = (String[]) ((String) options.get("--output")).split(":");
@@ -569,6 +832,8 @@ public class Salliere
             else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble((String) options.get("--handicap-normalizer")));
             else if ("ximp".equals(command)) ximp(boards);
             else if ("parimp".equals(command)) parimp(boards);
+            else if ("ecats-upload".equals(command)) uploadToECATS(boards, pairs, ecatsoptions);
+            else if ("ecats-export".equals(command)) exportToECATS(boards, pairs, ecatsoptions, (String) options.get("--ecats-export-dir"));
             else {
                System.out.println(_("Bad Command: ")+command);
                syntax();
