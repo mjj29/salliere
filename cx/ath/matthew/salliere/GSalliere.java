@@ -27,6 +27,7 @@ import static cx.ath.matthew.salliere.Gettext._;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -39,7 +40,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -579,6 +582,20 @@ public class GSalliere extends Salliere
                 if (null == pairs || null == boards) showerror(_("Must Load Pairs and boards before exporting"));
                 else 
                   export(GSalliereMainFrame.this);
+             } else if ("ecats-upload".equals(command)) {
+                status.setText(_("Uploading results to ECATS"));
+                if (null == pairs || null == boards) showerror(_("Must Load Pairs and boards before uploading to ECATS"));
+                else {
+                   ECATSDialog d = new ECATSDialog(GSalliereMainFrame.this, pairs, boards, true);
+                   d.setVisible(true);
+                }
+             } else if ("ecats-export".equals(command)) {
+                status.setText(_("Exporting results for ECATS"));
+                if (null == pairs || null == boards) showerror(_("Must Load Pairs and boards before uploading to ECATS"));
+                else {
+                   ECATSDialog d = new ECATSDialog(GSalliereMainFrame.this, pairs, boards, false);
+                   d.setVisible(true);
+                }
              } else if ("quit".equals(command)) {
                 setVisible(false);
                 System.exit(0);
@@ -670,6 +687,121 @@ public class GSalliere extends Salliere
          public void mouseEntered(MouseEvent e) {}
          public void mouseExited(MouseEvent e) {}
       }
+      public class ECATSDialog extends JDialog implements ActionListener
+      {
+         GSalliereMainFrame gs;
+         List pairs;
+         List boards;
+         boolean upload;
+
+         // fields
+         JTextField clubName = new JTextField();
+         JTextField session = new JTextField();
+         JTextField phone = new JTextField();
+         JTextField country = new JTextField();
+         JTextField name = new JTextField();
+         JTextField fax = new JTextField();
+         JTextField email = new JTextField();
+         JTextField town = new JTextField();
+         JTextField county = new JTextField();
+         JTextField date = new JTextField();
+         JTextField event = new JTextField();
+         JTextField path = new JTextField();
+
+         public ECATSDialog(GSalliereMainFrame gs, List pairs, List boards, boolean upload)
+         {
+            this.gs = gs;
+            this.pairs = pairs;
+            this.boards = boards;
+            this.upload = upload;
+            setSize(600,200);
+            setLayout(new BorderLayout());
+            
+            // add sub-panels
+            JPanel left = new JPanel();
+            JPanel right = new JPanel();
+            JPanel bottom = new JPanel();
+            add(left, BorderLayout.WEST);
+            add(right, BorderLayout.EAST);
+            add(bottom, BorderLayout.SOUTH);
+
+            // left panel (mandatory fields)
+            left.setLayout(new GridLayout(0,2));
+            left.add(new JLabel(_("Mandatory")));
+            left.add(new JLabel(_("Fields")));
+            left.add(new JLabel(_("Session")));
+            left.add(session);
+            left.add(new JLabel(_("Club Name")));
+            left.add(clubName);
+            left.add(new JLabel(_("Country")));
+            left.add(country);
+            left.add(new JLabel(_("Contact Name")));
+            left.add(name);
+            left.add(new JLabel(_("Contact Email")));
+            left.add(email);
+            left.add(new JLabel(_("Contact Phone Number")));
+            left.add(phone);
+
+            // right panel (optional fields)
+            right.setLayout(new GridLayout(0,2));
+            right.add(new JLabel(_("Optional")));
+            right.add(new JLabel(_("Fields")));
+            right.add(new JLabel(_("Date")));
+            right.add(date);
+            right.add(new JLabel(_("Event")));
+            right.add(event);
+            right.add(new JLabel(_("Town")));
+            right.add(town);
+            right.add(new JLabel(_("County")));
+            right.add(county);
+            right.add(new JLabel(_("Contact Fax Number")));
+            right.add(fax);
+
+            // bottom panel (path and button)
+            bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
+            JButton confirm;
+            if (!upload) {
+               bottom.add(new JLabel(_("Directory to export to")));
+               bottom.add(path);
+               confirm = new JButton(_("Export to ECATS format"));
+            } else
+               confirm = new JButton(_("Upload to ECATS"));
+            confirm.addActionListener(this);
+            bottom.add(confirm);
+         }
+         public void actionPerformed(ActionEvent e)
+         {
+            setVisible(false);
+
+            Map options = new HashMap();
+            
+            options.put("clubName", clubName.getText());
+            options.put("session", session.getText());
+            options.put("phone", phone.getText());
+            options.put("country", country.getText());
+            options.put("name", name.getText());
+            options.put("fax", fax.getText());
+            options.put("email", email.getText());
+            options.put("town", town.getText());
+            options.put("county", county.getText());
+            options.put("date", date.getText());
+            options.put("event", event.getText());
+
+            try {
+               if (upload) {
+                  status.setText(_("Uploading scores to ECATS"));
+                  uploadToECATS(boards, pairs, options);
+               } else {
+                  status.setText(_("Exporting scores in ECATS format to ")+path.getText());
+                  exportToECATS(boards, pairs, options, path.getText());
+                  JOptionPane.showMessageDialog(gs, "ECATS files have been written to `"+path.getText()+"'. Email the files C.txt, P.txt, R.txt and E.txt to results@simpairs.com", _("ECATS"), JOptionPane.INFORMATION_MESSAGE);
+               }
+            } catch (ScoreException Se) {
+               if (Debug.debug) Debug.print(Se);
+               showerror(_("Problem exporting to ECATS: ")+Se);
+            }
+         }
+      }
       private JPanel body;
       private JLabel status;
       private JTable boardtable;
@@ -728,6 +860,17 @@ public class GSalliere extends Salliere
          // export results
          item = new JMenuItem(_("Export Results"), KeyEvent.VK_E);
          item.setActionCommand("export");
+         item.addActionListener(mal);
+         file.add(item);
+
+         // ECATS
+         item = new JMenuItem(_("Upload Results to ECATS"), KeyEvent.VK_U);
+         item.setActionCommand("ecats-upload");
+         item.addActionListener(mal);
+         file.add(item);
+
+         item = new JMenuItem(_("Export in ECATS format"), KeyEvent.VK_C);
+         item.setActionCommand("ecats-export");
          item.addActionListener(mal);
          file.add(item);
 
