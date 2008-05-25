@@ -140,7 +140,7 @@ public class Salliere
       return new ArrayList(boards.values());
    }
 
-   static List readPairs(InputStream is, boolean individual) throws IOException
+   static List readPairs(InputStream is) throws IOException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
       List pairs = new Vector();
@@ -148,10 +148,7 @@ public class Salliere
          while (in.readRecord()) {
             String[] values = in.getValues();
             if (Debug.debug) Debug.print(Arrays.asList(values));
-            if (individual)
-               pairs.add(new Individual(values));
-            else
-               pairs.add(new Pair(values));
+            pairs.add(new Pair(values));
          }
       } catch (EOFException EOFe) {}
       in.close();
@@ -173,7 +170,7 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --individual --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...>");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...>");
       System.out.println("   Formats: txt html pdf");
       System.out.println("   ECATS options: ");
       System.out.println("      clubName = name of club (required)");
@@ -612,21 +609,21 @@ public class Salliere
       }
       modifiedpairs = true;
    }
-   public static void localpoint(List pairs, boolean individual) throws ScoreException
+   public static void localpoint(List pairs) throws ScoreException
    {
-      int rate = individual ? 3 : 6;
+      int rate = (1 == Pair.getMaxNames()) ? 3 : 6;
       // sort pairs in order
       Collections.sort(pairs, new PairPercentageComparer());
       Pair[] ps = (Pair[]) pairs.toArray(new Pair[0]);
 
       // check we have enough to give LPs
-      if (ps.length < (individual?8:6)) throw new ScoreException(_("Must have at least 3 full tables at pairs or 2 full tables at individuals to award local points"));
+      if (ps.length < ((1 == Pair.getMaxNames())?8:6)) throw new ScoreException(_("Must have at least 3 full tables at pairs or 2 full tables at individuals to award local points"));
 
       // calculate LP scale based on number of pairs
       int[] LPs = new int[ps.length];
       int awarded = (int) Math.ceil(LPs.length/3.0);
       int top;
-      if (individual) {
+      if (1 == Pair.getMaxNames()) {
          int tables = (int) Math.floor(ps.length/4.0);
          top = (3 * (int) Math.ceil(tables/3.0)) + (3 * tables);
       } else
@@ -637,7 +634,7 @@ public class Salliere
          LPs[i] = lp > 6 ? lp : 6;
 
       // award LPs, splitting on draws
-      for (int i = 0; i < ps.length; i++) {
+      for (int i = 0; i < ps.length && i < awarded; i++) {
          int a = i;
          int total = LPs[i];
          while (i+1 < ps.length && ps[i].getPercentage()==ps[i+1].getPercentage())
@@ -655,19 +652,20 @@ public class Salliere
       modifiedpairs = true;
    }
 
-   public static void results(List pairs, TablePrinter tabulate, boolean orange, boolean ximp, boolean individual, Map handicapdata, boolean handicaps)
+   public static void results(List pairs, TablePrinter tabulate, boolean orange, boolean ximp, Map handicapdata, boolean handicaps)
    {
       Vector results = new Vector();
       Collections.sort(pairs, new PairPercentageComparer());
 
       Vector headerv = new Vector();
-      if (individual) {
+      if (Pair.getMaxNames() == 1) {
          headerv.add(_("Num"));
          headerv.add(_("Name"));
       } else {
          headerv.add(_("Pair"));
          headerv.add(_("Names"));
-         headerv.add("");
+         for (int i = 1; i < Pair.getMaxNames(); i++)
+            headerv.add("");
       }
       if (ximp) 
          headerv.add(_("IMPs"));
@@ -737,7 +735,6 @@ public class Salliere
          options.put("--ximp", null);
          options.put("--title", _("Salliere Duplicate Bridge Scorer: Results"));
          options.put("--setsize", null);
-         options.put("--individual", null);
          options.put("--with-par", null);
          options.put("--with-handicaps", null);
          options.put("--trickdata", null);
@@ -780,7 +777,7 @@ public class Salliere
          List pairs;
 
          boards = readBoards(new FileInputStream(args[i+1]));
-         pairs = readPairs(new FileInputStream(args[i+2]), null != options.get("--individual"));
+         pairs = readPairs(new FileInputStream(args[i+2]));
 
          if (null != options.get("--trickdata")) {
             readTrickData(boards, new FileInputStream((String) options.get("--trickdata")));
@@ -825,10 +822,10 @@ public class Salliere
             else if ("verify".equals(command)) verify(boards, (String) options.get("--setsize"));
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
-            else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), null != options.get("--individual"), handicapdata, null != options.get("--with-handicaps"));
+            else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), handicapdata, null != options.get("--with-handicaps"));
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"), null != options.get("--with-par"));
-            else if ("localpoint".equals(command)) localpoint(pairs, null != options.get("--individual"));
+            else if ("localpoint".equals(command)) localpoint(pairs);
             else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble((String) options.get("--handicap-normalizer")));
             else if ("ximp".equals(command)) ximp(boards);
             else if ("parimp".equals(command)) parimp(boards);

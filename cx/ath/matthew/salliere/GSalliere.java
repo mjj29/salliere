@@ -487,7 +487,7 @@ public class GSalliere extends Salliere
                    try {
                       namesfile = f.getCanonicalPath();
                       status.setText(_("Loading Names from ")+namesfile);
-                      pairs = readPairs(new FileInputStream(f), false);
+                      pairs = readPairs(new FileInputStream(f));
                       nametable.setModel(new PairTableDataModel(pairs));
                       status.setText(_("Loaded Names from ")+namesfile);
                    } catch (IOException IOe) {
@@ -637,7 +637,7 @@ public class GSalliere extends Salliere
                 } else if ("localpoint".equals(command)) {
                    status.setText(_("Allocating local points"));
                    if (null == pairs) showerror(_("Must Load Pairs before allocating local points"));
-                   else localpoint(pairs, false);
+                   else localpoint(pairs);
                    nametable.repaint();
                 } else if ("results".equals(command)) {
                    status.setText(_("Exporting results"));
@@ -1074,7 +1074,7 @@ public class GSalliere extends Salliere
             tabular.header(titlestr);
 
             if (results.isSelected()) 
-               results(pairs, tabular, orangebool, ximpbool, false, null, false);
+               results(pairs, tabular, orangebool, ximpbool, null, false);
             if (matrix.isSelected()) matrix(pairs, boards, tabular);
             if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool, parbool);
 
@@ -1111,7 +1111,7 @@ public class GSalliere extends Salliere
             }
 
             try {
-               pairs = readPairs(new FileInputStream(namesfile), false);
+               pairs = readPairs(new FileInputStream(namesfile));
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
                System.out.println(_("Problem loading names file: ")+IOe);

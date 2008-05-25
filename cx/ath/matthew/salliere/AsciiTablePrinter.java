@@ -33,6 +33,7 @@ public class AsciiTablePrinter implements TablePrinter
    }
    public void print(String[] headers, String[][] rows)
    {
+      if (Debug.debug) Debug.print(Debug.DEBUG, "printing "+Arrays.deepToString(rows));
       // calculate column width
       int[] widths = new int[headers.length];
       for (int i = 0; i < headers.length; i++)
