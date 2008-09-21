@@ -210,7 +210,7 @@ manpage.1: manpage.sgml
       <varlistentry>
         <term>--output=format:file</term>
         <listitem>
-          <para>Changes the output format and file. Possible formats are pdf, html or txt. 
+          <para>Changes the output format and file. Possible formats are pdf, html, htmlfrag or txt. 
           A file of '-' corresponds to stdout.</para>
         </listitem>
       </varlistentry>

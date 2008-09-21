@@ -19,7 +19,7 @@ BINDIR?=$(PREFIX)/bin
 
 DEBUG?=disable
 
-CLASSPATH=/usr/share/java/csv.jar:/usr/share/java/debug-$(DEBUG).jar:/usr/share/java/itext.jar:/usr/share/java/commons-net.jar
+CLASSPATH=$(JARLIBDIR)/csv.jar:$(JARLIBDIR)/debug-$(DEBUG).jar:$(JARLIBDIR)/itext.jar:$(JARLIBDIR)/commons-net.jar
 
 VERSION=$(shell sed -n '1s/Version \(.*\):/\1/p' changelog)
 

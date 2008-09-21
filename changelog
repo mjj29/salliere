@@ -1,8 +1,9 @@
 Version 0.7:
 
 	* Support any number of names (currently only in cmd line).
-	  Superceedes individual support
+	  Supersedes individual support
 	* Add leaderboard binary for creating leaderboard/results pages
+	* Add html-fragment output
 
 Version 0.6:
 

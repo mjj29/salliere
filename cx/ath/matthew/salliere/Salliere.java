@@ -171,7 +171,7 @@ public class Salliere
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload");
       System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...>");
-      System.out.println("   Formats: txt html pdf");
+      System.out.println("   Formats: txt html htmlfrag pdf");
       System.out.println("   ECATS options: ");
       System.out.println("      clubName = name of club (required)");
       System.out.println("      session = ECATS session number (required)");
@@ -806,6 +806,8 @@ public class Salliere
             tabular = new AsciiTablePrinter(out);
          else if ("html".equals(format[0].toLowerCase()))
             tabular = new HTMLTablePrinter((String) options.get("--title"), out);
+         else if ("htmlfrag".equals(format[0].toLowerCase()))
+            tabular = new HTMLFragTablePrinter((String) options.get("--title"), out);
          else if ("pdf".equals(format[0].toLowerCase()))
             tabular = new PDFTablePrinter((String) options.get("--title"), out);
          else {
