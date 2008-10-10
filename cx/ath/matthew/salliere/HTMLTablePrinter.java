@@ -67,7 +67,7 @@ public class HTMLTablePrinter implements TablePrinter
    }
    public void gap()
    {
-      output.println("<br>");
+      output.println("<br />");
    }
    public void init() 
    {
