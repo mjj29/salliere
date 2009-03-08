@@ -1075,14 +1075,14 @@ public class GSalliere extends Salliere
 
             if (results.isSelected()) 
                results(pairs, tabular, orangebool, ximpbool, null, false);
-            if (matrix.isSelected()) matrix(pairs, boards, tabular);
+            if (matrix.isSelected()) matrix(pairs, boards, tabular, null);
             if (boardby.isSelected()) boardbyboard(boards, tabular, ximpbool, parbool);
 
             tabular.close();
             out.close();
-         } catch (IOException IOe) {
-            if (Debug.debug) Debug.print(IOe);
-            root.showerror(_("Problem while exporting: ")+IOe);
+         } catch (Exception e) {
+            if (Debug.debug) Debug.print(e);
+            root.showerror(_("Problem while exporting: ")+e);
          }
       }
    }

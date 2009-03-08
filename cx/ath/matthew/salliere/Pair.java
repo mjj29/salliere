@@ -42,7 +42,8 @@ public class Pair
       int names = 0;
       for (int i = 1; i <= data.length; i++)
          if (i == data.length || (data[i].length() > 0 && 
-             (data[i].charAt(0) >= '0' && data[i].charAt(0) <= '9'))) {
+             (data[i].charAt(0) == '-' || data[i].charAt(0) == '.' || 
+               (data[i].charAt(0) >= '0' && data[i].charAt(0) <= '9')))) {
             names = i-1;
             break;
          }

@@ -258,6 +258,52 @@ public class Board
          if (Debug.debug) Debug.print(Debug.DEBUG, h1.getNumber()+" NSMP="+nsimps+" EWMP="+ewimps);
       }
    }
+   public double[] sumimp(String prefix, int teams) throws ScoreException
+   {
+      double usimps = 0;
+      double themimps = 0;
+      double usscore = 0;
+      double themscore = 0;
+      int AVNUM = 4 == teams ? 3 : 5;
+      for (Hand h1: (Hand[]) hands.toArray(new Hand[0])) {
+         boolean usns = false;
+         if (h1.getNS().startsWith(prefix)) usns = true;
+         if (h1.isAveraged()) {
+            // +-2 or 0
+            switch (usns ? h1.getNSAverage() : h1.getEWAverage()) {
+               case Hand.AVERAGE:
+                  usimps = 0;
+                  break;
+               case Hand.AVERAGE_PLUS:
+                  usimps = AVNUM;
+                  break;
+               case Hand.AVERAGE_MINUS:
+                  usimps = -AVNUM;
+                  break;
+            }
+            switch (usns ? h1.getEWAverage() : h1.getNSAverage()) {
+               case Hand.AVERAGE:
+                  themimps = 0;
+                  break;
+               case Hand.AVERAGE_PLUS:
+                  themimps = AVNUM;
+                  break;
+               case Hand.AVERAGE_MINUS:
+                  themimps = -AVNUM;
+                  break;
+            }
+            return new double[] { usimps, themimps };
+         } else {
+            usscore += usns ? h1.getNSScore() : h1.getEWScore();
+            themscore += usns ? h1.getEWScore() : h1.getNSScore();
+         }
+         double diff = usscore-themscore;
+         usimps = imp(diff);
+         themimps = imp(-diff);
+         if (Debug.debug) Debug.print(Debug.DEBUG, h1.getNumber()+" NSMP="+usimps+" EWMP="+themimps);
+      }
+      return new double[] { usimps, themimps };
+   }
    public void ximp() throws ScoreException
    {
       double avs = 0;

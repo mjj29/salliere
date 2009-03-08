@@ -4,6 +4,8 @@ Version 0.7:
 	  Supersedes individual support
 	* Add leaderboard binary for creating leaderboard/results pages
 	* Add html-fragment output
+	* Add csv output
+	* Add teams of (4 or 8) scoring
 
 Version 0.6:
 

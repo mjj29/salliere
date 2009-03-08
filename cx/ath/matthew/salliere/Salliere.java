@@ -169,9 +169,9 @@ public class Salliere
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...>");
-      System.out.println("   Formats: txt html htmlfrag pdf");
+      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload scoreteams");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --teamsize=N --teamprefix=<prefix>");
+      System.out.println("   Formats: txt html htmlfrag pdf csv");
       System.out.println("   ECATS options: ");
       System.out.println("      clubName = name of club (required)");
       System.out.println("      session = ECATS session number (required)");
@@ -493,6 +493,45 @@ public class Salliere
       modifiedboards = true;
    }
 
+   public static void teams(List boards, TablePrinter tabular, String prefix, String teamsize) throws ScoreException
+   {
+      int teams = 4;
+      if (null != teamsize && teamsize.length() >= 0)
+         try {
+            teams = Integer.parseInt(teamsize);
+         } catch (NumberFormatException NFe) {
+            if (Debug.debug) Debug.print(NFe);
+            throw new ScoreException(teamsize+_(" isn't a number!"));
+         }
+
+      double usimps = 0;
+      double themimps = 0;
+      for (Board b: (Board[]) boards.toArray(new Board[0])) {
+         double[] res = b.sumimp(prefix, teams);
+         if (res[0] > 0)
+            usimps += res[0];
+         else
+            themimps += -res[0];
+      }
+      String[] headers = new String[3];
+      headers[0] = _("Us IMPs");
+      headers[1] = _("Them IMPs");
+      headers[2] = _("Difference");
+      DecimalFormat format = new DecimalFormat("0.##");
+      FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
+      StringBuffer tmp;
+      String[][] matrix = new String[1][3]; 
+      tmp = new StringBuffer();
+      matrix[0][0] = format.format(usimps, tmp, field).toString();
+      tmp = new StringBuffer();
+      matrix[0][1] = format.format(themimps, tmp, field).toString();
+      tmp = new StringBuffer();
+      matrix[0][2] = format.format(usimps-themimps, tmp, field).toString();
+
+      tabular.print(headers, matrix);
+      tabular.gap();
+   }
+
    public static void parimp(List boards) throws ScoreException
    {
       for (Board b: (Board[]) boards.toArray(new Board[0])) 
@@ -507,8 +546,19 @@ public class Salliere
       modifiedpairs = true;
    }
 
-   public static void matrix(List pairv, List boardv, TablePrinter tabular) 
+   public static void matrix(List pairv, List boardv, TablePrinter tabular, String setsize) throws MovementVerificationException
    {
+      int grouping = 0;
+      if (null != setsize && setsize.length() >= 0)
+         try {
+            grouping = Integer.parseInt(setsize);
+         } catch (NumberFormatException NFe) {
+            if (Debug.debug) Debug.print(NFe);
+            throw new MovementVerificationException(setsize+_(" isn't a number!"));
+         }
+
+      System.err.println("Grouping = " + grouping);
+
       Collections.sort(boardv, new BoardNumberComparer());
       Collections.sort(pairv, new PairNumberComparer());
       Board[] boards = (Board[]) boardv.toArray(new Board[0]);
@@ -516,26 +566,42 @@ public class Salliere
 
       DecimalFormat format = new DecimalFormat("0.##");
       FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
-      
-      String[][] matrix = new String[boards.length][pairs.length+1]; 
-      for (int i = 0; i < boards.length; i++) {
-         matrix[i][0] = boards[i].getNumber();
-         for (int j = 0; j < pairs.length; j++) {
-            StringBuffer tmp = new StringBuffer();
-            if (boards[i].played(pairs[j].getNumber()))
-               matrix[i][j+1] = format.format(boards[i].getMPs(pairs[j].getNumber()), tmp, field).toString();
-            else
-               matrix[i][j+1] = " ";
-         }
-      }
 
       String[] headers = new String[pairs.length+1];
       headers[0] = _("Board");
       for (int j = 0; j < pairs.length; j++) 
          headers[j+1] = pairs[j].getNumber()+"  ";
 
-      tabular.print(headers, matrix);
-      tabular.gap();
+      if (0 == grouping) grouping = boards.length;
+      String[][] matrix = new String[grouping+2][pairs.length+1]; 
+      
+      int start = 0;
+
+      while (start < boards.length) {
+         float[] sums = new float[pairs.length];
+         for (int i = 0; i+start < boards.length && i < grouping; i++) {
+            matrix[i][0] = boards[i+start].getNumber();
+            for (int j = 0; j < pairs.length; j++) {
+               StringBuffer tmp = new StringBuffer();
+               if (boards[i+start].played(pairs[j].getNumber())) {
+                  matrix[i][j+1] = format.format(boards[i+start].getMPs(pairs[j].getNumber()), tmp, field).toString();
+                  sums[j] += boards[i+start].getMPs(pairs[j].getNumber());
+               } else
+                  matrix[i][j+1] = " ";
+            }
+         }
+         matrix[matrix.length-2][0] = " ";
+         matrix[matrix.length-1][0] = _("Total");
+         for (int j = 0; j < sums.length; j++) {
+            StringBuffer tmp = new StringBuffer();
+            matrix[matrix.length-2][j+1] = " ";
+            matrix[matrix.length-1][j+1] = format.format(sums[j], tmp, field).toString();
+         }
+         start += grouping;
+
+         tabular.print(headers, matrix);
+         tabular.gap();
+      }
    }
    public static void boardbyboard(List boards, TablePrinter tabular, boolean ximp, boolean withpar) 
    {
@@ -734,6 +800,8 @@ public class Salliere
          options.put("--orange", null);
          options.put("--ximp", null);
          options.put("--title", _("Salliere Duplicate Bridge Scorer: Results"));
+         options.put("--teamsize", null);
+         options.put("--teamprefix", "");
          options.put("--setsize", null);
          options.put("--with-par", null);
          options.put("--with-handicaps", null);
@@ -804,6 +872,8 @@ public class Salliere
             tabular = new AsciiTablePrinter(out);
          else if ("txt".equals(format[0].toLowerCase()))
             tabular = new AsciiTablePrinter(out);
+         else if ("csv".equals(format[0].toLowerCase()))
+            tabular = new CSVTablePrinter(out);
          else if ("html".equals(format[0].toLowerCase()))
             tabular = new HTMLTablePrinter((String) options.get("--title"), out);
          else if ("htmlfrag".equals(format[0].toLowerCase()))
@@ -825,7 +895,7 @@ public class Salliere
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
             else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), handicapdata, null != options.get("--with-handicaps"));
-            else if ("matrix".equals(command)) matrix(pairs, boards, tabular);
+            else if ("matrix".equals(command)) matrix(pairs, boards, tabular, (String) options.get("--setsize"));
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"), null != options.get("--with-par"));
             else if ("localpoint".equals(command)) localpoint(pairs);
             else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble((String) options.get("--handicap-normalizer")));
@@ -833,6 +903,7 @@ public class Salliere
             else if ("parimp".equals(command)) parimp(boards);
             else if ("ecats-upload".equals(command)) uploadToECATS(boards, pairs, ecatsoptions);
             else if ("ecats-export".equals(command)) exportToECATS(boards, pairs, ecatsoptions, (String) options.get("--ecats-export-dir"));
+            else if ("scoreteams".equals(command)) teams(boards, tabular, (String) options.get("--teamprefix"), (String) options.get("--teamsize"));
             else {
                System.out.println(_("Bad Command: ")+command);
                syntax();
