@@ -1,3 +1,5 @@
+Version 0.8:
+
 Version 0.7:
 
 	* Support any number of names (currently only in cmd line).
@@ -6,6 +8,7 @@ Version 0.7:
 	* Add html-fragment output
 	* Add csv output
 	* Add teams of (4 or 8) scoring
+	* Update manual page
 
 Version 0.6:
 

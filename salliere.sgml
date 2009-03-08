@@ -137,9 +137,21 @@ manpage.1: manpage.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term>parimp</term>
+        <listitem>
+          <para>Calculates imps vs par for each hand</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term>total</term>
         <listitem>
           <para>Calculates the total match points for each pair</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>handicap</term>
+        <listitem>
+          <para>Calculates the result after applying handicaps for each player</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -166,6 +178,18 @@ manpage.1: manpage.sgml
           <para>Prints out each board with pairs, contract, results and match points</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>ecats-upload</term>
+        <listitem>
+          <para>Upload results to ecats bridge website</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>scoreteams</term>
+        <listitem>
+          <para>Prints out the results of the boards as a team of 4 or team of 8 match</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>
@@ -186,7 +210,7 @@ manpage.1: manpage.sgml
       <varlistentry>
         <term>--setsize=N</term>
         <listitem>
-          <para>Check the movement based on sets of size N</para>
+          <para>Check the movement based on sets of size N. Also used when printing the matrix to batch the results</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -210,10 +234,80 @@ manpage.1: manpage.sgml
       <varlistentry>
         <term>--output=format:file</term>
         <listitem>
-          <para>Changes the output format and file. Possible formats are pdf, html, htmlfrag or txt. 
+          <para>Changes the output format and file. Possible formats are pdf, html, htmlfrag, csv or txt. 
           A file of '-' corresponds to stdout.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>--with-par</term>
+        <listitem>
+          <para>Prints the par result along with the boards</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--trickdata=file</term>
+        <listitem>
+          <para>The tricks which can be made on each board for calculating par</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--handcapdata</term>
+        <listitem>
+          <para>Current handicaps for individuals</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--with-handicaps</term>
+        <listitem>
+          <para>Prints the handicaps with each pair</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--handcap-normalizer</term>
+        <listitem>
+          <para>When handicapping, center around this number as par</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--teamsize=N</term>
+        <listitem>
+          <para>Number of players in a team (4 or 8) for overall team scoring</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--teamprefix=prefix</term>
+        <listitem>
+          <para>The prefix on each pair number to identify which team they are on (eg CU if the pairs are named CU1, CU2, ...)</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--ecats-options=key:value,key2:value2,...</term>
+        <listitem>
+          <para>Options used to send scores to ecats.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>ECATS OPTIONS</title>
+
+    <para>
+      Here are a list of the available options to ecats and what they do.
+    </para>
+
+    <!-- score matchpoint total localpoint results matrix boards -->
+    <variablelist>
+      <varlistentry><term>clubName</term><listitem><para>name of club (required)</para></listitem></varlistentry>
+      <varlistentry><term>session</term><listitem><para>ECATS session number (required)</para></listitem></varlistentry>
+      <varlistentry><term>phone</term><listitem><para>contact phone number (required)</para></listitem></varlistentry>
+      <varlistentry><term>country</term><listitem><para>club country (required)</para></listitem></varlistentry>
+      <varlistentry><term>name</term><listitem><para>contact name</para></listitem></varlistentry>
+      <varlistentry><term>fax</term><listitem><para>contact fax number</para></listitem></varlistentry>
+      <varlistentry><term>email</term><listitem><para>contact email</para></listitem></varlistentry>
+      <varlistentry><term>town</term><listitem><para>club town</para></listitem></varlistentry>
+      <varlistentry><term>county</term><listitem><para>club county</para></listitem></varlistentry>
+      <varlistentry><term>date</term><listitem><para>event date</para></listitem></varlistentry>
+      <varlistentry><term>event</term><listitem><para>event name</para></listitem></varlistentry>
     </variablelist>
   </refsect1>
   <refsect1>
