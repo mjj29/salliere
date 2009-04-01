@@ -4,7 +4,7 @@ Installation Instructions
 To build salliere you will need a 1.5 compatible Java compiler with at least
 1.4 compatible java libraries, libcsv-java
 (http://sourceforge.net/projects/javacsv/), libmatthew-debug-java
-(http://www.matthew.ath.cx/projects/java/) and libitext-java
+(http://www.matthew.ath.cx/projects/java/) and libitext-java (v2 or higher)
 (http://www.lowagie.com/iText/)
 
 To build:

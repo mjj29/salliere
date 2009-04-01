@@ -1,5 +1,7 @@
 Version 0.8:
 
+	* Patch to build with itext 2.x
+
 Version 0.7:
 
 	* Support any number of names (currently only in cmd line).

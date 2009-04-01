@@ -50,9 +50,9 @@ public class PDFTablePrinter implements TablePrinter
          Table table = new Table(headers.length);
          table.setBorderWidth(1);
          table.setBorderColor(new Color(0, 0, 0));
-         table.setSpaceInsideCell(2);
-         table.setDefaultVerticalAlignment(Table.ALIGN_MIDDLE);
-         table.setDefaultCellBorder(Table.NO_BORDER);
+         table.setPadding(2);
+         table.getDefaultCell().setVerticalAlignment(Table.ALIGN_MIDDLE);
+         table.getDefaultCell().setBorder(Table.NO_BORDER);
 
          // print headers
          for (int i = 0; i < headers.length; i++) {
