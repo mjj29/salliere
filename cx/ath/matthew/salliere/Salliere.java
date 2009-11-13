@@ -687,7 +687,7 @@ public class Salliere
 
       // calculate LP scale based on number of pairs
       int[] LPs = new int[ps.length];
-      int awarded = (int) Math.ceil(LPs.length/3.0);
+      int awarded = (int) Math.ceil((Math.floor(LPs.length/2.0)*2.0)/3.0);
       int top;
       if (1 == Pair.getMaxNames()) {
          int tables = (int) Math.floor(ps.length/4.0);

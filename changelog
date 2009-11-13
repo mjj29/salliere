@@ -1,4 +1,8 @@
-Version 0.8:
+Version 0.7.2:
+	
+	* Fix LP allocation with odd number of pairs
+
+Version 0.7.1:
 
 	* Patch to build with itext 2.x
 
