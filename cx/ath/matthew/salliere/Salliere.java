@@ -169,7 +169,7 @@ public class Salliere
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload scoreteams");
+      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload scoreteams scorecards");
       System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --teamsize=N --teamprefix=<prefix>");
       System.out.println("   Formats: txt html htmlfrag pdf csv");
       System.out.println("   ECATS options: ");
@@ -636,6 +636,60 @@ public class Salliere
          tabular.gap();
       }
    }
+   public static void scorecards(List pairs, List boards, TablePrinter tabular, boolean ximp) 
+   {
+      String[] headers = new String[] {
+            _("Board"),
+            _("VS"),
+            _("Contract"), 
+            _("By"), 
+            _("Tricks"),
+            _("Score:"),
+            "",
+            ximp ? _("IMPs") 
+                 : _("MPs:"), 
+            "" };
+      Collections.sort(pairs, new PairNumberComparer());
+      Collections.sort(boards, new BoardNumberComparer());
+
+		for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
+			String header;
+			if (p.getNames().length == 1) 
+				header = _("Player ");
+			else
+				header = _("Pair ");
+			header += p.getNumber();
+			for (String n: p.getNames()) {
+				header += ", "+n;
+			}
+			tabular.header(header);
+			Vector lines = new Vector();
+			for (Board b: (Board[]) boards.toArray(new Board[0])) {
+				List hands = b.getHands();
+				Collections.sort(hands, new HandNSComparer());
+				for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
+					if (h.getNS().equals(p.getNumber())) {
+						String[] ex = h.export();
+						String[] line = new String[ex.length-1];
+						line[0] = ex[0];
+						line[1] = ex[2];
+						System.arraycopy(ex, 3, line, 2, line.length-2);
+						lines.add(line);
+					} else if (h.getEW().equals(p.getNumber())) {
+						String[] ex = h.export();
+						String[] line = new String[ex.length-1];
+						line[0] = ex[0];
+						line[1] = ex[1];
+						System.arraycopy(ex, 3, line, 2, line.length-2);
+						lines.add(line);
+					}
+				}
+			}
+			tabular.print(headers, (String[][]) lines.toArray(new String[0][]));
+			tabular.gap();
+		}
+   }
+
 
    public static Map readHandicapData(List pairs, InputStream handicapfile) throws ScoreException
    {
@@ -897,6 +951,7 @@ public class Salliere
             else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), handicapdata, null != options.get("--with-handicaps"));
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular, (String) options.get("--setsize"));
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"), null != options.get("--with-par"));
+            else if ("scorecards".equals(command)) scorecards(pairs, boards, tabular, null != options.get("--ximp"));
             else if ("localpoint".equals(command)) localpoint(pairs);
             else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble((String) options.get("--handicap-normalizer")));
             else if ("ximp".equals(command)) ximp(boards);
