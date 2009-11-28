@@ -640,6 +640,7 @@ public class Salliere
    {
       String[] headers = new String[] {
             _("Board"),
+            _("Dir"),
             _("VS"),
             _("Contract"), 
             _("By"), 
@@ -647,8 +648,7 @@ public class Salliere
             _("Score:"),
             "",
             ximp ? _("IMPs") 
-                 : _("MPs:"), 
-            "" };
+                 : _("MPs:")}; 
       Collections.sort(pairs, new PairNumberComparer());
       Collections.sort(boards, new BoardNumberComparer());
 
@@ -672,15 +672,27 @@ public class Salliere
 						String[] ex = h.export();
 						String[] line = new String[ex.length-1];
 						line[0] = ex[0];
-						line[1] = ex[2];
-						System.arraycopy(ex, 3, line, 2, line.length-2);
+						line[1] = _("NS");
+						line[2] = ex[2];
+						line[3] = ex[3];
+						line[4] = ex[4];
+						line[5] = ex[5];
+						line[6] = ex[6];
+						line[7] = ex[7];
+						line[8] = ex[8];
 						lines.add(line);
 					} else if (h.getEW().equals(p.getNumber())) {
 						String[] ex = h.export();
 						String[] line = new String[ex.length-1];
 						line[0] = ex[0];
-						line[1] = ex[1];
-						System.arraycopy(ex, 3, line, 2, line.length-2);
+						line[1] = _("EW");
+						line[2] = ex[1];
+						line[3] = ex[3];
+						line[4] = ex[4];
+						line[5] = ex[5];
+						line[6] = ex[7];
+						line[7] = ex[6];
+						line[8] = ex[9];
 						lines.add(line);
 					}
 				}
