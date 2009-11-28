@@ -677,8 +677,8 @@ public class Salliere
 						line[3] = ex[3];
 						line[4] = ex[4];
 						line[5] = ex[5];
-						line[6] = ex[6];
-						line[7] = ex[7];
+						line[6] = ex[6].equals("0") ? "" : ex[6];
+						line[7] = ex[7].equals("0") ? "" : ex[7];
 						line[8] = ex[8];
 						lines.add(line);
 					} else if (h.getEW().equals(p.getNumber())) {
@@ -690,8 +690,8 @@ public class Salliere
 						line[3] = ex[3];
 						line[4] = ex[4];
 						line[5] = ex[5];
-						line[6] = ex[7];
-						line[7] = ex[6];
+						line[6] = ex[7].equals("0") ? "" : ex[7];
+						line[7] = ex[6].equals("0") ? "" : ex[6];
 						line[8] = ex[9];
 						lines.add(line);
 					}
