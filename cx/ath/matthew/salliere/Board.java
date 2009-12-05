@@ -130,6 +130,7 @@ public class Board
       for (int i = 0; i < nshs.length; i++) {
          double nsmps = 0.0;
          double score = (0 == nshs[i].getNSScore()) ? - nshs[i].getEWScore() : nshs[i].getNSScore();
+			if (Debug.debug) Debug.print("N/S Average: "+nshs[i].getNSAverage());
             switch (nshs[i].getNSAverage()) {
                case Hand.AVERAGE: nsmps = ave;
                                   break;
@@ -158,6 +159,7 @@ public class Board
       for (int i = 0; i < ewhs.length; i++) {
          double ewmps = 0.0;
          double score = (0 == ewhs[i].getEWScore()) ? - ewhs[i].getNSScore() : ewhs[i].getEWScore();
+			if (Debug.debug) Debug.print("E/W Average: "+ewhs[i].getNSAverage());
             switch (ewhs[i].getEWAverage()) {
                case Hand.AVERAGE: ewmps = ave;
                                   break;

@@ -2,6 +2,7 @@ Version 0.8:
 	
 	* Fix LP allocation with odd number of pairs
 	* Add personal score card generation
+	* Fix MP calculations with AV-/+
 
 Version 0.7.1:
 

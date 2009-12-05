@@ -100,7 +100,8 @@ public class Hand
                } catch (NumberFormatException NFe) { 
                   if (Debug.debug) Debug.print(NFe);
                   String av = data[7].toLowerCase();
-                  if (av.startsWith("av") && av.length() == 3)
+                  if (av.startsWith("av") && av.length() == 3) {
+							if (Debug.debug) Debug.print("Parsing average, mode character is "+av.charAt(2));
                      switch (av.charAt(2)) {
                         case '=':
                            ewavetype = AVERAGE;
@@ -114,6 +115,7 @@ public class Hand
                         default:
                            throw new HandParseException(_("Invalid Average: ")+data[7]);
                      }
+						}
                   else throw new HandParseException(_("Invalid Score: ")+data[7]);
                }
             }
@@ -124,7 +126,8 @@ public class Hand
                } catch (NumberFormatException NFe) {
                   if (Debug.debug) Debug.print(NFe);
                   String av = data[6].toLowerCase();
-                  if (av.startsWith("av") && av.length() == 3)
+                  if (av.startsWith("av") && av.length() == 3) {
+							if (Debug.debug) Debug.print("Parsing average, mode character is "+av.charAt(2));
                      switch (av.charAt(2)) {
                         case '=':
                            nsavetype = AVERAGE;
@@ -138,6 +141,7 @@ public class Hand
                         default:
                            throw new HandParseException(_("Invalid Average: ")+data[6]);
                      }
+						}
                   else throw new HandParseException(_("Invalid Score: ")+data[6]);
                }
             }
@@ -282,7 +286,7 @@ public class Hand
    public char getDeclarer() { return declarer; }
    public boolean isAveraged() { return !(0 == ewavetype && 0 == nsavetype); }
    public int getEWAverage() { return ewavetype; }
-   public int getNSAverage() { return ewavetype; }
+   public int getNSAverage() { return nsavetype; }
    public boolean hasForcedNSMP() { return forced_nsmp; }
    public boolean hasForcedEWMP() { return forced_ewmp; }
    public boolean hasForcedNSScore() { return forced_nsscore; }
