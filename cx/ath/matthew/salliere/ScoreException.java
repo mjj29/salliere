@@ -19,6 +19,7 @@
 
 package cx.ath.matthew.salliere;
 
+@SuppressWarnings("serial")
 public class ScoreException extends Exception
 {
    public ScoreException(String message)

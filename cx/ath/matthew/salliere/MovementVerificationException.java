@@ -19,6 +19,7 @@
 
 package cx.ath.matthew.salliere;
 
+@SuppressWarnings("serial")
 public class MovementVerificationException extends Exception
 {
    public MovementVerificationException(String message)

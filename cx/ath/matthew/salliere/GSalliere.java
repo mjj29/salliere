@@ -67,8 +67,10 @@ import javax.swing.event.TableModelListener;
 
 public class GSalliere extends Salliere
 {
+	@SuppressWarnings("serial")
    static class GSalliereMainFrame extends JFrame
    {
+		@SuppressWarnings("serial")
       class BoardEditDialog extends JDialog implements ActionListener
       {
          private Board board;
@@ -97,11 +99,11 @@ public class GSalliere extends Salliere
       class BoardTableDataModel implements TableModel
       {
          private Board[] boards;
-         public BoardTableDataModel(List boards)
+         public BoardTableDataModel(List<Board> boards)
          {
             if (null == boards) return;
             Collections.sort(boards, new BoardNumberComparer());
-            this.boards = (Board[]) boards.toArray(new Board[0]);
+            this.boards = boards.toArray(new Board[0]);
          }
          public int getRowCount()
          { return null == boards ? 1 : boards.length+1; }
@@ -138,8 +140,8 @@ public class GSalliere extends Salliere
                   case 0: return boards[rowIndex].getNumber();
                   case 1: return boards[rowIndex].getHands().size();
                   case 2: 
-                     Vector s = new Vector();
-                     for (Hand h: (Hand[]) boards[rowIndex].getHands().toArray(new Hand[0]))  {
+                     Vector<String> s = new Vector<String>();
+                     for (Hand h: boards[rowIndex].getHands()) {
                         s.add(h.getNS());
                         s.add(h.getEW());
                      }
@@ -150,7 +152,7 @@ public class GSalliere extends Salliere
          public void setValueAt(Object aValue, int rowIndex, int columnIndex)
          {
             if (null == boards) {
-               GSalliere.boards = new Vector();
+               GSalliere.boards = new Vector<Board>();
                boards = new Board[1];
                boards[0] = new Board();
                rowIndex = 0;
@@ -188,10 +190,10 @@ public class GSalliere extends Salliere
          public HandTableDataModel(Board b)
          {
             this.b = b;
-            List handv = b.getHands();
+            List<Hand> handv = b.getHands();
             if (null == handv) return;
             Collections.sort(handv, new HandNSComparer());
-            this.hands = (Hand[]) handv.toArray(new Hand[0]);
+            this.hands = handv.toArray(new Hand[0]);
          }
          public int getRowCount()
          { return null == hands ? 1 : hands.length+1; }
@@ -333,11 +335,11 @@ public class GSalliere extends Salliere
       class PairTableDataModel implements TableModel
       {
          private Pair[] pairs;
-         public PairTableDataModel(List pairs)
+         public PairTableDataModel(List<Pair> pairs)
          {
             if (null == pairs) return;
             Collections.sort(pairs, new PairNumberComparer());
-            this.pairs = (Pair[]) pairs.toArray(new Pair[0]);
+            this.pairs = pairs.toArray(new Pair[0]);
          }
          public int getRowCount()
          { return null == pairs ? 1 : pairs.length+1; }
@@ -390,7 +392,7 @@ public class GSalliere extends Salliere
          public void setValueAt(Object aValue, int rowIndex, int columnIndex)
          {
             if (null == pairs) {
-               GSalliere.pairs = new Vector();
+               GSalliere.pairs = new Vector<Pair>();
                pairs = new Pair[1];
                pairs[0] = new Pair();
                rowIndex = 0;
@@ -668,6 +670,7 @@ public class GSalliere extends Salliere
       }
       class MouseActionListener implements MouseListener
       {
+			@SuppressWarnings("deprecation")
          public void mouseClicked(MouseEvent e) 
          {
             if (Debug.debug) Debug.print(e);
@@ -687,11 +690,12 @@ public class GSalliere extends Salliere
          public void mouseEntered(MouseEvent e) {}
          public void mouseExited(MouseEvent e) {}
       }
+		@SuppressWarnings("serial")
       public class ECATSDialog extends JDialog implements ActionListener
       {
          GSalliereMainFrame gs;
-         List pairs;
-         List boards;
+         List<Pair> pairs;
+         List<Board> boards;
          boolean upload;
 
          // fields
@@ -708,7 +712,7 @@ public class GSalliere extends Salliere
          JTextField event = new JTextField();
          JTextField path = new JTextField();
 
-         public ECATSDialog(GSalliereMainFrame gs, List pairs, List boards, boolean upload)
+         public ECATSDialog(GSalliereMainFrame gs, List<Pair> pairs, List<Board> boards, boolean upload)
          {
             this.gs = gs;
             this.pairs = pairs;
@@ -773,7 +777,7 @@ public class GSalliere extends Salliere
          {
             setVisible(false);
 
-            Map options = new HashMap();
+            Map<String, String> options = new HashMap<String, String>();
             
             options.put("clubName", clubName.getText());
             options.put("session", session.getText());
@@ -1087,11 +1091,11 @@ public class GSalliere extends Salliere
       }
    }
 
-   private static List boards;
+   private static List<Board> boards;
    private static String boardfile;
    private static String namesfile;
    private static String outputfile;
-   private static List pairs;
+   private static List<Pair> pairs;
 
    public static void main(String[] args)
    {

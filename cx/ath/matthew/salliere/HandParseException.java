@@ -21,6 +21,7 @@ package cx.ath.matthew.salliere;
 
 import java.io.IOException;
 
+@SuppressWarnings("serial")
 public class HandParseException extends IOException
 {
    public HandParseException(String message)

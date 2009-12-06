@@ -19,6 +19,7 @@
 
 package cx.ath.matthew.salliere;
 
+@SuppressWarnings("serial")
 public class BoardValidationException extends Exception
 {
    public BoardValidationException(String message)

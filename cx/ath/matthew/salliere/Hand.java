@@ -62,6 +62,7 @@ public class Hand
    public Hand()
    {
    }
+	@SuppressWarnings("fallthrough")
    public Hand(String[] data) throws HandParseException
    {
       if (data.length < 4) {
@@ -157,6 +158,7 @@ public class Hand
                this.declarer = data[4].charAt(0);
       }
    }
+	@SuppressWarnings("fallthrough")
    public void score() throws ScoreException, ContractParseException, HandParseException
    {
       String[] n = number.split(":");
@@ -245,6 +247,7 @@ public class Hand
       }
    }
 
+	@SuppressWarnings("fallthrough")
    public void check() throws HandParseException
    {
       try {

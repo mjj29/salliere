@@ -23,7 +23,8 @@ import java.util.HashMap;
 
 import static cx.ath.matthew.salliere.Gettext._;
 
-public class ECatsOptionsMap extends HashMap
+@SuppressWarnings("serial")
+public class ECatsOptionsMap extends HashMap<String, String>
 {
    public ECatsOptionsMap(String options) throws ScoreException
    {

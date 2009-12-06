@@ -29,6 +29,7 @@ public class Individual extends Pair
 {
    String name = "";
    public Individual() {}
+	@SuppressWarnings("fallthrough")
    public Individual(String[] data)
    {
       this.number = data[0];
@@ -45,12 +46,12 @@ public class Individual extends Pair
                mps = Double.parseDouble(data[2]);
       }
    }
-   public void total(List boards)
+   public void total(List<Board> boards)
    {
       double top = 0;
       int bds = 0;
       mps = 0;
-      for (Board b: (Board[]) boards.toArray(new Board[0])) {
+      for (Board b: boards) {
          top = b.getTop();
          if (b.played(number)) {
             mps += b.getMPs(number);

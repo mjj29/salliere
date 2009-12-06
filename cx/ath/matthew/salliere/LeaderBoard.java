@@ -47,12 +47,12 @@ public class LeaderBoard
          return (int) (((LeaderEntry) o).LPs - LPs);
       }
    }
-   HashMap results = new HashMap();
+   HashMap<String, LeaderEntry> results = new HashMap<String, LeaderEntry>();
    public void update(String name, double LPs)
    {
       if (LPs == 0) return; 
 
-      LeaderEntry d = (LeaderEntry) results.get(name);
+      LeaderEntry d = results.get(name);
       if (null == d) {
          d = new LeaderEntry(name, LPs);
          results.put(name, d);
@@ -63,7 +63,7 @@ public class LeaderBoard
    {
       if (Debug.debug) Debug.print("Serializing leaderboard: "+results);
       String[][] results = new String[this.results.size()][2];
-      LeaderEntry[] es = (LeaderEntry[]) this.results.values().toArray(new LeaderEntry[0]);
+      LeaderEntry[] es = this.results.values().toArray(new LeaderEntry[0]);
       Arrays.sort(es);
       int i = 0;
       for (LeaderEntry e: es) {

@@ -47,9 +47,9 @@ public class Leaders
                Debug.loadConfig(f);
             Debug.setThrowableTraces(true);
          }
-         HashMap options = new HashMap();
+         HashMap<String, String> options = new HashMap<String, String>();
          options.put("--help", null);
-         List files = new Vector();
+         List<String> files = new Vector<String>();
 
          int i;
          for (i = 0; i < args.length; i++) {
@@ -84,15 +84,15 @@ public class Leaders
          TablePrinter printer = new AsciiTablePrinter(System.out);
          LeaderBoard leaders = new LeaderBoard();
 
-         for (Object f: files) {
+         for (String f: files) {
             System.out.println(f);
-            List pairs = Salliere.readPairs(new FileInputStream((String) f));
+            List<Pair> pairs = Salliere.readPairs(new FileInputStream(f));
             if (Debug.debug) Debug.print(Debug.DEBUG, "Got results: "+pairs);
             Salliere.results(pairs, printer, false, false, null, false);
-            for (Object p: pairs) {
-               for (String s: ((Pair) p).getNames())
+            for (Pair p: pairs) {
+               for (String s: p.getNames())
                   if (null != s && s.length() != 0)
-                     leaders.update(s, ((Pair) p).getLPs());
+                     leaders.update(s, p.getLPs());
             }
             printer.gap();
             Pair.resetNames();

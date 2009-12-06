@@ -45,46 +45,46 @@ public class Board
    public static final int HEARTS = 2;
    public static final int SPADES = 3;
    public static final int NOTRUMPS = 4;
-   class HandScoreNSComparer implements Comparator {
-      public int compare(Object obj1, Object obj2)
+   class HandScoreNSComparer implements Comparator<Hand> {
+      public int compare(Hand obj1, Hand obj2)
       {
-         double score1 = ( 0 == ((Hand) obj1).getNSScore() ) ? - ((Hand) obj1).getEWScore() : ((Hand) obj1).getNSScore();
-         double score2 = ( 0 == ((Hand) obj2).getNSScore() ) ? - ((Hand) obj2).getEWScore() : ((Hand) obj2).getNSScore();
+         double score1 = ( 0 == obj1.getNSScore() ) ? - obj1.getEWScore() : obj1.getNSScore();
+         double score2 = ( 0 == obj2.getNSScore() ) ? - obj2.getEWScore() : obj2.getNSScore();
          return (int) (score1 - score2);
       }
    }
-   class HandScoreEWComparer implements Comparator {
-      public int compare(Object obj1, Object obj2)
+   class HandScoreEWComparer implements Comparator<Hand> {
+      public int compare(Hand obj1, Hand obj2)
       {
-         double score1 = ( 0 == ((Hand) obj1).getEWScore() ) ? - ((Hand) obj1).getNSScore() : ((Hand) obj1).getEWScore();
-         double score2 = ( 0 == ((Hand) obj2).getEWScore() ) ? - ((Hand) obj2).getNSScore() : ((Hand) obj2).getEWScore();
+         double score1 = ( 0 == obj1.getEWScore() ) ? - obj1.getNSScore() : obj1.getEWScore();
+         double score2 = ( 0 == obj2.getEWScore() ) ? - obj2.getNSScore() : obj2.getEWScore();
          return (int) (score1 - score2);
       }
    }
-   Vector/*<Hand>*/ hands;
+   Vector<Hand> hands;
    byte[] tricks;
    String number = "";
    Contract par;
    public Board() 
    {
-      this.hands = new Vector();
+      this.hands = new Vector<Hand>();
    }
    public Board(String number)
    {
       this.number = number;
-      this.hands = new Vector/*<Hand>*/();
+      this.hands = new Vector<Hand>();
    }
    public void matchPoint() throws ScoreException
    {
       // order by (NS score) and (EW score)
       Collections.sort(hands, new HandScoreNSComparer());
-      Hand[] nshs = (Hand[]) hands.toArray(new Hand[0]);
+      Hand[] nshs = hands.toArray(new Hand[0]);
       Collections.sort(hands, new HandScoreEWComparer());
-      Hand[] ewhs = (Hand[]) hands.toArray(new Hand[0]);
+      Hand[] ewhs = hands.toArray(new Hand[0]);
 
       // create score-frequency table
-      Map ewfrequencies = new HashMap();
-      Map nsfrequencies = new HashMap();
+      Map<Double, Double> ewfrequencies = new HashMap<Double, Double>();
+      Map<Double, Double> nsfrequencies = new HashMap<Double, Double>();
       int avcount = 0;
       for (int i = 0; i < nshs.length; i++) {
          if (Debug.debug) Debug.print(nshs[i]);
@@ -93,7 +93,7 @@ public class Board
             if (Debug.debug) Debug.print("Average on "+nshs[i]);
             avcount++;
          } else {
-            Double freq = (Double) nsfrequencies.get(score);
+            Double freq = nsfrequencies.get(score);
             if (null != freq)
                nsfrequencies.put(score,freq+1.0);
             else
@@ -107,7 +107,7 @@ public class Board
          if (ewhs[i].isAveraged())
             ;
          else {
-            Double freq = (Double) ewfrequencies.get(score);
+            Double freq = ewfrequencies.get(score);
             if (null != freq)
                ewfrequencies.put(score,freq+1.0);
             else
@@ -118,10 +118,10 @@ public class Board
       // increase frequencies for averages
       double increment = 1.0 + ( (double) avcount / (double) ( nshs.length - avcount ) );
       if (Debug.debug) Debug.print("Got "+avcount+" averages, increment = "+increment);
-      for (Double f: (Double[]) ewfrequencies.keySet().toArray(new Double[0]))
-         ewfrequencies.put(f, ((Double) ewfrequencies.get(f))*increment);
-      for (Double f: (Double[]) nsfrequencies.keySet().toArray(new Double[0]))
-         nsfrequencies.put(f, ((Double) nsfrequencies.get(f))*increment);
+      for (Double f: ewfrequencies.keySet())
+         ewfrequencies.put(f, ewfrequencies.get(f)*increment);
+      for (Double f: nsfrequencies.keySet())
+         nsfrequencies.put(f, nsfrequencies.get(f)*increment);
 
       double avp = 0.60 * getTop();
       double ave = 0.50 * getTop();
@@ -139,9 +139,9 @@ public class Board
                case Hand.AVERAGE_MINUS: nsmps = avm;
                                         break;
                default:
-            nsmps = ((Double) nsfrequencies.get(score)) - 1;
-            for (Double f: (Double[]) nsfrequencies.keySet().toArray(new Double[0]))
-               if (f < score) nsmps += ( 2 * ((Double) nsfrequencies.get(f)) );
+            nsmps = nsfrequencies.get(score) - 1;
+            for (Double f: nsfrequencies.keySet())
+               if (f < score) nsmps += ( 2 * nsfrequencies.get(f) );
 
          }
 
@@ -168,9 +168,9 @@ public class Board
                case Hand.AVERAGE_MINUS: ewmps = avm;
                                         break;
                default:
-            ewmps = ((Double) ewfrequencies.get(score)) - 1;
-            for (Double f: (Double[]) ewfrequencies.keySet().toArray(new Double[0]))
-               if (f < score) ewmps += ( 2 * ((Double) ewfrequencies.get(f)) );
+            ewmps = ewfrequencies.get(score) - 1;
+            for (Double f: ewfrequencies.keySet())
+               if (f < score) ewmps += ( 2 * ewfrequencies.get(f) );
 
          }
 
@@ -218,7 +218,7 @@ public class Board
    public void parimp() throws ScoreException
    {
       double avs = 0;
-      for (Hand h1: (Hand[]) hands.toArray(new Hand[0])) {
+      for (Hand h1: hands) {
          double nsimps = 0;
          double ewimps = 0;
          if (h1.isAveraged()) {
@@ -267,7 +267,7 @@ public class Board
       double usscore = 0;
       double themscore = 0;
       int AVNUM = 4 == teams ? 3 : 5;
-      for (Hand h1: (Hand[]) hands.toArray(new Hand[0])) {
+      for (Hand h1: hands) {
          boolean usns = false;
          if (h1.getNS().startsWith(prefix)) usns = true;
          if (h1.isAveraged()) {
@@ -309,7 +309,7 @@ public class Board
    public void ximp() throws ScoreException
    {
       double avs = 0;
-      for (Hand h1: (Hand[]) hands.toArray(new Hand[0])) {
+      for (Hand h1: hands) {
          double nsimps = 0;
          double ewimps = 0;
          if (h1.isAveraged()) {
@@ -340,7 +340,7 @@ public class Board
          } else {
             // for each score, IMP against the other scores, sum, 
             // then divide by the number of scores. 
-            for (Hand h2: (Hand[]) hands.toArray(new Hand[0])) {
+            for (Hand h2: hands) {
                if (Debug.debug) Debug.print(Debug.DEBUG, h1+" imp "+h2);
                if (!h2.isAveraged()) {
                    double s1 = (0 == h1.getNSScore()) ? - h1.getEWScore() : h1.getNSScore();
@@ -367,7 +367,7 @@ public class Board
       for (int i = 0; i < ss.length; i++)
          tricks[i] = Byte.parseByte(ss[i]);
       if (Debug.debug) {
-         Vector v = new Vector();
+         Vector<Byte> v = new Vector<Byte>();
          for (int i = 0; i < tricks.length; i++) 
             v.add(tricks[i]);
          Debug.print(Debug.INFO, "Read avaiable tricks for board "+number+": "+v);
@@ -397,6 +397,7 @@ public class Board
       return new Contract(contr, decl, vuln, tr);
    }
 
+	@SuppressWarnings("fallthrough")
    private int vuln()
    {
       String[] n = number.split(":");
@@ -538,14 +539,14 @@ public class Board
                         new Object[] { h.getNumber(), number }));
       hands.add(h); 
    }
-   public List/*<Hand>*/ getHands() { return hands; }
+   public List<Hand> getHands() { return hands; }
    public double getTop()
    {
       return 2*(hands.size()-1);
    }
    public double getMPs(String number)
    {
-      for (Hand h: (Hand[]) hands.toArray(new Hand[0]))
+      for (Hand h: hands)
          if (h.getNS().equals(number)) 
             return h.getNSMP();
          else if (h.getEW().equals(number))
@@ -562,13 +563,13 @@ public class Board
    }
    public boolean containsAverage()
    {
-      for (Hand h: (Hand[]) hands.toArray(new Hand[0]))
+      for (Hand h: hands)
          if (h.isAveraged()) return true;
       return false;
    }
    public boolean played(String number)
    {
-      for (Hand h: (Hand[]) hands.toArray(new Hand[0]))
+      for (Hand h: hands)
          if (h.getNS().equals(number)) 
             return true;
          else if (h.getEW().equals(number))
@@ -587,8 +588,8 @@ public class Board
    {
       // conditions:
       // no pair plays the board twice
-      Set seen = new TreeSet();
-      for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
+      Set<String> seen = new TreeSet<String>();
+      for (Hand h: hands) {
          h.check();
          if (seen.contains(h.getNS()))
             throw new BoardValidationException(MessageFormat.format(_("Board {0} has been played by pair {1} twice."), new Object[] {number, h.getNS()}));
@@ -603,7 +604,7 @@ public class Board
    public void setNumber(String number) 
    { 
       this.number = number; 
-      for (Hand h: (Hand[]) hands.toArray(new Hand[0]))
+      for (Hand h: hands)
          h.setNumber(number);
    }
    public String toString() 

@@ -61,22 +61,22 @@ public class Salliere
    public static final String ECATS_UPLOAD_DIR = "\\sims";
    public static final String ECATS_PROGRAM_VERSION = "5.6.28";
 
-   static class HandNSComparer implements Comparator
+   static class HandNSComparer implements Comparator<Hand>
    {
-      public int compare(Object ob1, Object ob2)
+      public int compare(Hand ob1, Hand ob2)
       {
-         String n1 = ((Hand) ob1).getNS();
-         String n2 = ((Hand) ob2).getNS();
+         String n1 = ob1.getNS();
+         String n2 = ob2.getNS();
          return n1.compareTo(n2);
       }
    }
 
-   static class BoardNumberComparer implements Comparator
+   static class BoardNumberComparer implements Comparator<Board>
    {
-      public int compare(Object ob1, Object ob2)
+      public int compare(Board ob1, Board ob2)
       {
-         String n1 = ((Board) ob1).getNumber();
-         String n2 = ((Board) ob2).getNumber();
+         String n1 = ob1.getNumber();
+         String n2 = ob2.getNumber();
          String[] n = n1.split(":");
          String[] v = n[n.length-1].split(";");
          int num1 = Integer.parseInt(v[0]);
@@ -88,29 +88,29 @@ public class Salliere
       }
    }
 
-   static class PairNumberComparer implements Comparator
+   static class PairNumberComparer implements Comparator<Pair>
    {
-      public int compare(Object ob1, Object ob2)
+      public int compare(Pair ob1, Pair ob2)
       {
-         return ((Pair) ob1).getNumber().compareTo(((Pair) ob2).getNumber());
+         return ob1.getNumber().compareTo(ob2.getNumber());
       }
    }
 
-   static class PairPercentageComparer implements Comparator
+   static class PairPercentageComparer implements Comparator<Pair>
    {
-      public int compare(Object ob1, Object ob2)
+      public int compare(Pair ob1, Pair ob2)
       {
-         return (int) ((((Pair) ob2).getPercentage()-((Pair) ob1).getPercentage())*100.0);
+         return (int) ((ob2.getPercentage()-ob1.getPercentage())*100.0);
       }
    }
 
-   static void readTrickData(List boards, InputStream trickdatafile) throws IOException
+   static void readTrickData(List<Board> boards, InputStream trickdatafile) throws IOException
    {
       Collections.sort(boards, new BoardNumberComparer());
 
       BufferedReader br = new BufferedReader(new InputStreamReader(trickdatafile));
 
-      for (Board b: (Board[]) boards.toArray(new Board[0])) {
+      for (Board b: boards) {
          String s;
          if (null != (s = br.readLine()))
             b.importTricks(s);
@@ -118,17 +118,17 @@ public class Salliere
 
    }
 
-   static List readBoards(InputStream is) throws IOException, BoardValidationException
+   static List<Board> readBoards(InputStream is) throws IOException, BoardValidationException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
-      Map boards = new HashMap();
+      Map<String, Board> boards = new HashMap<String, Board>();
       try { 
          while (in.readRecord()) {
             String[] values = in.getValues();
             if (Debug.debug) {
                Debug.print(in.getCurrentRecord()+": "+Arrays.asList(values));
             }
-            Board b = (Board) boards.get(values[0]);
+            Board b = boards.get(values[0]);
             if (null == b) {
                b = new Board(values[0]);
                boards.put(values[0], b);
@@ -137,13 +137,13 @@ public class Salliere
          }
       } catch (EOFException EOFe) {}
       in.close();
-      return new ArrayList(boards.values());
+      return new ArrayList<Board>(boards.values());
    }
 
-   static List readPairs(InputStream is) throws IOException
+   static List<Pair> readPairs(InputStream is) throws IOException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
-      List pairs = new Vector();
+      List<Pair> pairs = new Vector<Pair>();
       try { 
          while (in.readRecord()) {
             String[] values = in.getValues();
@@ -155,10 +155,10 @@ public class Salliere
       return pairs;
    }
 
-   static void writePairs(List pairs, OutputStream os) throws IOException
+   static void writePairs(List<Pair> pairs, OutputStream os) throws IOException
    {
       CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
-      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
+      for (Pair p: pairs)
          out.writeRecord(p.export());
       out.close();
    }
@@ -187,16 +187,16 @@ public class Salliere
    }
 
 
-   static void writeBoards(List boards, OutputStream os) throws IOException
+   static void writeBoards(List<Board> boards, OutputStream os) throws IOException
    {
       CsvWriter out = new CsvWriter(new OutputStreamWriter(os), ',');
-      for (Board b: (Board[]) boards.toArray(new Board[0])) 
-         for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
+      for (Board b: boards)
+         for (Hand h: b.getHands())
             out.writeRecord(h.export());
       out.close();
    }
 
-   private static void doC(PrintStream out, List boards, Map options)
+   private static void doC(PrintStream out, List<Board> boards, Map<String, String> options)
    {
       // write C.txt
       out.print("\t");
@@ -210,37 +210,37 @@ public class Salliere
       out.print("\t");
       out.print("\"true\""); // true iff contracts were recorded
       out.print("\t");
-      out.print('"'+(String) options.get("clubName")+'"'); //club name, compulsory (max 50 chars)
+      out.print('"'+options.get("clubName")+'"'); //club name, compulsory (max 50 chars)
       out.print("\t");
-      out.print('"'+(String) options.get("town")+'"'); //town (max 50 chars)
+      out.print('"'+options.get("town")+'"'); //town (max 50 chars)
       out.print("\t");
-      out.print('"'+(String) options.get("county")+'"'); //county (max 50 chars)
+      out.print('"'+options.get("county")+'"'); //county (max 50 chars)
       out.print("\t");
-      out.print('"'+(String) options.get("country")+'"'); //country, compulsory, spelling agreed in advance (max 50 chars)
+      out.print('"'+options.get("country")+'"'); //country, compulsory, spelling agreed in advance (max 50 chars)
       out.print("\t");
-      out.print('"'+(String) options.get("name")+'"'); //name (max 50 chars)
+      out.print('"'+options.get("name")+'"'); //name (max 50 chars)
       out.print("\t");
-      out.print('"'+(String) options.get("phone")+'"'); //phone, compulsory (max 50 chars)
+      out.print('"'+options.get("phone")+'"'); //phone, compulsory (max 50 chars)
       out.print("\t");
-      out.print('"'+(String) options.get("fax")+'"'); //fax (max 50 chars)
+      out.print('"'+options.get("fax")+'"'); //fax (max 50 chars)
       out.print("\t");
-      out.print('"'+(String) options.get("email")+'"'); //email (max 50 chars)
+      out.print('"'+options.get("email")+'"'); //email (max 50 chars)
       out.print("\t");
       out.print("\"false\""); //spare = false
       out.print("\t");
-      out.print((String) options.get("session")); //session #, compulsory, numeric
+      out.print(options.get("session")); //session #, compulsory, numeric
       out.print("\t");
       out.print('"'+ECATS_PROGRAM_VERSION+'"'); // program version. Important. My program? their program? this number seems to work...
       out.print("\t");
-      out.print('"'+(String) options.get("date")+'"'); // "dd/mm/yyyy" 
+      out.print('"'+options.get("date")+'"'); // "dd/mm/yyyy" 
       out.print("\t");
-      out.print('"'+(String) options.get("event")+'"'); // event name, text (max 50 chars)
+      out.print('"'+options.get("event")+'"'); // event name, text (max 50 chars)
       out.print("\r\n");
    }
 
-   private static void doP(PrintStream out, List pairs)
+   private static void doP(PrintStream out, List<Pair> pairs)
    {
-      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
+      for (Pair p: pairs) {
          out.print("\t");
          out.print("0"); // spare = 0
          out.print("\t");
@@ -259,10 +259,10 @@ public class Salliere
          out.print("\r\n");
       }
    }
-   private static void doR(PrintStream out, List boards, String session)
+   private static void doR(PrintStream out, List<Board> boards, String session)
    {
-      for (Board bd: (Board[]) boards.toArray(new Board[0])) {
-         for (Hand b: (Hand[]) bd.getHands().toArray(new Hand[0])) {
+      for (Board bd: boards) {
+         for (Hand b: bd.getHands()) {
             out.print("\t");
             out.print("0"); // spare == 0
             out.print("\t");
@@ -328,14 +328,14 @@ public class Salliere
       }
    }
 
-   public static void exportToECATS(List boards, List pairs, Map options, String exportdir) throws ScoreException
+   public static void exportToECATS(List<Board> boards, List<Pair> pairs, Map<String,String> options, String exportdir) throws ScoreException
    {
       try {
          if (null == exportdir)
             exportdir = new File (".").getCanonicalPath();
          System.err.println(_("Exporting scores in ECATS format to ")+exportdir);
 
-         String session = (String) options.get("session");
+         String session = options.get("session");
    
          // write club file
          PrintStream out = new PrintStream(new FileOutputStream(exportdir+"/C.txt"));
@@ -366,7 +366,7 @@ public class Salliere
    }
 
 
-   public static void uploadToECATS(List boards, List pairs, Map options) throws ScoreException
+   public static void uploadToECATS(List<Board> boards, List<Pair> pairs, Map<String, String> options) throws ScoreException
    {
       System.err.println(_("Uploading scores to ECATS"));
 
@@ -380,9 +380,9 @@ public class Salliere
          ftp.enterLocalPassiveMode();
 
          // get options
-         String session = (String) options.get("session");
-         String clubName = (String) options.get("clubName");
-         String phone = (String) options.get("phone");
+         String session = options.get("session");
+         String clubName = options.get("clubName");
+         String phone = options.get("phone");
 
          // calculate file prefix
          StringBuffer prefixb = new StringBuffer();
@@ -435,18 +435,18 @@ public class Salliere
       }
    }
 
-   public static void score(List boards) throws ScoreException, ContractParseException, HandParseException
+   public static void score(List<Board> boards) throws ScoreException, ContractParseException, HandParseException
    {
-      for (Board b: (Board[]) boards.toArray(new Board[0])) 
-         for (Hand h: (Hand[]) b.getHands().toArray(new Hand[0])) 
+      for (Board b: boards)
+         for (Hand h: b.getHands())
             if (!h.isAveraged())
                h.score();
       modifiedboards = true;
    }
 
-   public static void verify(List boardv, String setsize) throws MovementVerificationException, BoardValidationException, HandParseException
+   public static void verify(List<Board> boardv, String setsize) throws MovementVerificationException, BoardValidationException, HandParseException
    {
-      for (Board b: (Board[]) boardv.toArray(new Board[0])) 
+      for (Board b: boardv)
          b.validate();
 
       if (null == setsize || setsize.length() == 0) return;
@@ -460,17 +460,17 @@ public class Salliere
       }
       
       Collections.sort(boardv, new BoardNumberComparer());
-      Board[] boards = (Board[]) boardv.toArray(new Board[0]);
-      Set pairs = new TreeSet();
+      Board[] boards = boardv.toArray(new Board[0]);
+      Set<String> pairs = new TreeSet<String>();
       for (int i = 0; i < boards.length; i++) {
          if (0 == (i % size)) {
             // reset the pairs
             pairs.clear();
-            for (Hand h: (Hand[]) boards[i].getHands().toArray(new Hand[0])) 
+            for (Hand h: boards[i].getHands())
                pairs.add(h.getNS()+" "+h.getEW());
          } else {
             // check the pairs
-            for (Hand h: (Hand[]) boards[i].getHands().toArray(new Hand[0])) 
+            for (Hand h: boards[i].getHands())
                if (!pairs.contains(h.getNS()+" "+h.getEW()))
                   throw new MovementVerificationException(
                         MessageFormat.format(_("Board {0} was played by {1} and {2}, which I was not expecting."), 
@@ -479,21 +479,21 @@ public class Salliere
       }
    }
 
-   public static void matchpoint(List boards) throws ScoreException
+   public static void matchpoint(List<Board> boards) throws ScoreException
    {
-      for (Board b: (Board[]) boards.toArray(new Board[0])) 
+      for (Board b: boards)
          b.matchPoint();
       modifiedboards = true;
    }
 
-   public static void ximp(List boards) throws ScoreException
+   public static void ximp(List<Board> boards) throws ScoreException
    {
-      for (Board b: (Board[]) boards.toArray(new Board[0])) 
+      for (Board b: boards)
          b.ximp();
       modifiedboards = true;
    }
 
-   public static void teams(List boards, TablePrinter tabular, String prefix, String teamsize) throws ScoreException
+   public static void teams(List<Board> boards, TablePrinter tabular, String prefix, String teamsize) throws ScoreException
    {
       int teams = 4;
       if (null != teamsize && teamsize.length() >= 0)
@@ -506,7 +506,7 @@ public class Salliere
 
       double usimps = 0;
       double themimps = 0;
-      for (Board b: (Board[]) boards.toArray(new Board[0])) {
+      for (Board b: boards) {
          double[] res = b.sumimp(prefix, teams);
          if (res[0] > 0)
             usimps += res[0];
@@ -532,21 +532,21 @@ public class Salliere
       tabular.gap();
    }
 
-   public static void parimp(List boards) throws ScoreException
+   public static void parimp(List<Board> boards) throws ScoreException
    {
-      for (Board b: (Board[]) boards.toArray(new Board[0])) 
+      for (Board b: boards)
          b.parimp();
       modifiedboards = true;
    }
 
-   public static void total(List pairs, List boards)
+   public static void total(List<Pair> pairs, List<Board> boards)
    {
-      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
+      for (Pair p: pairs)
          p.total(boards);
       modifiedpairs = true;
    }
 
-   public static void matrix(List pairv, List boardv, TablePrinter tabular, String setsize) throws MovementVerificationException
+   public static void matrix(List<Pair> pairv, List<Board> boardv, TablePrinter tabular, String setsize) throws MovementVerificationException
    {
       int grouping = 0;
       if (null != setsize && setsize.length() >= 0)
@@ -557,12 +557,10 @@ public class Salliere
             throw new MovementVerificationException(setsize+_(" isn't a number!"));
          }
 
-      System.err.println("Grouping = " + grouping);
-
       Collections.sort(boardv, new BoardNumberComparer());
       Collections.sort(pairv, new PairNumberComparer());
-      Board[] boards = (Board[]) boardv.toArray(new Board[0]);
-      Pair[] pairs = (Pair[]) pairv.toArray(new Pair[0]);
+      Board[] boards = boardv.toArray(new Board[0]);
+      Pair[] pairs = pairv.toArray(new Pair[0]);
 
       DecimalFormat format = new DecimalFormat("0.##");
       FieldPosition field = new FieldPosition(DecimalFormat.INTEGER_FIELD);
@@ -603,7 +601,7 @@ public class Salliere
          tabular.gap();
       }
    }
-   public static void boardbyboard(List boards, TablePrinter tabular, boolean ximp, boolean withpar) 
+   public static void boardbyboard(List<Board> boards, TablePrinter tabular, boolean ximp, boolean withpar) 
    {
       String[] headers = new String[] {
             _("NS"),
@@ -618,11 +616,11 @@ public class Salliere
             "" };
       Collections.sort(boards, new BoardNumberComparer());
 
-      for (Board b: (Board[]) boards.toArray(new Board[0])) {
-         Vector lines = new Vector();
-         List hands = b.getHands();
+      for (Board b: boards) {
+         Vector<String[]> lines = new Vector<String[]>();
+         List<Hand> hands = b.getHands();
          Collections.sort(hands, new HandNSComparer());
-         for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
+         for (Hand h: hands) {
             String[] ex = h.export();
             String[] line = new String[ex.length-1];
             System.arraycopy(ex, 1, line, 0, line.length);
@@ -632,11 +630,11 @@ public class Salliere
             tabular.header(_("Board: ")+b.getNumber()+" [ "+b.getParContract()+" by "+b.getPar().getDeclarer()+" ]");
          else
             tabular.header(_("Board: ")+b.getNumber());
-         tabular.print(headers, (String[][]) lines.toArray(new String[0][]));
+         tabular.print(headers, lines.toArray(new String[0][]));
          tabular.gap();
       }
    }
-   public static void scorecards(List pairs, List boards, TablePrinter tabular, boolean ximp) 
+   public static void scorecards(List<Pair> pairs, List<Board> boards, TablePrinter tabular, boolean ximp) 
    {
       String[] headers = new String[] {
             _("Board"),
@@ -652,7 +650,7 @@ public class Salliere
       Collections.sort(pairs, new PairNumberComparer());
       Collections.sort(boards, new BoardNumberComparer());
 
-		for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
+		for (Pair p: pairs) {
 			String header;
 			if (p.getNames().length == 1) 
 				header = _("Player ");
@@ -663,11 +661,11 @@ public class Salliere
 				header += ", "+n;
 			}
 			tabular.header(header);
-			Vector lines = new Vector();
-			for (Board b: (Board[]) boards.toArray(new Board[0])) {
-				List hands = b.getHands();
+			Vector<String[]> lines = new Vector<String[]>();
+			for (Board b: boards) {
+				List<Hand> hands = b.getHands();
 				Collections.sort(hands, new HandNSComparer());
-				for (Hand h: (Hand[]) hands.toArray(new Hand[0])) {
+				for (Hand h: hands) {
 					if (h.getNS().equals(p.getNumber())) {
 						String[] ex = h.export();
 						String[] line = new String[ex.length-1];
@@ -697,16 +695,16 @@ public class Salliere
 					}
 				}
 			}
-			tabular.print(headers, (String[][]) lines.toArray(new String[0][]));
+			tabular.print(headers, lines.toArray(new String[0][]));
 			tabular.gap();
 		}
    }
 
 
-   public static Map readHandicapData(List pairs, InputStream handicapfile) throws ScoreException
+   public static Map<Pair, Double> readHandicapData(List<Pair> pairs, InputStream handicapfile) throws ScoreException
    {
-      Map handicaps = new HashMap();
-      Map pairhandicaps = new HashMap();
+      Map<String, Double> handicaps = new HashMap<String, Double>();
+      Map<Pair, Double> pairhandicaps = new HashMap<Pair, Double>();
       try {
          CsvReader in = new CsvReader(new InputStreamReader(handicapfile));
          while (in.readRecord()) {
@@ -719,11 +717,11 @@ public class Salliere
          if (Debug.debug) Debug.print(IOe);
          throw new ScoreException(_("Failure in reading handicap file: ")+IOe.getMessage());
       }
-      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
+      for (Pair p: pairs) {
          double handicap = 0.0;
          String[] names = p.getNames();
          for (String n: names) {
-            Double v = (Double) handicaps.get(n);
+            Double v = handicaps.get(n);
             if (null == v) v = 50.0;
             handicap += v;
          }
@@ -732,21 +730,21 @@ public class Salliere
       }
       return pairhandicaps;
    }
-   public static void handicap(List pairs, Map handicaps,  double normalize) throws ScoreException
+   public static void handicap(List<Pair> pairs, Map<Pair, Double> handicaps,  double normalize) throws ScoreException
    {
       if (null == handicaps) throw new ScoreException(_("Must supply a handicap file before calculating handicapped scores"));
-      for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
-         double handicap = (Double) handicaps.get(p);
+      for (Pair p: pairs) {
+         double handicap = handicaps.get(p);
          p.setPercentage(p.getPercentage()-handicap+normalize);
       }
       modifiedpairs = true;
    }
-   public static void localpoint(List pairs) throws ScoreException
+   public static void localpoint(List<Pair> pairs) throws ScoreException
    {
       int rate = (1 == Pair.getMaxNames()) ? 3 : 6;
       // sort pairs in order
       Collections.sort(pairs, new PairPercentageComparer());
-      Pair[] ps = (Pair[]) pairs.toArray(new Pair[0]);
+      Pair[] ps = pairs.toArray(new Pair[0]);
 
       // check we have enough to give LPs
       if (ps.length < ((1 == Pair.getMaxNames())?8:6)) throw new ScoreException(_("Must have at least 3 full tables at pairs or 2 full tables at individuals to award local points"));
@@ -784,12 +782,12 @@ public class Salliere
       modifiedpairs = true;
    }
 
-   public static void results(List pairs, TablePrinter tabulate, boolean orange, boolean ximp, Map handicapdata, boolean handicaps)
+   public static void results(List<Pair> pairs, TablePrinter tabulate, boolean orange, boolean ximp, Map<Pair, Double> handicapdata, boolean handicaps)
    {
-      Vector results = new Vector();
+      Vector<String[]> results = new Vector<String[]>();
       Collections.sort(pairs, new PairPercentageComparer());
 
-      Vector headerv = new Vector();
+      Vector<String> headerv = new Vector<String>();
       if (Pair.getMaxNames() == 1) {
          headerv.add(_("Num"));
          headerv.add(_("Name"));
@@ -812,10 +810,10 @@ public class Salliere
       else
          headerv.add(_("LPs"));
 
-      String[] header = (String[]) headerv.toArray(new String[0]);
+      String[] header = headerv.toArray(new String[0]);
 
       if (ximp)
-         for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) {
+         for (Pair p: pairs) {
             String[] a = p.export();
             String[] b = new String[a.length-1];
             System.arraycopy(a, 0, b, 0, 4);
@@ -823,13 +821,13 @@ public class Salliere
             results.add(b);
          }
       else
-         for (Pair p: (Pair[]) pairs.toArray(new Pair[0])) 
+         for (Pair p: pairs)
             results.add(p.export());
 
       if (handicaps) 
          for (int i = 0; i < pairs.size(); i++) {
-            Pair p = (Pair) pairs.get(i);
-            String[] r = (String[]) results.get(i);
+            Pair p = pairs.get(i);
+            String[] r = results.get(i);
             String[] n = new String[r.length+1];
             System.arraycopy(r, 0, n, 0, r.length-2);
             DecimalFormat format = new DecimalFormat("0.#");
@@ -842,8 +840,7 @@ public class Salliere
             results.set(i, n);
          }
 
-      tabulate.print(header, 
-            (String[][]) results.toArray(new String[0][]));
+      tabulate.print(header, results.toArray(new String[0][]));
       tabulate.gap();
    }
 
@@ -859,8 +856,8 @@ public class Salliere
                Debug.loadConfig(f);
             Debug.setThrowableTraces(true);
          }
-         Vector commands = new Vector();
-         HashMap options = new HashMap();
+         Vector<String> commands = new Vector<String>();
+         HashMap<String, String> options = new HashMap<String, String>();
          options.put("--output", "-");
          options.put("--help", null);
          options.put("--orange", null);
@@ -907,27 +904,27 @@ public class Salliere
             System.exit(1);
          }
 
-         List boards;
-         List pairs;
+         List<Board> boards;
+         List<Pair> pairs;
 
          boards = readBoards(new FileInputStream(args[i+1]));
          pairs = readPairs(new FileInputStream(args[i+2]));
 
          if (null != options.get("--trickdata")) {
-            readTrickData(boards, new FileInputStream((String) options.get("--trickdata")));
+            readTrickData(boards, new FileInputStream(options.get("--trickdata")));
          }
 
-         Map handicapdata = null;
+         Map<Pair, Double> handicapdata = null;
 
          if (null != options.get("--handicapdata")) {
-            handicapdata = readHandicapData(pairs, new FileInputStream((String) options.get("--handicapdata")));
+            handicapdata = readHandicapData(pairs, new FileInputStream(options.get("--handicapdata")));
          }
 
-         Map ecatsoptions = new ECatsOptionsMap((String) options.get("--ecats-options"));
+         Map<String, String> ecatsoptions = new ECatsOptionsMap(options.get("--ecats-options"));
 
          TablePrinter tabular = null;
 
-         String[] format = (String[]) ((String) options.get("--output")).split(":");
+         String[] format = options.get("--output").split(":");
          PrintStream out;
          if ("-".equals(format[format.length-1]))
             out = System.out;
@@ -941,11 +938,11 @@ public class Salliere
          else if ("csv".equals(format[0].toLowerCase()))
             tabular = new CSVTablePrinter(out);
          else if ("html".equals(format[0].toLowerCase()))
-            tabular = new HTMLTablePrinter((String) options.get("--title"), out);
+            tabular = new HTMLTablePrinter(options.get("--title"), out);
          else if ("htmlfrag".equals(format[0].toLowerCase()))
-            tabular = new HTMLFragTablePrinter((String) options.get("--title"), out);
+            tabular = new HTMLFragTablePrinter(options.get("--title"), out);
          else if ("pdf".equals(format[0].toLowerCase()))
-            tabular = new PDFTablePrinter((String) options.get("--title"), out);
+            tabular = new PDFTablePrinter(options.get("--title"), out);
          else {
             System.out.println(_("Unknown format: ")+format[0]);
             syntax();
@@ -953,24 +950,24 @@ public class Salliere
          }
          
          tabular.init();
-         tabular.header((String) options.get("--title"));
+         tabular.header(options.get("--title"));
 
-         for (String command: (String[]) commands.toArray(new String[0])) {
+         for (String command: commands) {
             if ("score".equals(command)) score(boards);
-            else if ("verify".equals(command)) verify(boards, (String) options.get("--setsize"));
+            else if ("verify".equals(command)) verify(boards, options.get("--setsize"));
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
             else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), handicapdata, null != options.get("--with-handicaps"));
-            else if ("matrix".equals(command)) matrix(pairs, boards, tabular, (String) options.get("--setsize"));
+            else if ("matrix".equals(command)) matrix(pairs, boards, tabular, options.get("--setsize"));
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"), null != options.get("--with-par"));
             else if ("scorecards".equals(command)) scorecards(pairs, boards, tabular, null != options.get("--ximp"));
             else if ("localpoint".equals(command)) localpoint(pairs);
-            else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble((String) options.get("--handicap-normalizer")));
+            else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble(options.get("--handicap-normalizer")));
             else if ("ximp".equals(command)) ximp(boards);
             else if ("parimp".equals(command)) parimp(boards);
             else if ("ecats-upload".equals(command)) uploadToECATS(boards, pairs, ecatsoptions);
-            else if ("ecats-export".equals(command)) exportToECATS(boards, pairs, ecatsoptions, (String) options.get("--ecats-export-dir"));
-            else if ("scoreteams".equals(command)) teams(boards, tabular, (String) options.get("--teamprefix"), (String) options.get("--teamsize"));
+            else if ("ecats-export".equals(command)) exportToECATS(boards, pairs, ecatsoptions, options.get("--ecats-export-dir"));
+            else if ("scoreteams".equals(command)) teams(boards, tabular, options.get("--teamprefix"), options.get("--teamsize"));
             else {
                System.out.println(_("Bad Command: ")+command);
                syntax();

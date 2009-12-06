@@ -19,6 +19,7 @@
 
 package cx.ath.matthew.salliere;
 
+@SuppressWarnings("serial")
 public class ContractParseException extends Exception
 {
    public ContractParseException(String message)
