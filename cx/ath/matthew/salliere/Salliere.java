@@ -992,12 +992,6 @@ public class Salliere
                commands.add(args[i]);
          }
 
-         if (args.length < (i+3)) {
-            System.out.println(_("You must specify boards.csv and names.csv"));
-            syntax();
-            System.exit(1);
-         }
-
          if (null != options.get("--help")) {
             syntax();
             System.exit(1);
@@ -1008,6 +1002,12 @@ public class Salliere
          }
          if (null != options.get("--print-mpscales")) {
             MasterPointScale.printScales();
+            System.exit(1);
+         }
+
+         if (args.length < (i+3)) {
+            System.out.println(_("You must specify boards.csv and names.csv"));
+            syntax();
             System.exit(1);
          }
 
