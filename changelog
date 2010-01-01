@@ -3,6 +3,10 @@ Version 0.9:
 	* Rewrite everything with Java generics to remove all the warnings
 	* Add split-tie procedures (only works for 2-way split-tie in
 	  all-play-all pairs or individual events)
+	* Add different master point scales, now copes with:
+		- club/district/county/regional/national scales
+		- 12+ boards not just 18-35
+		- quali-final scales
 
 Version 0.8:
 	

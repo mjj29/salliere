@@ -26,6 +26,21 @@ import static cx.ath.matthew.salliere.Gettext._;
 @SuppressWarnings("serial")
 public class ECatsOptionsMap extends HashMap<String, String>
 {
+	public static void printOptions()
+	{
+      System.out.println("ECATS options: ");
+      System.out.println("\tclubName = name of club (required)");
+      System.out.println("\tsession = ECATS session number (required)");
+      System.out.println("\tphone = contact phone number (required)");
+      System.out.println("\tcountry = club country (required)");
+      System.out.println("\tname = contact name");
+      System.out.println("\tfax = contact fax number");
+      System.out.println("\temail = contact email");
+      System.out.println("\ttown = club town");
+      System.out.println("\tcounty = club county");
+      System.out.println("\tdate = event date");
+      System.out.println("\tevent = event name");
+	}
    public ECatsOptionsMap(String options) throws ScoreException
    {
       super();

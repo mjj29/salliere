@@ -100,14 +100,18 @@ public class Salliere
    {
       public int compare(Pair ob1, Pair ob2)
       {
-			if (Debug.debug) Debug.print(Debug.VERBOSE, "Comparing "+ob1.getNumber()+"["+ob1.getPercentage()+"] and "+ob1.getNumber()+"["+ob2.getPercentage()+"]");
+			if (Debug.debug) Debug.print(Debug.VERBOSE, "Comparing "+ob1.getNumber()+"["+ob1.getPercentage()+"] and "+ob2.getNumber()+"["+ob2.getPercentage()+"]");
 			
 			// no need to split tie
 			if (ob2.getPercentage() != ob1.getPercentage()) return (int) ((ob2.getPercentage()-ob1.getPercentage())*100.0);
 
 			List<Hand> hands1 = ob1.getHands();
 			List<Hand> hands2 = ob2.getHands();
-			if (hands1.size() == 0 || hands2.size() == 0) return 0;
+
+			if (hands1.size() == 0 || hands2.size() == 0) {
+				if (Debug.debug) Debug.print(Debug.INFO, "Can't Split tie for "+ob1.getNumber()+" and "+ob2.getNumber()+", because there are no hands");
+				return 0;
+			}
 
 			if (Debug.debug) Debug.print(Debug.INFO, "Splitting tie for "+ob1.getNumber()+" and "+ob2.getNumber());
 
@@ -122,11 +126,15 @@ public class Salliere
 			for (Hand h: hands1) {
 				if (Debug.debug) Debug.print(Debug.VERBOSE, "Board: "+h.getNumber());
 				double mp1 = 0.0, mp2 = 0.0;
-				if (h.getNS().equals(ob1.getNumber())) mp1 = h.getNSMP();
+				if (h.getNS().equals(ob1.getNumber()) 
+					|| h.getNS().startsWith(ob1.getNumber()+".") 
+					|| h.getNS().endsWith("."+ob1.getNumber())) mp1 = h.getNSMP();
 				else mp1 = h.getEWMP();
 				if (hands2map.containsKey(h.getNumber())) {
 					h = hands2map.remove(h.getNumber());
-					if (h.getNS().equals(ob2.getNumber())) mp2 = h.getNSMP();
+					if (h.getNS().equals(ob2.getNumber()) 
+						|| h.getNS().startsWith(ob2.getNumber()+".") 
+						|| h.getNS().endsWith("."+ob2.getNumber())) mp2 = h.getNSMP();
 					else mp2 = h.getEWMP();
 				} else {
 					if (Debug.debug) Debug.print(Debug.VERBOSE, ob2.getNumber()+" not played, treating as average");
@@ -151,7 +159,9 @@ public class Salliere
 				if (Debug.debug) Debug.print(Debug.VERBOSE, ob1.getNumber()+" not played, treating as average");
 				double mp1 = 0.0, mp2 = 0.0;
 				mp1 = h.getBoard().getTop() / 2;
-				if (h.getNS().equals(ob2.getNumber())) mp2 = h.getNSMP();
+				if (h.getNS().equals(ob2.getNumber()) 
+					|| h.getNS().startsWith(ob2.getNumber()+".") 
+					|| h.getNS().endsWith("."+ob2.getNumber())) mp2 = h.getNSMP();
 				else mp2 = h.getEWMP();
 				if (mp1 > mp2) {
 					if (Debug.debug) Debug.print(Debug.VERBOSE, ob1.getNumber()+" win");
@@ -226,8 +236,18 @@ public class Salliere
 		if (null != boards) {
 			for (Board b: boards) {
 				for (Hand h: b.getHands()) {
-					pairmap.get(h.getNS()).addHand(h);
-					pairmap.get(h.getEW()).addHand(h);
+					if (pairmap.containsKey(h.getNS())) {
+						pairmap.get(h.getNS()).addHand(h);
+						pairmap.get(h.getEW()).addHand(h);
+					} else {
+						// probably individual
+						String[] ss = h.getNS().split("\\.");
+						for (String s: ss)
+							pairmap.get(s).addHand(h);
+						ss = h.getEW().split("\\.");
+						for (String s: ss)
+							pairmap.get(s).addHand(h);
+					}
 				}
 			}
 		}
@@ -250,20 +270,8 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload scoreteams scorecards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --teamsize=N --teamprefix=<prefix>");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables>");
       System.out.println("   Formats: txt html htmlfrag pdf csv");
-      System.out.println("   ECATS options: ");
-      System.out.println("      clubName = name of club (required)");
-      System.out.println("      session = ECATS session number (required)");
-      System.out.println("      phone = contact phone number (required)");
-      System.out.println("      country = club country (required)");
-      System.out.println("      name = contact name");
-      System.out.println("      fax = contact fax number");
-      System.out.println("      email = contact email");
-      System.out.println("      town = club town");
-      System.out.println("      county = club county");
-      System.out.println("      date = event date");
-      System.out.println("      event = event name");
    }
 
 
@@ -819,29 +827,36 @@ public class Salliere
       }
       modifiedpairs = true;
    }
-   public static void localpoint(List<Pair> pairs) throws ScoreException
+   public static void localpoint(List<Pair> pairs, List<Board> boards, MasterPointScale scale, int originaltables) throws ScoreException
    {
-      int rate = (1 == Pair.getMaxNames()) ? 3 : 6;
       // sort pairs in order
       Collections.sort(pairs, new PairPercentageComparer());
       Pair[] ps = pairs.toArray(new Pair[0]);
 
+		if (ps.length == 0) return;
+
+		int npairs;
+		int arity = ps[0].getNames().length;
+		if (-1 == originaltables)
+			npairs = ps.length;
+		else
+			npairs = originaltables * arity;
+
       // check we have enough to give LPs
-      if (ps.length < ((1 == Pair.getMaxNames())?8:6)) throw new ScoreException(_("Must have at least 3 full tables at pairs or 2 full tables at individuals to award local points"));
+		if (ps.length < scale.minPairs(arity)) throw new ScoreException(
+                     MessageFormat.format(_("Must have at least {0} competitors to award local points in this event"),
+                        new Object[] { new Integer(scale.minPairs(arity)) }));
 
       // calculate LP scale based on number of pairs
       int[] LPs = new int[ps.length];
-      int awarded = (int) Math.ceil((Math.floor(LPs.length/2.0)*2.0)/3.0);
-      int top;
-      if (1 == Pair.getMaxNames()) {
-         int tables = (int) Math.floor(ps.length/4.0);
-         top = (3 * (int) Math.ceil(tables/3.0)) + (3 * tables);
-      } else
-         top = rate*awarded;
-      if (top > 100) top = 100;
+      int awarded = scale.numberAwards(npairs, arity, boards.size());
+      double top = scale.getTop(npairs, arity, boards.size());
+      double rate = scale.getRate(arity);
       if (Debug.debug) Debug.print(Debug.DEBUG, "Awarding LPs to "+ps.length+" pairs, top is "+top+" rate is "+rate+" number receiving LPs: "+awarded);
-      for (int i = 0, lp=top; i < awarded; i++, lp -= rate)
-         LPs[i] = lp > 6 ? lp : 6;
+		double lp = top;
+      for (int i = 0; i < awarded; i++, lp -= rate)
+			if (lp > scale.getMax(boards.size())) LPs[i] = scale.getMax(boards.size());
+			else LPs[i] = (int) Math.ceil(lp);
 
       // award LPs, splitting on draws
       for (int i = 0; i < ps.length && i < awarded; i++) {
@@ -850,7 +865,7 @@ public class Salliere
          while (i+1 < ps.length && ps[i].getPercentage()==ps[i+1].getPercentage())
             total += LPs[++i];
          double award = Math.ceil(total / (1.0+i-a));
-         if (award < 6 && award > 0) award = 6;
+         if (award < scale.getMin() && award > 0) award = scale.getMin();
          for (int j = a; j <= i; j++) {
             if (ps[j].getLPs() != 0 && ps[j].getLPs() != award) 
                throw new ScoreException(
@@ -953,6 +968,10 @@ public class Salliere
          options.put("--handicap-normalizer", "0.0");
          options.put("--ecats-options", null);
          options.put("--ecats-export-dir", null);
+         options.put("--print-ecats-options", null);
+         options.put("--print-mpscales", null);
+         options.put("--mpscale", null);
+         options.put("--original-entry", "-1");
          int i;
          for (i = 0; i < args.length; i++) {
             if ("--".equals(args[i])) break;
@@ -981,6 +1000,14 @@ public class Salliere
 
          if (null != options.get("--help")) {
             syntax();
+            System.exit(1);
+         }
+         if (null != options.get("--print-ecats-options")) {
+            ECatsOptionsMap.printOptions();
+            System.exit(1);
+         }
+         if (null != options.get("--print-mpscales")) {
+            MasterPointScale.printScales();
             System.exit(1);
          }
 
@@ -1041,7 +1068,7 @@ public class Salliere
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular, options.get("--setsize"));
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"), null != options.get("--with-par"));
             else if ("scorecards".equals(command)) scorecards(pairs, boards, tabular, null != options.get("--ximp"));
-            else if ("localpoint".equals(command)) localpoint(pairs);
+            else if ("localpoint".equals(command)) localpoint(pairs, boards, MasterPointScale.getScale(options.get("--mpscale")), Integer.parseInt(options.get("--original-entry")));
             else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble(options.get("--handicap-normalizer")));
             else if ("ximp".equals(command)) ximp(boards);
             else if ("parimp".equals(command)) parimp(boards);
@@ -1065,7 +1092,7 @@ public class Salliere
       } catch (Exception e) {
          if (Debug.debug) {
             Debug.setThrowableTraces(true);
-            Debug.print(e);
+            Debug.print(Debug.ERR, e);
          }
          System.out.println(_("Salliere failed to compute results: ")+e.getMessage());
          System.exit(1);

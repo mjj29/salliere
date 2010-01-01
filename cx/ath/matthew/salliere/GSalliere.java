@@ -639,7 +639,8 @@ public class GSalliere extends Salliere
                 } else if ("localpoint".equals(command)) {
                    status.setText(_("Allocating local points"));
                    if (null == pairs) showerror(_("Must Load Pairs before allocating local points"));
-                   else localpoint(pairs);
+                   if (null == boards) showerror(_("Must Load Boards before allocating local points"));
+                   else localpoint(pairs, boards, MasterPointScale.getScale(null), -1);
                    nametable.repaint();
                 } else if ("results".equals(command)) {
                    status.setText(_("Exporting results"));
