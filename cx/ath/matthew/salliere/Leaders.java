@@ -86,7 +86,7 @@ public class Leaders
 
          for (String f: files) {
             System.out.println(f);
-            List<Pair> pairs = Salliere.readPairs(new FileInputStream(f));
+            List<Pair> pairs = Salliere.readPairs(new FileInputStream(f), null);
             if (Debug.debug) Debug.print(Debug.DEBUG, "Got results: "+pairs);
             Salliere.results(pairs, printer, false, false, null, false);
             for (Pair p: pairs) {

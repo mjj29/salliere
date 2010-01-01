@@ -100,7 +100,74 @@ public class Salliere
    {
       public int compare(Pair ob1, Pair ob2)
       {
-         return (int) ((ob2.getPercentage()-ob1.getPercentage())*100.0);
+			if (Debug.debug) Debug.print(Debug.VERBOSE, "Comparing "+ob1.getNumber()+"["+ob1.getPercentage()+"] and "+ob1.getNumber()+"["+ob2.getPercentage()+"]");
+			
+			// no need to split tie
+			if (ob2.getPercentage() != ob1.getPercentage()) return (int) ((ob2.getPercentage()-ob1.getPercentage())*100.0);
+
+			List<Hand> hands1 = ob1.getHands();
+			List<Hand> hands2 = ob2.getHands();
+			if (hands1.size() == 0 || hands2.size() == 0) return 0;
+
+			if (Debug.debug) Debug.print(Debug.INFO, "Splitting tie for "+ob1.getNumber()+" and "+ob2.getNumber());
+
+			/* Only using this method here, so only works for all-play-all events without direct matches
+				and only for two-way ties. Matchpoint the matchpoints for these two pairs */
+			if (Debug.debug) Debug.print(Debug.DEBUG, "Point-a-board count-back:");
+			int points1 = 0, points2 = 0;
+
+			HashMap<String, Hand> hands2map = new HashMap<String, Hand>();
+			for (Hand h: hands2) hands2map.put(h.getNumber(), h);
+			
+			for (Hand h: hands1) {
+				if (Debug.debug) Debug.print(Debug.VERBOSE, "Board: "+h.getNumber());
+				double mp1 = 0.0, mp2 = 0.0;
+				if (h.getNS().equals(ob1.getNumber())) mp1 = h.getNSMP();
+				else mp1 = h.getEWMP();
+				if (hands2map.containsKey(h.getNumber())) {
+					h = hands2map.remove(h.getNumber());
+					if (h.getNS().equals(ob2.getNumber())) mp2 = h.getNSMP();
+					else mp2 = h.getEWMP();
+				} else {
+					if (Debug.debug) Debug.print(Debug.VERBOSE, ob2.getNumber()+" not played, treating as average");
+					mp2 = h.getBoard().getTop() / 2;
+				}
+
+				if (mp1 > mp2) {
+					if (Debug.debug) Debug.print(Debug.VERBOSE, ob1.getNumber()+" win");
+					points1 += 2;
+				} else if (mp1 < mp2) {
+					if (Debug.debug) Debug.print(Debug.VERBOSE, ob2.getNumber()+" win");
+					points2 += 2;
+				} else {
+					if (Debug.debug) Debug.print(Debug.VERBOSE, "Draw");
+					points1++;
+					points2++;
+				}
+			}
+
+			for (Hand h: hands2map.values()) {
+				if (Debug.debug) Debug.print(Debug.VERBOSE, "Board: "+h.getNumber());
+				if (Debug.debug) Debug.print(Debug.VERBOSE, ob1.getNumber()+" not played, treating as average");
+				double mp1 = 0.0, mp2 = 0.0;
+				mp1 = h.getBoard().getTop() / 2;
+				if (h.getNS().equals(ob2.getNumber())) mp2 = h.getNSMP();
+				else mp2 = h.getEWMP();
+				if (mp1 > mp2) {
+					if (Debug.debug) Debug.print(Debug.VERBOSE, ob1.getNumber()+" win");
+					points1 += 2;
+				} else if (mp1 < mp2) {
+					if (Debug.debug) Debug.print(Debug.VERBOSE, ob2.getNumber()+" win");
+					points2 += 2;
+				} else {
+					if (Debug.debug) Debug.print(Debug.VERBOSE, "Draw");
+					points1++;
+					points2++;
+				}
+			}
+
+			if (Debug.debug) Debug.print(Debug.DEBUG, ob1.getNumber()+" have "+points1+" points and "+ob2.getNumber()+" have "+points2+" points.");
+			return points2-points1;
       }
    }
 
@@ -140,18 +207,31 @@ public class Salliere
       return new ArrayList<Board>(boards.values());
    }
 
-   static List<Pair> readPairs(InputStream is) throws IOException
+   static List<Pair> readPairs(InputStream is, List<Board> boards) throws IOException
    {
       CsvReader in = new CsvReader(new InputStreamReader(is));
       List<Pair> pairs = new Vector<Pair>();
+		HashMap<String, Pair> pairmap = new HashMap<String, Pair>();
       try { 
          while (in.readRecord()) {
             String[] values = in.getValues();
             if (Debug.debug) Debug.print(Arrays.asList(values));
-            pairs.add(new Pair(values));
+				Pair p = new Pair(values);
+            pairs.add(p);
+				pairmap.put(p.getNumber(), p);
          }
       } catch (EOFException EOFe) {}
       in.close();
+	
+		if (null != boards) {
+			for (Board b: boards) {
+				for (Hand h: b.getHands()) {
+					pairmap.get(h.getNS()).addHand(h);
+					pairmap.get(h.getEW()).addHand(h);
+				}
+			}
+		}
+
       return pairs;
    }
 
@@ -908,7 +988,7 @@ public class Salliere
          List<Pair> pairs;
 
          boards = readBoards(new FileInputStream(args[i+1]));
-         pairs = readPairs(new FileInputStream(args[i+2]));
+         pairs = readPairs(new FileInputStream(args[i+2]), boards);
 
          if (null != options.get("--trickdata")) {
             readTrickData(boards, new FileInputStream(options.get("--trickdata")));

@@ -489,7 +489,7 @@ public class GSalliere extends Salliere
                    try {
                       namesfile = f.getCanonicalPath();
                       status.setText(_("Loading Names from ")+namesfile);
-                      pairs = readPairs(new FileInputStream(f));
+                      pairs = readPairs(new FileInputStream(f), boards);
                       nametable.setModel(new PairTableDataModel(pairs));
                       status.setText(_("Loaded Names from ")+namesfile);
                    } catch (IOException IOe) {
@@ -1115,7 +1115,7 @@ public class GSalliere extends Salliere
             }
 
             try {
-               pairs = readPairs(new FileInputStream(namesfile));
+               pairs = readPairs(new FileInputStream(namesfile), boards);
             } catch (IOException IOe) {
                if (Debug.debug) Debug.print(IOe);
                System.out.println(_("Problem loading names file: ")+IOe);

@@ -59,6 +59,7 @@ public class Hand
    boolean forced_ewmp;
    int ewavetype;
    int nsavetype;
+	Board board;
    public Hand()
    {
    }
@@ -294,7 +295,9 @@ public class Hand
    public boolean hasForcedEWMP() { return forced_ewmp; }
    public boolean hasForcedNSScore() { return forced_nsscore; }
    public boolean hasForcedEWScore() { return forced_ewscore; }
+	public Board getBoard() { return board; }
 
+	public void setBoard(Board b) { board = b; }
    public void setNSMP(double mp) { nsmp = mp; }
    public void setEWMP(double mp) { ewmp = mp; }
    public void setNumber(String number) { this.number = number; }

@@ -23,6 +23,7 @@ import cx.ath.matthew.debug.Debug;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 
@@ -34,6 +35,7 @@ public class Pair
    double mps;
    double percentage;
    double lps;
+	Vector<Hand> hands = new Vector<Hand>();
    public static synchronized int getMaxNames() { return maxnames; }
    public static synchronized void resetNames() { maxnames = 0; }
    public Pair() {}
@@ -139,5 +141,13 @@ public class Pair
 
       return rv;
    }
+	public void addHand(Hand h) 
+	{
+		hands.add(h);
+	}
+	public List<Hand> getHands()
+	{
+		return hands;
+	}
 }
 

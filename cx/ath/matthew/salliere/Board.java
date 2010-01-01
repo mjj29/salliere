@@ -538,6 +538,7 @@ public class Board
                         _("This Hand is number {0} but this is board {1}."),
                         new Object[] { h.getNumber(), number }));
       hands.add(h); 
+		h.setBoard(this);
    }
    public List<Hand> getHands() { return hands; }
    public double getTop()
