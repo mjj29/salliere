@@ -74,7 +74,7 @@ public class Board
       this.number = number;
       this.hands = new Vector<Hand>();
    }
-   public void matchPoint() throws ScoreException
+   public void matchPoint(int played) throws ScoreException
    {
       // order by (NS score) and (EW score)
       Collections.sort(hands, new HandScoreNSComparer());
@@ -85,7 +85,7 @@ public class Board
       // create score-frequency table
       Map<Double, Double> ewfrequencies = new HashMap<Double, Double>();
       Map<Double, Double> nsfrequencies = new HashMap<Double, Double>();
-      int avcount = 0;
+      int avcount = played-hands.size(); // scale up the board if it wasn't played as many times as others
       for (int i = 0; i < nshs.length; i++) {
          if (Debug.debug) Debug.print(nshs[i]);
          double score = (0 == nshs[i].getNSScore()) ? - nshs[i].getEWScore() : nshs[i].getNSScore();
@@ -116,7 +116,7 @@ public class Board
       }
 
       // increase frequencies for averages
-      double increment = 1.0 + ( (double) avcount / (double) ( nshs.length - avcount ) );
+      double increment = 1.0 + ( (double) avcount / (double) ( played - avcount ) );
       if (Debug.debug) Debug.print("Got "+avcount+" averages, increment = "+increment);
       for (Double f: ewfrequencies.keySet())
          ewfrequencies.put(f, ewfrequencies.get(f)*increment);

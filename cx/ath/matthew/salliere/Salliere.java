@@ -103,7 +103,7 @@ public class Salliere
 			if (Debug.debug) Debug.print(Debug.VERBOSE, "Comparing "+ob1.getNumber()+"["+ob1.getPercentage()+"] and "+ob2.getNumber()+"["+ob2.getPercentage()+"]");
 			
 			// no need to split tie
-			if (ob2.getPercentage() != ob1.getPercentage()) return (int) ((ob2.getPercentage()-ob1.getPercentage())*100.0);
+			if (ob2.getPercentage() != ob1.getPercentage()) return (int) ((ob2.getPercentage()-ob1.getPercentage())*10000.0);
 
 			List<Hand> hands1 = ob1.getHands();
 			List<Hand> hands2 = ob2.getHands();
@@ -242,10 +242,10 @@ public class Salliere
 					} else {
 						// probably individual
 						String[] ss = h.getNS().split("\\.");
-						for (String s: ss)
+						for (String s: ss) if (pairmap.containsKey(s))
 							pairmap.get(s).addHand(h);
 						ss = h.getEW().split("\\.");
-						for (String s: ss)
+						for (String s: ss) if (pairmap.containsKey(s))
 							pairmap.get(s).addHand(h);
 					}
 				}
@@ -569,8 +569,13 @@ public class Salliere
 
    public static void matchpoint(List<Board> boards) throws ScoreException
    {
+		int played = 0;
+      for (Board b: boards) {
+			if (b.getHands().size() > played)
+				played = b.getHands().size();
+		}
       for (Board b: boards)
-         b.matchPoint();
+         b.matchPoint(played);
       modifiedboards = true;
    }
 
@@ -724,7 +729,10 @@ public class Salliere
    }
    public static void scorecards(List<Pair> pairs, List<Board> boards, TablePrinter tabular, boolean ximp) 
    {
-      String[] headers = new String[] {
+      String[] headers;
+		if (0 == pairs.size()) return;
+		if (pairs.get(0).getNames().length > 1) {
+			headers = new String[] {
             _("Board"),
             _("Dir"),
             _("VS"),
@@ -735,6 +743,20 @@ public class Salliere
             "",
             ximp ? _("IMPs") 
                  : _("MPs:")}; 
+			if (Debug.debug) Debug.print("Pairs");
+		} else {
+			headers = new String[] {
+            _("Board"),
+            _("Dir"),
+            _("Contract"), 
+            _("By"), 
+            _("Tricks"),
+            _("Score:"),
+            "",
+            ximp ? _("IMPs") 
+                 : _("MPs:")}; 
+			if (Debug.debug) Debug.print("Individual");
+		}
       Collections.sort(pairs, new PairNumberComparer());
       Collections.sort(boards, new BoardNumberComparer());
 
@@ -779,6 +801,54 @@ public class Salliere
 						line[6] = ex[7].equals("0") ? "" : ex[7];
 						line[7] = ex[6].equals("0") ? "" : ex[6];
 						line[8] = ex[9];
+						lines.add(line);
+					} else if (h.getNS().startsWith(p.getNumber()+".")) {
+						String[] ex = h.export();
+						String[] line = new String[ex.length-2];
+						line[0] = ex[0];
+						line[1] = _("N");
+						line[2] = ex[3];
+						line[3] = ex[4];
+						line[4] = ex[5];
+						line[5] = ex[7].equals("0") ? "" : ex[7];
+						line[6] = ex[6].equals("0") ? "" : ex[6];
+						line[7] = ex[9];
+						lines.add(line);
+					} else if (h.getNS().endsWith("."+p.getNumber())) {
+						String[] ex = h.export();
+						String[] line = new String[ex.length-2];
+						line[0] = ex[0];
+						line[1] = _("S");
+						line[2] = ex[3];
+						line[3] = ex[4];
+						line[4] = ex[5];
+						line[5] = ex[7].equals("0") ? "" : ex[7];
+						line[6] = ex[6].equals("0") ? "" : ex[6];
+						line[7] = ex[9];
+						lines.add(line);
+					} else if (h.getEW().startsWith(p.getNumber()+".")) {
+						String[] ex = h.export();
+						String[] line = new String[ex.length-2];
+						line[0] = ex[0];
+						line[1] = _("E");
+						line[2] = ex[3];
+						line[3] = ex[4];
+						line[4] = ex[5];
+						line[5] = ex[7].equals("0") ? "" : ex[7];
+						line[6] = ex[6].equals("0") ? "" : ex[6];
+						line[7] = ex[9];
+						lines.add(line);
+					} else if (h.getEW().endsWith("."+p.getNumber())) {
+						String[] ex = h.export();
+						String[] line = new String[ex.length-2];
+						line[0] = ex[0];
+						line[1] = _("W");
+						line[2] = ex[3];
+						line[3] = ex[4];
+						line[4] = ex[5];
+						line[5] = ex[7].equals("0") ? "" : ex[7];
+						line[6] = ex[6].equals("0") ? "" : ex[6];
+						line[7] = ex[9];
 						lines.add(line);
 					}
 				}
@@ -854,7 +924,7 @@ public class Salliere
       double rate = scale.getRate(arity);
       if (Debug.debug) Debug.print(Debug.DEBUG, "Awarding LPs to "+ps.length+" pairs, top is "+top+" rate is "+rate+" number receiving LPs: "+awarded);
 		double lp = top;
-      for (int i = 0; i < awarded; i++, lp -= rate)
+      for (int i = 0; i < LPs.length && i < awarded; i++, lp -= rate)
 			if (lp > scale.getMax(boards.size())) LPs[i] = scale.getMax(boards.size());
 			else LPs[i] = (int) Math.ceil(lp);
 

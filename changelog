@@ -1,3 +1,11 @@
+Version 0.10:
+	
+	* Fix Neuberging boards which weren't played as many times
+	* Fix NPE with nonexistent pairs
+	* Fix Individual scorecards
+	* Fix Local-pointing with everyone getting points
+	* Make PDF output tables bigger
+
 Version 0.9:
 
 	* Rewrite everything with Java generics to remove all the warnings

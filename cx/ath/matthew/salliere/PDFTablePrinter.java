@@ -48,6 +48,7 @@ public class PDFTablePrinter implements TablePrinter
    {
       try {
          Table table = new Table(headers.length);
+			table.setWidth(100);
          table.setBorderWidth(1);
          table.setBorderColor(new Color(0, 0, 0));
          table.setPadding(2);

@@ -83,7 +83,7 @@ public class Pair
             bds++;
          }
       }
-      percentage = (mps*100) / (top*bds);
+      percentage = (mps*100.0) / (top*bds);
       if (Debug.debug) Debug.print("totalling for pair "+number+": mps="+mps+", boards="+bds+", top="+top+", %age="+percentage);
    }
    public String getNumber() { return number; }
