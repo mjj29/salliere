@@ -269,8 +269,8 @@ public class Salliere
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload scoreteams scorecards");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables>");
+      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload ecats-export scoreteams scorecards");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --ecats-export-dir=<dir> --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables>");
       System.out.println("   Formats: txt html htmlfrag pdf csv");
    }
 
@@ -337,11 +337,17 @@ public class Salliere
          out.print(p.getNumber()); // pair number (int)
          out.print("\t");
          String[] names = p.getNames();
-         out.print('"'+names[0]+" & "+names[1]+'"');
+			if (names.length > 1)
+				out.print('"'+names[0]+" & "+names[1]+'"');
+			else 
+				out.print('"'+names[0]+'"');
          out.print("\t");
          out.print('"'+names[0]+'"');
          out.print("\t");
-         out.print('"'+names[1]+'"');
+			if (names.length > 1)
+				out.print('"'+names[1]+'"');
+			else
+				out.print('"'+'"');
          out.print("\t");
          out.print("\"NS\""); // for a 2 winner movement, set this to the direction they were sitting. 
          out.print("\r\n");

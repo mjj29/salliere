@@ -5,6 +5,7 @@ Version 0.10:
 	* Fix Individual scorecards
 	* Fix Local-pointing with everyone getting points
 	* Make PDF output tables bigger
+	* Fix ECATS for individuals
 
 Version 0.9:
 
