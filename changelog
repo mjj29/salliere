@@ -1,3 +1,8 @@
+Version 0.11:
+
+	* Sort numeric substrings numerically
+	* More useful information on verify
+
 Version 0.10:
 	
 	* Fix Neuberging boards which weren't played as many times

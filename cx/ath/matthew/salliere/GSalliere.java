@@ -649,7 +649,8 @@ public class GSalliere extends Salliere
                 } else if ("validate".equals(command)) {
                    status.setText(_("Verifying Movement"));
                    if (null == boards) showerror(_("Must Load Boards before Verifying movement"));
-                   else verify(boards, setsize.getText());
+                   if (null == pairs) showerror(_("Must Load Pairs before Verifying movement"));
+                   else verify(boards, pairs, setsize.getText());
                 }
              } catch (ScoreException Se) {
                if (Debug.debug) Debug.print(Se);

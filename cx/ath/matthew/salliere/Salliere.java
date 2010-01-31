@@ -90,9 +90,41 @@ public class Salliere
 
    static class PairNumberComparer implements Comparator<Pair>
    {
+		public String[] tokenize(String in)
+		{
+			Vector<String> v = new Vector<String>();
+			for (int i = 0; i < in.length(); i++) {
+				if (in.charAt(i) >= '0' && in.charAt(i) <= '9') {
+					StringBuilder sb = new StringBuilder();
+					sb.append(in.charAt(i));
+					while (i < (in.length()-1) && in.charAt(i+1) >= '0' && in.charAt(i+1) <= '9') {
+						sb.append(in.charAt(++i));
+					}
+					v.add(sb.toString());
+				} else {
+					v.add(""+in.charAt(i));
+				}
+			}
+			if (Debug.debug) Debug.print(Debug.VERBOSE, "Tokenized "+in+" to "+v);
+			return v.toArray(new String[0]);
+		}
       public int compare(Pair ob1, Pair ob2)
       {
-         return ob1.getNumber().compareTo(ob2.getNumber());
+			String[] n1 = tokenize(ob1.getNumber());
+			String[] n2 = tokenize(ob2.getNumber());
+			for (int i = 0; i < n1.length && i < n2.length; i++)
+			{
+				int c;
+				try {
+					int a = Integer.parseInt(n1[i]);
+					int b = Integer.parseInt(n2[i]);
+					c = a-b;
+				} catch (Exception e) {
+					c = n1[i].compareTo(n2[i]);
+				}
+				if (0 != c) return c;
+			}
+			return n2.length-n1.length;
       }
    }
 
@@ -538,10 +570,21 @@ public class Salliere
       modifiedboards = true;
    }
 
-   public static void verify(List<Board> boardv, String setsize) throws MovementVerificationException, BoardValidationException, HandParseException
+   public static void verify(List<Board> boardv, List<Pair> pairv, String setsize) throws MovementVerificationException, BoardValidationException, HandParseException
    {
-      for (Board b: boardv)
+      Collections.sort(boardv, new BoardNumberComparer());
+      Collections.sort(pairv, new PairNumberComparer());
+
+		for (Pair p: pairv) {
+			System.out.println(MessageFormat.format(_("Pair {0} has played {1} boards."), 
+						new Object[] { p.getNumber(), p.getHands().size() }));
+		}
+
+      for (Board b: boardv) {
          b.validate();
+			System.out.println(MessageFormat.format(_("Board {0} was played {1} times."), 
+						new Object[] { b.getNumber(), b.getHands().size() }));
+		}
 
       if (null == setsize || setsize.length() == 0) return;
 
@@ -553,7 +596,6 @@ public class Salliere
          throw new MovementVerificationException(setsize+_(" isn't a number!"));
       }
       
-      Collections.sort(boardv, new BoardNumberComparer());
       Board[] boards = boardv.toArray(new Board[0]);
       Set<String> pairs = new TreeSet<String>();
       for (int i = 0; i < boards.length; i++) {
@@ -1137,7 +1179,7 @@ public class Salliere
 
          for (String command: commands) {
             if ("score".equals(command)) score(boards);
-            else if ("verify".equals(command)) verify(boards, options.get("--setsize"));
+            else if ("verify".equals(command)) verify(boards, pairs, options.get("--setsize"));
             else if ("matchpoint".equals(command)) matchpoint(boards);
             else if ("total".equals(command)) total(pairs, boards);
             else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), handicapdata, null != options.get("--with-handicaps"));
