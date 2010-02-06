@@ -796,10 +796,10 @@ public class GSalliere extends Salliere
             try {
                if (upload) {
                   status.setText(_("Uploading scores to ECATS"));
-                  uploadToECATS(boards, pairs, options);
+                  uploadToECATS(boards, pairs, options, new HashMap<String, String>());
                } else {
                   status.setText(_("Exporting scores in ECATS format to ")+path.getText());
-                  exportToECATS(boards, pairs, options, path.getText());
+                  exportToECATS(boards, pairs, options, new HashMap<String, String>(), path.getText());
                   JOptionPane.showMessageDialog(gs, "ECATS files have been written to `"+path.getText()+"'. Email the files C.txt, P.txt, R.txt and E.txt to results@simpairs.com", _("ECATS"), JOptionPane.INFORMATION_MESSAGE);
                }
             } catch (ScoreException Se) {

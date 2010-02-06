@@ -3,6 +3,7 @@ Version 0.11:
 	* Sort numeric substrings numerically
 	* More useful information on verify
 	* Add a handicaps program for creating handicap tables
+	* Update ECATS format for EBU pay-to-play
 
 Version 0.10:
 	

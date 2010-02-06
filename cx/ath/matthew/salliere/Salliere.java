@@ -355,10 +355,12 @@ public class Salliere
       out.print('"'+options.get("date")+'"'); // "dd/mm/yyyy" 
       out.print("\t");
       out.print('"'+options.get("event")+'"'); // event name, text (max 50 chars)
+      out.print("\t");
+      out.print('"'+options.get("nboid")+'"'); // event name, text (max 50 chars)
       out.print("\r\n");
    }
 
-   private static void doP(PrintStream out, List<Pair> pairs)
+   private static void doP(PrintStream out, List<Pair> pairs, Map<String, String> nboids)
    {
       for (Pair p: pairs) {
          out.print("\t");
@@ -382,6 +384,13 @@ public class Salliere
 				out.print('"'+'"');
          out.print("\t");
          out.print("\"NS\""); // for a 2 winner movement, set this to the direction they were sitting. 
+			out.print("\t");
+			out.print('"'+nboids.get(names[0]) == null ? "":nboids.get(names[0])+'"');
+			out.print("\t");
+			if (names.length > 1)
+				out.print('"'+nboids.get(names[1]) == null ? "":nboids.get(names[1])+'"');
+			else
+				out.print('"'+'"');
          out.print("\r\n");
       }
    }
@@ -454,7 +463,7 @@ public class Salliere
       }
    }
 
-   public static void exportToECATS(List<Board> boards, List<Pair> pairs, Map<String,String> options, String exportdir) throws ScoreException
+   public static void exportToECATS(List<Board> boards, List<Pair> pairs, Map<String,String> options, Map<String, String> nboids, String exportdir) throws ScoreException
    {
       try {
          if (null == exportdir)
@@ -470,7 +479,7 @@ public class Salliere
 
          // write pairs file
          out = new PrintStream(new FileOutputStream(exportdir+"/P.txt"));
-         doP(out, pairs);
+         doP(out, pairs, nboids);
          out.close();
 
          // write boards file
@@ -492,7 +501,7 @@ public class Salliere
    }
 
 
-   public static void uploadToECATS(List<Board> boards, List<Pair> pairs, Map<String, String> options) throws ScoreException
+   public static void uploadToECATS(List<Board> boards, List<Pair> pairs, Map<String, String> options, Map<String, String> nboids) throws ScoreException
    {
       System.err.println(_("Uploading scores to ECATS"));
 
@@ -528,7 +537,7 @@ public class Salliere
          // write pairs file
          System.err.print(_("Uploading pair details"));
          out = new PrintStream(ftp.storeFileStream(prefix+"P.txt"));
-         doP(out, pairs);
+         doP(out, pairs, nboids);
          out.close();
          if (!ftp.completePendingCommand()) throw new IOException(_("Uploading pairs failed"));
          System.err.println();
@@ -906,6 +915,23 @@ public class Salliere
 		}
    }
 
+   public static Map<String, String> readNBOData(InputStream datafile) throws ScoreException
+   {
+      Map<String, String> data = new HashMap<String, String>();
+      try {
+         CsvReader in = new CsvReader(new InputStreamReader(datafile));
+         while (in.readRecord()) {
+            String[] values = in.getValues();
+            if (values.length != 2) throw new ScoreException(_("Malformed NBO data line: ")+Arrays.deepToString(values));
+            data.put(values[0], values[1]);
+         }
+         in.close();
+      } catch (IOException IOe) {
+         if (Debug.debug) Debug.print(IOe);
+         throw new ScoreException(_("Failure in reading handicap file: ")+IOe.getMessage());
+      }
+		return data;
+   }
 
    public static Map<Pair, Double> readHandicapData(List<Pair> pairs, InputStream handicapfile) throws ScoreException
    {
@@ -1145,6 +1171,12 @@ public class Salliere
             handicapdata = readHandicapData(pairs, new FileInputStream(options.get("--handicapdata")));
          }
 
+         Map<String, String> nboids = null;
+
+         if (null != options.get("--nbodata")) {
+            nboids = readNBOData(new FileInputStream(options.get("--nboids")));
+         }
+
          Map<String, String> ecatsoptions = new ECatsOptionsMap(options.get("--ecats-options"));
 
          TablePrinter tabular = null;
@@ -1190,8 +1222,8 @@ public class Salliere
             else if ("handicap".equals(command)) handicap(pairs, handicapdata, Double.parseDouble(options.get("--handicap-normalizer")));
             else if ("ximp".equals(command)) ximp(boards);
             else if ("parimp".equals(command)) parimp(boards);
-            else if ("ecats-upload".equals(command)) uploadToECATS(boards, pairs, ecatsoptions);
-            else if ("ecats-export".equals(command)) exportToECATS(boards, pairs, ecatsoptions, options.get("--ecats-export-dir"));
+            else if ("ecats-upload".equals(command)) uploadToECATS(boards, pairs, ecatsoptions, nboids);
+            else if ("ecats-export".equals(command)) exportToECATS(boards, pairs, ecatsoptions, nboids, options.get("--ecats-export-dir"));
             else if ("scoreteams".equals(command)) teams(boards, tabular, options.get("--teamprefix"), options.get("--teamsize"));
             else {
                System.out.println(_("Bad Command: ")+command);

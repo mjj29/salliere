@@ -40,6 +40,7 @@ public class ECatsOptionsMap extends HashMap<String, String>
       System.out.println("\tcounty = club county");
       System.out.println("\tdate = event date");
       System.out.println("\tevent = event name");
+      System.out.println("\tnboid = club NBO ID");
 	}
    public ECatsOptionsMap(String options) throws ScoreException
    {
@@ -51,6 +52,7 @@ public class ECatsOptionsMap extends HashMap<String, String>
       put("county", "");
       put("date", "");
       put("event", "");
+      put("nboid", "");
       if (null != options) {
          String[] opts = options.split(",");
          for (String o: opts) {
