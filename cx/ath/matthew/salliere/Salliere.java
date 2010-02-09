@@ -270,7 +270,8 @@ public class Salliere
 				for (Hand h: b.getHands()) {
 					if (pairmap.containsKey(h.getNS())) {
 						pairmap.get(h.getNS()).addHand(h);
-						pairmap.get(h.getEW()).addHand(h);
+                  if (pairmap.containsKey(h.getEW()))
+                     pairmap.get(h.getEW()).addHand(h);
 					} else {
 						// probably individual
 						String[] ss = h.getNS().split("\\.");
