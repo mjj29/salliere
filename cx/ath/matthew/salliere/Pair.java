@@ -77,7 +77,7 @@ public class Pair
       int bds = 0;
       mps = 0;
       for (Board b: boards) {
-         top = b.getTop();
+         if (b.getTop() > top) top = b.getTop();
          if (b.played(number)) {
             mps += b.getMPs(number);
             bds++;

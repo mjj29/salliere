@@ -5,6 +5,7 @@ Version 0.11:
 	* Add a handicaps program for creating handicap tables
 	* Update ECATS format for EBU pay-to-play
    * Add support for USEBIO format for EBU pay-to-play
+	* Fix percentages after a truncated movement
 
 Version 0.10:
 	
