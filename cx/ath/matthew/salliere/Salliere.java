@@ -302,7 +302,7 @@ public class Salliere
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
-      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload ecats-export scoreteams scorecards");
+      System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload ecats-export scoreteams scorecards usebio-export");
       System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --ecats-export-dir=<dir> --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables>");
       System.out.println("   Formats: txt html htmlfrag pdf csv");
    }
@@ -462,6 +462,100 @@ public class Salliere
             out.print("\r\n");
          }
       }
+   }
+
+   public static void exportToUSEBIO(List<Board> boards, List<Pair> pairs, Map<String, String> options, Map<String, String>nboids, String exportdir, boolean ximp, String mpscale) throws ScoreException
+   {
+      try {
+         if (null == exportdir)
+            exportdir = new File (".").getCanonicalPath();
+         System.err.println(_("Exporting scores in USEBIO format to ")+exportdir);
+
+         PrintStream out = new PrintStream(new FileOutputStream(exportdir+"/"+options.get("event")+".xml"));
+
+         out.println("<?xml version='1.0'?>");
+         out.println("<!DOCTYPE USEBIO SYSTEM 'http://www.ebu.co.uk/usebio/usebio_v1_0.dtd'>");
+         out.println("<USEBIO Version='1.0'>");
+         out.println("<CLUB><CLUB_NAME>"+options.get("clubName")+"</CLUB_NAME>");
+         out.println("<CLUB_ID_NUMBER>"+options.get("clubID")+"</CLUB_ID_NUMBER></CLUB>");
+         String type;
+         if (pairs.get(0).getNames().length > 1) type = "INDIVIDUAL";
+         else if (ximp) type = "BUTLER_PAIRS";
+         else type = "MP_PAIRS";
+         
+         out.println("<EVENT EVENT_TYPE='"+type+"'>");
+         out.println("<EVENT_DESCRIPTION>"+options.get("description")+"</EVENT_DESCRIPTION>");
+         out.println("<TITLE>"+options.get("event")+"</TITLE>");
+         out.println("<DATE>"+options.get("date")+"</DATE>");
+         out.println("<WINNER_TYPE>1</WINNER_TYPE>");
+         out.println("<MASTER_POINT_TYPE>BLACK</MASTER_POINT_TYPE>");
+         out.println("<MASTER_POINT_SCALE>"+mpscale+"</MASTER_POINT_SCALE>");
+         out.println("<SESSION_COUNT>1</SESSION_COUNT>");
+         out.println("<SECTION_COUNT>1</SECTION_COUNT>");
+         out.println("<P2P_CHARGE_RATE>1</P2P_CHARGE_RATE>");
+         out.println("<MPS_AWARDED_FLAG>Y</MPS_AWARDED_FLAG>");
+         out.println("<CONTACT>");
+         out.println("<FULL_NAME>"+options.get("name")+"</FULL_NAME>");
+         out.println("<TELEPHONE>"+options.get("phone")+"</TELEPHONE>");
+         out.println("<EMAIL>"+options.get("email")+"</EMAIL>");
+         out.println("</CONTACT>");
+
+         out.println("<PARTICIPANTS EVENT_TYPE='"+type+"'>");
+
+
+         Collections.sort(pairs, new PairPercentageComparer());
+         int i = 1;
+         for (Pair p: pairs) {
+
+            out.println("<PAIR>");
+            out.println("<PAIR_NUMBER>"+p.getNumber()+"</PAIR_NUMBER>");
+            out.println("<DIRECTION>NS</DIRECTION>");
+            out.println("<PERCENTAGE>"+p.getPercentage()+"</PERCENTAGE>");
+            out.println("<PLACE>"+i+"</PLACE>");
+            out.println("<MASTER_POINTS_AWARDED>"+p.getLPs()+"</MASTER_POINTS_AWARDED>");
+            i++;
+
+            for (String name: p.getNames()) {
+               out.println("<PLAYER>");
+               out.println("<PLAYER_NAME>"+name+"</PLAYER_NAME>");
+               out.println("<NATIONAL_ID_NUMBER>"+ (null == nboids.get(name) ? "" : nboids.get(name)) +"</NATIONAL_ID_NUMBER>");
+               out.println("</PLAYER>");
+            }
+            out.println("</PAIR>");
+
+         }
+
+         out.println("</PARTICIPANTS>");
+
+         for (Board b: boards) {
+
+            out.println("<BOARD EVENT_TYPE='"+type+"'>");
+            out.println("<BOARD_NUMBER>"+b.getNumber()+"</BOARD_NUMBER>");
+
+            for (Hand h: b.getHands()) {
+               out.println("<TRAVELLER_LINE>");
+               out.println("<NS_PAIR_NUMBER>"+h.getNS()+"</NS_PAIR_NUMBER>");
+               out.println("<EW_PAIR_NUMBER>"+h.getEW()+"</EW_PAIR_NUMBER>");
+               out.println("<SCORE>"+h.getNSScore()+"</SCORE>");
+               out.println("<NS_MATCH_POINTS>"+h.getNSMP()+"</NS_MATCH_POINTS>");
+               out.println("<EW_MATCH_POINTS>"+h.getEWMP()+"</EW_MATCH_POINTS>");
+               out.println("</TRAVELLER_LINE>");
+            }
+            out.println("</BOARD>");
+
+         }
+
+         out.println("</EVENT>");
+         out.println("</USEBIO>");
+
+         out.close();
+
+      } catch (IOException IOe) {
+         if (Debug.debug) Debug.print(IOe);
+         throw new ScoreException(_("Exception occurred while trying to export to USEBIO: ")+IOe.getMessage());
+      }
+
+      System.err.println(_("USEBIO data exported, please upload to the EBU P2P website: ")+options.get("event")+".xml");
    }
 
    public static void exportToECATS(List<Board> boards, List<Pair> pairs, Map<String,String> options, Map<String, String> nboids, String exportdir) throws ScoreException
@@ -1115,7 +1209,7 @@ public class Salliere
          options.put("--ecats-export-dir", null);
          options.put("--print-ecats-options", null);
          options.put("--print-mpscales", null);
-         options.put("--mpscale", null);
+         options.put("--mpscale", "Club");
          options.put("--original-entry", "-1");
          int i;
          for (i = 0; i < args.length; i++) {
@@ -1172,7 +1266,7 @@ public class Salliere
             handicapdata = readHandicapData(pairs, new FileInputStream(options.get("--handicapdata")));
          }
 
-         Map<String, String> nboids = null;
+         Map<String, String> nboids = new HashMap<String, String>();
 
          if (null != options.get("--nbodata")) {
             nboids = readNBOData(new FileInputStream(options.get("--nboids")));
@@ -1225,6 +1319,7 @@ public class Salliere
             else if ("parimp".equals(command)) parimp(boards);
             else if ("ecats-upload".equals(command)) uploadToECATS(boards, pairs, ecatsoptions, nboids);
             else if ("ecats-export".equals(command)) exportToECATS(boards, pairs, ecatsoptions, nboids, options.get("--ecats-export-dir"));
+            else if ("usebio-export".equals(command)) exportToUSEBIO(boards, pairs, ecatsoptions, nboids, options.get("--ecats-export-dir"), null != options.get("--ximp"), options.get("--mpscale"));
             else if ("scoreteams".equals(command)) teams(boards, tabular, options.get("--teamprefix"), options.get("--teamsize"));
             else {
                System.out.println(_("Bad Command: ")+command);

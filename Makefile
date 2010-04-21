@@ -9,7 +9,7 @@ GCJFLAGS?=-fjni
 JCFLAGS?=-source 1.5 -Xlint:all
 MSGFMT?=msgfmt
 
-PREFIX?=/usr/local
+PREFIX?=/usr
 JARLIBDIR?=$(PREFIX)/share/java
 JARINSTALLDIR?=$(PREFIX)/share/salliere
 DOCDIR?=$(PREFIX)/share/doc/salliere
