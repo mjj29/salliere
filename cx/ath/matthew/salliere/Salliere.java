@@ -303,7 +303,7 @@ public class Salliere
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
       System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
       System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload ecats-export scoreteams scorecards usebio-export");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --ecats-export-dir=<dir> --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables>");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --ecats-export-dir=<dir> --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables> --nbodata=<file>");
       System.out.println("   Formats: txt html htmlfrag pdf csv");
    }
 
@@ -477,10 +477,10 @@ public class Salliere
          out.println("<!DOCTYPE USEBIO SYSTEM 'http://www.ebu.co.uk/usebio/usebio_v1_0.dtd'>");
          out.println("<USEBIO Version='1.0'>");
          out.println("<CLUB><CLUB_NAME>"+options.get("clubName")+"</CLUB_NAME>");
-         out.println("<CLUB_ID_NUMBER>"+options.get("clubID")+"</CLUB_ID_NUMBER></CLUB>");
+         out.println("<CLUB_ID_NUMBER>"+options.get("nboid")+"</CLUB_ID_NUMBER></CLUB>");
          String type;
-         if (pairs.get(0).getNames().length > 1) type = "INDIVIDUAL";
-         else if (ximp) type = "BUTLER_PAIRS";
+         if (pairs.get(0).getNames().length == 1) type = "INDIVIDUAL";
+         else if (ximp) type = "CROSS_IMP";
          else type = "MP_PAIRS";
          
          out.println("<EVENT EVENT_TYPE='"+type+"'>");
@@ -536,7 +536,7 @@ public class Salliere
                out.println("<TRAVELLER_LINE>");
                out.println("<NS_PAIR_NUMBER>"+h.getNS()+"</NS_PAIR_NUMBER>");
                out.println("<EW_PAIR_NUMBER>"+h.getEW()+"</EW_PAIR_NUMBER>");
-               out.println("<SCORE>"+h.getNSScore()+"</SCORE>");
+               out.println("<SCORE>"+(h.getNSScore()-h.getEWScore())+"</SCORE>");
                out.println("<NS_MATCH_POINTS>"+h.getNSMP()+"</NS_MATCH_POINTS>");
                out.println("<EW_MATCH_POINTS>"+h.getEWMP()+"</EW_MATCH_POINTS>");
                out.println("</TRAVELLER_LINE>");
@@ -1209,6 +1209,7 @@ public class Salliere
          options.put("--ecats-export-dir", null);
          options.put("--print-ecats-options", null);
          options.put("--print-mpscales", null);
+         options.put("--nbodata", null);
          options.put("--mpscale", "Club");
          options.put("--original-entry", "-1");
          int i;
@@ -1269,7 +1270,7 @@ public class Salliere
          Map<String, String> nboids = new HashMap<String, String>();
 
          if (null != options.get("--nbodata")) {
-            nboids = readNBOData(new FileInputStream(options.get("--nboids")));
+            nboids = readNBOData(new FileInputStream(options.get("--nbodata")));
          }
 
          Map<String, String> ecatsoptions = new ECatsOptionsMap(options.get("--ecats-options"));
