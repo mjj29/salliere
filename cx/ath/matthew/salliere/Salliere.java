@@ -1203,6 +1203,7 @@ public class Salliere
          options.put("--with-par", null);
          options.put("--with-handicaps", null);
          options.put("--trickdata", null);
+         options.put("--nbodata", null);
          options.put("--handicapdata", null);
          options.put("--handicap-normalizer", "0.0");
          options.put("--ecats-options", null);
