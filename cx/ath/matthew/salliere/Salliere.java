@@ -706,8 +706,9 @@ public class Salliere
          if (0 == (i % size)) {
             // reset the pairs
             pairs.clear();
-            for (Hand h: boards[i].getHands())
+            for (Hand h: boards[i].getHands()) {
                pairs.add(h.getNS()+" "+h.getEW());
+				}
          } else {
             // check the pairs
             for (Hand h: boards[i].getHands())

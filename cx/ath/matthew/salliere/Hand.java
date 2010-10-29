@@ -239,6 +239,8 @@ public class Hand
                      _("Calculated tricks as {0} but hand says {1}."),
                      new Object[] { c.getTricks(), this }));
          tricks = c.getTricks();
+			if (0 == tricks)
+				System.out.println(_("Warning, 0 tricks taken on board ")+board.getNumber());
          contract = c.getContract();
          declarer = c.getDeclarer();
          if (Debug.debug) Debug.print(this);
