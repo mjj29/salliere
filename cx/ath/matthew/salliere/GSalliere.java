@@ -634,7 +634,7 @@ public class GSalliere extends Salliere
                 } else if ("total".equals(command)) {
                    status.setText(_("Calculating total matchpoints and percentages"));
                    if (null == boards || null == pairs) showerror(_("Must Load Boards and Pairs before Totalling"));
-                   else total(pairs, boards);
+                   else total(pairs, boards, false);
                    nametable.repaint();
                 } else if ("localpoint".equals(command)) {
                    status.setText(_("Allocating local points"));

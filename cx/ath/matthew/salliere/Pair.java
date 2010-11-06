@@ -71,7 +71,7 @@ public class Pair
          if (maxnames < names) maxnames = names;
       }
    }
-   public void total(List<Board> boards)
+   public void total(List<Board> boards, boolean ximp)
    {
       double top = 0;
       int bds = 0;
@@ -83,7 +83,12 @@ public class Pair
             bds++;
          }
       }
-      percentage = (mps*100.0) / (top*bds);
+		if (ximp) {
+			percentage = mps * (((float)boards.size())/((float)bds));
+		}
+		else {
+			percentage = (mps*100.0) / (top*bds);
+		}
       if (Debug.debug) Debug.print("totalling for pair "+number+": mps="+mps+", boards="+bds+", top="+top+", %age="+percentage);
    }
    public String getNumber() { return number; }

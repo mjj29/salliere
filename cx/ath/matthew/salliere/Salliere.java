@@ -785,10 +785,10 @@ public class Salliere
       modifiedboards = true;
    }
 
-   public static void total(List<Pair> pairs, List<Board> boards)
+   public static void total(List<Pair> pairs, List<Board> boards, boolean ximp)
    {
       for (Pair p: pairs)
-         p.total(boards);
+         p.total(boards, ximp);
       modifiedpairs = true;
    }
 
@@ -1132,9 +1132,10 @@ public class Salliere
          for (int i = 1; i < Pair.getMaxNames(); i++)
             headerv.add("");
       }
-      if (ximp) 
+      if (ximp) {
          headerv.add(_("IMPs"));
-      else {
+         headerv.add(_("Scaled"));
+		} else {
          headerv.add(_("MPs"));
          if (handicaps)
             headerv.add(_("h'cap"));
@@ -1147,17 +1148,8 @@ public class Salliere
 
       String[] header = headerv.toArray(new String[0]);
 
-      if (ximp)
-         for (Pair p: pairs) {
-            String[] a = p.export();
-            String[] b = new String[a.length-1];
-            System.arraycopy(a, 0, b, 0, 4);
-            System.arraycopy(a, 5, b, 4, a.length-5);
-            results.add(b);
-         }
-      else
-         for (Pair p: pairs)
-            results.add(p.export());
+		for (Pair p: pairs)
+			results.add(p.export());
 
       if (handicaps) 
          for (int i = 0; i < pairs.size(); i++) {
@@ -1311,7 +1303,7 @@ public class Salliere
             if ("score".equals(command)) score(boards);
             else if ("verify".equals(command)) verify(boards, pairs, options.get("--setsize"));
             else if ("matchpoint".equals(command)) matchpoint(boards);
-            else if ("total".equals(command)) total(pairs, boards);
+            else if ("total".equals(command)) total(pairs, boards, null != options.get("--ximp"));
             else if ("results".equals(command)) results(pairs, tabular, null != options.get("--orange"), null != options.get("--ximp"), handicapdata, null != options.get("--with-handicaps"));
             else if ("matrix".equals(command)) matrix(pairs, boards, tabular, options.get("--setsize"));
             else if ("boards".equals(command)) boardbyboard(boards, tabular, null != options.get("--ximp"), null != options.get("--with-par"));
