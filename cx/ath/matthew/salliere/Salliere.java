@@ -1175,7 +1175,13 @@ public class Salliere
 
 	public static void readUsebioOptions(Element event, Map<String, String> options)
 	{
-		options.put("--title", event.getElement("","TITLE").getText(0));
+		try {
+			options.put("--title", event.getElement("","TITLE").getText(0));
+		} catch (Exception e) {
+			options.put("--title", event.getElement("","EVENT_DESCRIPTION").getText(0));
+		}
+		try { options.put("--mpscale", event.getElement("","MASTER_POINT_SCALE").getText(0));
+		} catch (Exception e) {}
 		String type = event.getAttributeValue("", "EVENT_TYPE");
 		if (type.equals("CROSS_IMP")) options.put("--ximp", "true");
 	}
@@ -1190,8 +1196,11 @@ public class Salliere
 				Element PAIR = (Element) o;
 				String number = PAIR.getElement("", "PAIR_NUMBER").getText(0);
 				String percentage = PAIR.getElement("", "PERCENTAGE").getText(0);
-				String lps = PAIR.getElement("", "MASTER_POINTS_AWARDED").getText(0);
+				String mps = "0";
+				try { mps = PAIR.getElement("", "TOTAL_SCORE").getText(0); } catch (Exception e) {}
 				Vector<String> players = new Vector<String>();
+				String lps = "0";
+				try { lps = PAIR.getElement("", "MASTER_POINTS_AWARDED").getText(0); } catch (Exception e) {}
 				for (int j = 0; j < PAIR.getChildCount(); j++) {
 					o = PAIR.getChild(j);
 					if (o instanceof Element &&
@@ -1205,7 +1214,7 @@ public class Salliere
 				for (int j = 0; j < players.size(); j++) {
 					data[j+1] = players.get(j);
 				}
-				data[players.size()+1] = "0";
+				data[players.size()+1] = mps;
 				data[players.size()+2] = percentage;
 				data[players.size()+3] = lps;
 				pairs.add(new Pair(data));
@@ -1232,11 +1241,27 @@ public class Salliere
 						String NS = TRAVELLER_LINE.getElement("", "NS_PAIR_NUMBER").getText(0);
 						String EW = TRAVELLER_LINE.getElement("", "EW_PAIR_NUMBER").getText(0);
 						String score = TRAVELLER_LINE.getElement("", "SCORE").getText(0);
-						String NSMPs = TRAVELLER_LINE.getElement("", "NS_MATCH_POINTS").getText(0);
-						String EWMPs = TRAVELLER_LINE.getElement("", "EW_MATCH_POINTS").getText(0);
+						String NSMPs = "0";
+						try { 
+							NSMPs = TRAVELLER_LINE.getElement("", "NS_MATCH_POINTS").getText(0);
+						} catch (Exception e) {
+							NSMPs = TRAVELLER_LINE.getElement("", "NS_CROSS_IMP_POINTS").getText(0);
+						}
+						String EWMPs = "0"; 
+						try {
+							EWMPs = TRAVELLER_LINE.getElement("", "EW_MATCH_POINTS").getText(0);
+						} catch (Exception e) {
+							EWMPs = TRAVELLER_LINE.getElement("", "EW_CROSS_IMP_POINTS").getText(0);
+						}
+						String contract = "";
+						String declarer = "";
+						String tricks = "";
+						try { contract = TRAVELLER_LINE.getElement("", "CONTRACT").getText(0); } catch(Exception e) {}
+						try { declarer = TRAVELLER_LINE.getElement("", "PLAYED_BY").getText(0); } catch(Exception e) {}
+						try { tricks = TRAVELLER_LINE.getElement("", "TRICKS").getText(0); } catch(Exception e) {}
 						// board, ns, ew, contract, declarer, tricks, nss, ews, nsmp, ewmp
 						String[] data = new String[] {
-							number, NS, EW, "", "", "",
+							number, NS, EW, contract, declarer, tricks,
 							score.contains("-") ? "" : score,
 							score.contains("-") ? score.replace("-","") : "",
 							NSMPs, EWMPs
@@ -1270,10 +1295,19 @@ public class Salliere
 		Element event = root.getElement("", "EVENT");
 		readUsebioOptions(event, options);
 
-		Element participants = event.getElement("", "PARTICIPANTS");
+		Element participants;
+		Element boardParent;
+		try { 
+			Element section = event.getElement("", "SECTION");
+			participants = section.getElement("", "PARTICIPANTS");
+			boardParent = section;
+		} catch (Exception e) {  
+			participants = event.getElement("", "PARTICIPANTS");
+			boardParent = event;
+		}
 		pairs = readUsebioPairs(participants);
 
-		boards = readUsebioBoards(event);
+		boards = readUsebioBoards(boardParent);
 
 		Object[] rv = new Object[2];
 		rv[0] = boards;
