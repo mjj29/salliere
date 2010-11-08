@@ -19,7 +19,7 @@ BINDIR?=$(PREFIX)/bin
 
 DEBUG?=disable
 
-CLASSPATH=$(JARLIBDIR)/csv.jar:$(JARLIBDIR)/debug-$(DEBUG).jar:$(JARLIBDIR)/itext.jar:$(JARLIBDIR)/commons-net.jar
+CLASSPATH=$(JARLIBDIR)/csv.jar:$(JARLIBDIR)/debug-$(DEBUG).jar:$(JARLIBDIR)/itext.jar:$(JARLIBDIR)/commons-net.jar:$(JARLIBDIR)/kxml2.jar
 
 VERSION=$(shell sed -n '1s/Version \(.*\):/\1/p' changelog)
 
@@ -63,6 +63,8 @@ csv.jar:
 	ln -sf /usr/share/java/csv.jar .
 itext.jar: 
 	ln -sf /usr/share/java/itext.jar .
+kxml2.jar: 
+	ln -sf /usr/share/java/kxml2.jar .
 commons-net.jar: 
 	ln -sf /usr/share/java/commons-net.jar .
 debug-$(DEBUG).jar: 
@@ -71,7 +73,7 @@ debug-$(DEBUG).jar:
 bin/%: %.sh .bin
 	sed 's,\%JARINSTPATH\%,$(JARINSTALLDIR),;s,\%JARLIBPATH\%,$(JARLIBDIR),;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 
-testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itext.jar salliere-handicaps-$(VERSION).jar gsalliere-$(VERSION).jar commons-net.jar leaderboard-$(VERSION).jar
+testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itext.jar kxml2.jar salliere-handicaps-$(VERSION).jar gsalliere-$(VERSION).jar commons-net.jar leaderboard-$(VERSION).jar
 	sed 's,\%JARPATH\%,'"`pwd`"',;s,\%VERSION\%,$(VERSION),;s,\%DEBUG\%,$(DEBUG),;s,\%JAVA\%,$(JAVA),' < $< > $@
 	chmod 755 $@
 
@@ -81,9 +83,9 @@ testbin/%: %.sh .testbin salliere-$(VERSION).jar csv.jar debug-$(DEBUG).jar itex
 SalliereManifest.txt: Manifest.txt.in
 	echo Main-Class: cx.ath.matthew.salliere.Salliere > $@
 ifeq ($(DEBUG),enable)
-	echo Class-Path: $(JARLIBDIR)/csv.jar $(JARLIBDIR)/debug-$(DEBUG).jar $(JARLIBDIR)/itext.jar $(JARLIBDIR)/commons-net.jar >> $@
+	echo Class-Path: $(JARLIBDIR)/csv.jar $(JARLIBDIR)/debug-$(DEBUG).jar $(JARLIBDIR)/itext.jar $(JARLIBDIR)/kxml2.jar $(JARLIBDIR)/commons-net.jar >> $@
 else
-	echo Class-Path: $(JARLIBDIR)/csv.jar $(JARLIBDIR)/itext.jar $(JARLIBDIR)/commons-net.jar >> $@
+	echo Class-Path: $(JARLIBDIR)/csv.jar $(JARLIBDIR)/itext.jar $(JARLIBDIR)/kxml2.jar $(JARLIBDIR)/commons-net.jar >> $@
 endif
 	cat $< >> $@
 	echo "Implementation-Version: $(VERSION)" >> $@

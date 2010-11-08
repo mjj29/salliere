@@ -26,6 +26,9 @@ import cx.ath.matthew.debug.Debug;
 import static cx.ath.matthew.salliere.Gettext._;
 
 import org.apache.commons.net.ftp.FTPClient;
+import org.kxml2.io.KXmlParser;
+import org.kxml2.kdom.Document;
+import org.kxml2.kdom.Element;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -301,12 +304,11 @@ public class Salliere
       String version = Package.getPackage("cx.ath.matthew.salliere")
                               .getImplementationVersion();
       System.out.println("Salliere Duplicate Bridge Scorer - version "+version);
-      System.out.println("Usage: salliere [options] [commands] -- <boards.csv> <names.csv>");
+      System.out.println("Usage: salliere [options] [commands] -- [<boards.csv> <names.csv> | <usebio.xml>]");
       System.out.println("   Commands: verify score matchpoint ximp parimp total handicap localpoint results matrix boards ecats-upload ecats-export scoreteams scorecards usebio-export");
-      System.out.println("   Options: --help --output=[<format>:]file --title=title --orange --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --ecats-export-dir=<dir> --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables> --nbodata=<file>");
+      System.out.println("   Options: --help --output=[<format>:]file --title=title --setsize=N --ximp --with-par --trickdata=<tricks.txt> --handicapdata=<handicap.csv> --with-handicaps --handicap-normalizer=<num> --ecats-options=<key:val,key2:val2,...> --print-ecats-options --ecats-export-dir=<dir> --mpscale=<scale> --print-mpscales --teamsize=N --teamprefix=<prefix> --original-entry=<#tables> --nbodata=<file>");
       System.out.println("   Formats: txt html htmlfrag pdf csv");
    }
-
 
    static void writeBoards(List<Board> boards, OutputStream os) throws IOException
    {
@@ -1171,6 +1173,114 @@ public class Salliere
       tabulate.gap();
    }
 
+	public static void readUsebioOptions(Element event, Map<String, String> options)
+	{
+		options.put("--title", event.getElement("","TITLE").getText(0));
+		String type = event.getAttributeValue("", "EVENT_TYPE");
+		if (type.equals("CROSS_IMP")) options.put("--ximp", "true");
+	}
+
+	public static List<Pair> readUsebioPairs(Element participants) throws IOException
+	{
+		List<Pair> pairs = new Vector<Pair>();
+		for (int i = 0; i < participants.getChildCount(); i++) {
+			Object o = participants.getChild(i);
+			if (o instanceof Element &&
+					"PAIR".equals(((Element) o).getName())) {
+				Element PAIR = (Element) o;
+				String number = PAIR.getElement("", "PAIR_NUMBER").getText(0);
+				String percentage = PAIR.getElement("", "PERCENTAGE").getText(0);
+				String lps = PAIR.getElement("", "MASTER_POINTS_AWARDED").getText(0);
+				Vector<String> players = new Vector<String>();
+				for (int j = 0; j < PAIR.getChildCount(); j++) {
+					o = PAIR.getChild(j);
+					if (o instanceof Element &&
+							"PLAYER".equals(((Element) o).getName())) {
+						Element PLAYER = (Element) o;
+						players.add(PLAYER.getElement("", "PLAYER_NAME").getText(0));
+					}
+				}
+				String[] data = new String[players.size()+4];
+				data[0] = number;
+				for (int j = 0; j < players.size(); j++) {
+					data[j+1] = players.get(j);
+				}
+				data[players.size()+1] = "0";
+				data[players.size()+2] = percentage;
+				data[players.size()+3] = lps;
+				pairs.add(new Pair(data));
+			}
+		}
+		return pairs;
+	}
+
+	public static List<Board> readUsebioBoards(Element root) throws IOException, BoardValidationException, HandParseException
+	{
+		List<Board> boards = new Vector<Board>();
+		for (int i = 0; i < root.getChildCount(); i++) {
+			Object o = root.getChild(i);
+			if (o instanceof Element &&
+					"BOARD".equals(((Element) o).getName())) {
+				Element BOARD = (Element) o;
+				String number = BOARD.getElement("", "BOARD_NUMBER").getText(0);
+				Board b = new Board(number);
+				for (int j = 0; j < BOARD.getChildCount(); j++) {
+					o = BOARD.getChild(j);
+					if (o instanceof Element &&
+							"TRAVELLER_LINE".equals(((Element) o).getName())) {
+						Element TRAVELLER_LINE = (Element) o;
+						String NS = TRAVELLER_LINE.getElement("", "NS_PAIR_NUMBER").getText(0);
+						String EW = TRAVELLER_LINE.getElement("", "EW_PAIR_NUMBER").getText(0);
+						String score = TRAVELLER_LINE.getElement("", "SCORE").getText(0);
+						String NSMPs = TRAVELLER_LINE.getElement("", "NS_MATCH_POINTS").getText(0);
+						String EWMPs = TRAVELLER_LINE.getElement("", "EW_MATCH_POINTS").getText(0);
+						// board, ns, ew, contract, declarer, tricks, nss, ews, nsmp, ewmp
+						String[] data = new String[] {
+							number, NS, EW, "", "", "",
+							score.contains("-") ? "" : score,
+							score.contains("-") ? score.replace("-","") : "",
+							NSMPs, EWMPs
+						};
+						b.addHand(new Hand(data));
+					}
+				}
+				boards.add(b);
+			}
+		}
+		return boards;
+	}
+
+	public static Object[] readUsebio(Map<String, String> options, InputStream input) throws IOException, BoardValidationException, HandParseException
+	{
+		Element root;
+		try {
+			KXmlParser kxp = new KXmlParser();
+			kxp.setInput(new InputStreamReader(input));
+			Document doc = new Document();
+			doc.parse(kxp);
+			root = doc.getRootElement();
+		} catch (org.xmlpull.v1.XmlPullParserException XPPe) {
+			throw new IOException(XPPe.getMessage());
+		}
+		System.err.println(root.getNamespace());
+
+		List<Board> boards;
+		List<Pair> pairs;
+
+		Element event = root.getElement("", "EVENT");
+		readUsebioOptions(event, options);
+
+		Element participants = event.getElement("", "PARTICIPANTS");
+		pairs = readUsebioPairs(participants);
+
+		boards = readUsebioBoards(event);
+
+		Object[] rv = new Object[2];
+		rv[0] = boards;
+		rv[1] = pairs;
+		return rv;
+	}
+
    public static boolean modifiedpairs = false;
    public static boolean modifiedboards = false;
 
@@ -1187,7 +1297,6 @@ public class Salliere
          HashMap<String, String> options = new HashMap<String, String>();
          options.put("--output", "-");
          options.put("--help", null);
-         options.put("--orange", null);
          options.put("--ximp", null);
          options.put("--title", _("Salliere Duplicate Bridge Scorer: Results"));
          options.put("--teamsize", null);
@@ -1239,8 +1348,8 @@ public class Salliere
             System.exit(1);
          }
 
-         if (args.length < (i+3)) {
-            System.out.println(_("You must specify boards.csv and names.csv"));
+         if (args.length < (i+2)) {
+            System.out.println(_("You must specify boards.csv and names.csv _or_ usebio.xml"));
             syntax();
             System.exit(1);
          }
@@ -1248,8 +1357,14 @@ public class Salliere
          List<Board> boards;
          List<Pair> pairs;
 
-         boards = readBoards(new FileInputStream(args[i+1]));
-         pairs = readPairs(new FileInputStream(args[i+2]), boards);
+			if ((i+2) == args.length) {
+				Object[] lists = readUsebio(options, new FileInputStream(args[i+1]));
+				boards = (List<Board>) lists[0];
+				pairs = (List<Pair>) lists[1];
+			} else {
+				boards = readBoards(new FileInputStream(args[i+1]));
+				pairs = readPairs(new FileInputStream(args[i+2]), boards);
+			}
 
          if (null != options.get("--trickdata")) {
             readTrickData(boards, new FileInputStream(options.get("--trickdata")));
