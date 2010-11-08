@@ -1,6 +1,7 @@
 Version 0.12:
 
 	* Add USEBIO format as an input format
+	* Include contract in USEBIO output
 
 Version 0.11:
 

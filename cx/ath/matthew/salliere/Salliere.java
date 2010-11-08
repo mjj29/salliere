@@ -538,9 +538,17 @@ public class Salliere
                out.println("<TRAVELLER_LINE>");
                out.println("<NS_PAIR_NUMBER>"+h.getNS()+"</NS_PAIR_NUMBER>");
                out.println("<EW_PAIR_NUMBER>"+h.getEW()+"</EW_PAIR_NUMBER>");
-               out.println("<SCORE>"+(h.getNSScore()-h.getEWScore())+"</SCORE>");
-               out.println("<NS_MATCH_POINTS>"+h.getNSMP()+"</NS_MATCH_POINTS>");
-               out.println("<EW_MATCH_POINTS>"+h.getEWMP()+"</EW_MATCH_POINTS>");
+               out.println("<CONTRACT>"+h.getContract()+"</CONTRACT>");
+               out.println("<TRICKS>"+h.getTricks()+"</TRICKS>");
+               out.println("<PLAYED_BY>"+h.getDeclarer()+"</PLAYED_BY>");
+               out.println("<SCORE>"+(h.getNSScore()-h.getEWScore())+"</SCORE>"); 
+					if (ximp) {
+						out.println("<NS_CROSS_IMP_POINTS>"+h.getNSMP()+"</NS_CROSS_IMP_POINTS>");
+						out.println("<EW_CROSS_IMP_POINTS>"+h.getEWMP()+"</EW_CROSS_IMP_POINTS>");
+					} else {
+						out.println("<NS_MATCH_POINTS>"+h.getNSMP()+"</NS_MATCH_POINTS>");
+						out.println("<EW_MATCH_POINTS>"+h.getEWMP()+"</EW_MATCH_POINTS>");
+					}
                out.println("</TRAVELLER_LINE>");
             }
             out.println("</BOARD>");
