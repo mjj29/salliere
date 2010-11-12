@@ -1208,7 +1208,10 @@ public class Salliere
 				try { mps = PAIR.getElement("", "TOTAL_SCORE").getText(0); } catch (Exception e) {}
 				Vector<String> players = new Vector<String>();
 				String lps = "0";
-				try { lps = PAIR.getElement("", "MASTER_POINTS_AWARDED").getText(0); } catch (Exception e) {}
+				try { 
+					Element MASTER_POINTS = PAIR.getElement("", "MASTER_POINTS");
+					lps = MASTER_POINTS.getElement("", "MASTER_POINTS_AWARDED").getText(0);
+				} catch (Exception e) {}
 				for (int j = 0; j < PAIR.getChildCount(); j++) {
 					o = PAIR.getChild(j);
 					if (o instanceof Element &&

@@ -143,6 +143,35 @@ public class Hand
                         default:
                            throw new HandParseException(_("Invalid Average: ")+data[6]);
                      }
+						} else if (av.startsWith("a") && av.length() == 5) {
+							String nsa = av.substring(1,2);
+							String ewa = av.substring(3,4);
+							switch (nsa.charAt(0)) {
+								case '4':
+                           nsavetype = AVERAGE_MINUS;
+                           break;
+								case '5':
+                           nsavetype = AVERAGE;
+                           break;
+								case '6':
+                           nsavetype = AVERAGE_PLUS;
+                           break;
+                        default:
+                           throw new HandParseException(_("Invalid Average: ")+data[6]);
+							}
+							switch (ewa.charAt(0)) {
+								case '4':
+                           ewavetype = AVERAGE_MINUS;
+                           break;
+								case '5':
+                           ewavetype = AVERAGE;
+                           break;
+								case '6':
+                           ewavetype = AVERAGE_PLUS;
+                           break;
+                        default:
+                           throw new HandParseException(_("Invalid Average: ")+data[6]);
+							}
 						}
                   else throw new HandParseException(_("Invalid Score: ")+data[6]);
                }
