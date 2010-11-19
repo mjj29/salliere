@@ -975,7 +975,7 @@ public class Salliere
 						line[4] = ex[5];
 						line[5] = ex[7].equals("0") ? "" : ex[7];
 						line[6] = ex[6].equals("0") ? "" : ex[6];
-						line[7] = ex[9];
+						line[7] = ex[8];
 						lines.add(line);
 					} else if (h.getNS().endsWith("."+p.getNumber())) {
 						String[] ex = h.export();
@@ -987,7 +987,7 @@ public class Salliere
 						line[4] = ex[5];
 						line[5] = ex[7].equals("0") ? "" : ex[7];
 						line[6] = ex[6].equals("0") ? "" : ex[6];
-						line[7] = ex[9];
+						line[7] = ex[8];
 						lines.add(line);
 					} else if (h.getEW().startsWith(p.getNumber()+".")) {
 						String[] ex = h.export();
