@@ -388,10 +388,10 @@ public class Salliere
          out.print("\t");
          out.print("\"NS\""); // for a 2 winner movement, set this to the direction they were sitting. 
 			out.print("\t");
-			out.print('"'+nboids.get(names[0]) == null ? "":nboids.get(names[0])+'"');
+			out.print('"'+(nboids.get(names[0]) == null ? "":nboids.get(names[0]))+'"');
 			out.print("\t");
 			if (names.length > 1)
-				out.print('"'+nboids.get(names[1]) == null ? "":nboids.get(names[1])+'"');
+				out.print('"'+(nboids.get(names[1]) == null ? "":nboids.get(names[1]))+'"');
 			else
 				out.print('"'+'"');
          out.print("\r\n");
